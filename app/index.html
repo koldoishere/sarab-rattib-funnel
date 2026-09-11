@@ -74,6 +74,15 @@
         <h1>متابعة العملاء</h1>
         <button type="button" id="add-client" class="primary">+ عميل</button>
       </div>
+      <div class="crm-filters" id="crm-filters" role="toolbar" aria-label="تصفية العملاء">
+        <button type="button" class="chip active" data-filter="all">الكل</button>
+        <button type="button" class="chip chip-late" data-filter="overdue">متأخر</button>
+        <button type="button" class="chip" data-filter="lead">عميل محتمل</button>
+        <button type="button" class="chip" data-filter="proposal">عرض سعر</button>
+        <button type="button" class="chip" data-filter="won">تم الاتفاق</button>
+        <button type="button" class="chip" data-filter="lost">خسارة</button>
+      </div>
+      <p class="empty-hint" id="crm-empty" hidden>مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.</p>
       <div class="table-wrap">
         <table id="crm-table">
           <thead>
