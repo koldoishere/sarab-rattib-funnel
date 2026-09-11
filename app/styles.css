@@ -79,28 +79,32 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
   border-color: #7a3030; color: #ffb4b4;
 }
 @media (max-width: 700px) {
-  /* CRM / week keep horizontal scroll; pricing becomes cards */
-  #panel-crm table,
+  /* Week keeps horizontal scroll; pricing + CRM become cards */
   #panel-week table { min-width: 720px; }
 
-  #panel-pricing .table-wrap {
+  #panel-pricing .table-wrap,
+  #panel-crm .table-wrap {
     overflow: visible;
     border: none;
     background: transparent;
     border-radius: 0;
   }
-  #panel-pricing table {
+  #panel-pricing table,
+  #panel-crm table {
     min-width: 0;
     width: 100%;
     display: block;
   }
-  #panel-pricing thead { display: none; }
-  #panel-pricing tbody {
+  #panel-pricing thead,
+  #panel-crm thead { display: none; }
+  #panel-pricing tbody,
+  #panel-crm tbody {
     display: flex;
     flex-direction: column;
     gap: .75rem;
   }
-  #panel-pricing tr {
+  #panel-pricing tr,
+  #panel-crm tr {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: .55rem .65rem;
@@ -109,8 +113,10 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
-  #panel-pricing tr:nth-child(even) td { background: transparent; }
-  #panel-pricing td {
+  #panel-pricing tr:nth-child(even) td,
+  #panel-crm tr:nth-child(even) td { background: transparent; }
+  #panel-pricing td,
+  #panel-crm td {
     display: flex;
     flex-direction: column;
     gap: .25rem;
@@ -118,7 +124,8 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
     border: none;
     min-width: 0;
   }
-  #panel-pricing td::before {
+  #panel-pricing td::before,
+  #panel-crm td::before {
     content: attr(data-label);
     color: var(--muted);
     font-size: .72rem;
@@ -129,17 +136,29 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
   #panel-pricing td:nth-child(11) {
     grid-column: 1 / -1;
   }
+  /* CRM: name, notes, actions full width */
+  #panel-crm td:nth-child(1),
+  #panel-crm td:nth-child(8),
+  #panel-crm td:nth-child(9) {
+    grid-column: 1 / -1;
+  }
   #panel-pricing td.calc-cell {
     background: #0a1610;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: .4rem .5rem;
   }
-  #panel-pricing .row-actions {
+  #panel-pricing .row-actions,
+  #panel-crm .row-actions {
     justify-content: flex-start;
     flex-wrap: wrap;
     gap: .5rem;
   }
+  /* Keep overdue accent on card edge */
+  #panel-crm tr.overdue {
+    box-shadow: inset 3px 0 0 var(--danger);
+  }
+  #panel-crm tr.overdue td { box-shadow: none; }
 }
 
 .badge {
