@@ -140,18 +140,19 @@ function renderPricing() {
     const c = pricingCalcs(row);
     const tr = document.createElement("tr");
     tr.dataset.row = String(i);
+    const depLabel = `مقدم ${depositPct()}%`;
     tr.innerHTML = `
-      <td><input data-i="${i}" data-k="type" value="${esc(row.type)}"></td>
-      <td class="num"><input data-i="${i}" data-k="hours" type="number" value="${row.hours}"></td>
-      <td class="num"><input data-i="${i}" data-k="rate" type="number" value="${row.rate}"></td>
-      <td class="num"><input data-i="${i}" data-k="costs" type="number" value="${row.costs}"></td>
-      <td class="num"><input data-i="${i}" data-k="margin" type="number" value="${row.margin}"></td>
-      <td><span class="calc">${c.empty ? "—" : money(c.price)}</span></td>
-      <td><span class="calc">${c.empty ? "—" : money(c.usd)}</span></td>
-      <td><span class="calc">${c.empty ? "—" : money(c.dep)}</span></td>
-      <td><span class="calc">${c.empty ? "—" : money(c.bal)}</span></td>
-      <td><input data-i="${i}" data-k="notes" value="${esc(row.notes)}"></td>
-      <td class="row-actions">
+      <td data-label="نوع المشروع"><input data-i="${i}" data-k="type" value="${esc(row.type)}"></td>
+      <td class="num" data-label="ساعات"><input data-i="${i}" data-k="hours" type="number" value="${row.hours}"></td>
+      <td class="num" data-label="سعر/س"><input data-i="${i}" data-k="rate" type="number" value="${row.rate}"></td>
+      <td class="num" data-label="تكاليف"><input data-i="${i}" data-k="costs" type="number" value="${row.costs}"></td>
+      <td class="num" data-label="هامش %"><input data-i="${i}" data-k="margin" type="number" value="${row.margin}"></td>
+      <td class="calc-cell" data-label="مقترح ج.م"><span class="calc">${c.empty ? "—" : money(c.price)}</span></td>
+      <td class="calc-cell" data-label="USD"><span class="calc">${c.empty ? "—" : money(c.usd)}</span></td>
+      <td class="calc-cell" data-label="${depLabel}"><span class="calc">${c.empty ? "—" : money(c.dep)}</span></td>
+      <td class="calc-cell" data-label="المتبقي"><span class="calc">${c.empty ? "—" : money(c.bal)}</span></td>
+      <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(row.notes)}"></td>
+      <td class="row-actions" data-label="إجراءات">
         <button type="button" class="ghost tiny" data-use="${i}" title="ضع السعر والمشروع في عرض السعر">للعرض</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
