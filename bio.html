@@ -97,6 +97,23 @@
     outline: 3px solid var(--oasis);
     outline-offset: 3px;
   }
+
+  .link-quiet {
+    display: inline-block;
+    margin-top: 0.85rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 500;
+  }
+  .link-quiet:hover { color: var(--oasis); }
+  .link-quiet:focus-visible {
+    outline: 2px solid var(--oasis);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .btn { transition: none; }
     .btn:hover { transform: none; box-shadow: none; }
@@ -146,6 +163,7 @@
     <span>Pricing</span><span>50% deposit</span><span>Proposals</span><span>Light CRM</span><span>Weekly board</span>
   </div>
   <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Get Rattib — $12</a>
+  <a class="link-quiet" href="app/">جرّب الـweb app مجاناً</a>
   <p class="price">One-time on Whop · <strong>instant download</strong> · no subscription · Excel / CSV / Notion</p>
   <p class="price" style="margin-top:0.35rem">Built by a freelancer for freelancers · English storefront · Arabic READMEs inside</p>
 </div>
