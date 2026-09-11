@@ -239,3 +239,22 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   border: 1px dashed var(--border); border-radius: var(--radius); margin: 0 0 .85rem;
   background: var(--card);
 }
+
+.crm-search { display: block; margin: 0 0 .85rem; }
+.crm-search input {
+  width: 100%;
+  background: var(--input);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .55rem 1rem;
+  font: inherit;
+}
+.crm-search input::placeholder { color: var(--muted); }
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
