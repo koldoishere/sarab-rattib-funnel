@@ -66,6 +66,7 @@ const seed = () => ({
 });
 
 let state = load();
+let crmFilter = "all";
 
 function load() {
   try {
@@ -343,6 +344,16 @@ function nextDateHint(iso) {
 }
 
 
+function clientIsOverdue(c) {
+  return !!(c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate());
+}
+
+function clientMatchesFilter(c) {
+  if (crmFilter === "all") return true;
+  if (crmFilter === "overdue") return clientIsOverdue(c);
+  return c.status === crmFilter;
+}
+
 function crmSortKey(c) {
   const overdue = c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate();
   const next = c.next || "9999-99-99";
@@ -426,10 +437,22 @@ function renderCrm() {
   const tbody = document.querySelector("#crm-table tbody");
   tbody.innerHTML = "";
   let overdueCount = 0;
-  sortedClientIndexes().forEach(({ c, i }) => {
+  const visible = sortedClientIndexes().filter(({ c }) => clientMatchesFilter(c));
+  const emptyEl = document.getElementById("crm-empty");
+  const wrap = document.querySelector("#panel-crm .table-wrap");
+  if (emptyEl) {
+    emptyEl.hidden = visible.length > 0;
+    emptyEl.textContent = state.clients.length === 0
+      ? "لسه مفيش عملاء — اضغط «+ عميل» أو «أضف للعملاء» من عرض السعر."
+      : "مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.";
+  }
+  if (wrap) wrap.hidden = visible.length === 0;
+  // badge counts all overdue, not just filtered
+  state.clients.forEach((c) => { if (clientIsOverdue(c)) overdueCount += 1; });
+  visible.forEach(({ c, i }) => {
     const tr = document.createElement("tr");
-    const overdue = c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate();
-    if (overdue) { tr.classList.add("overdue"); overdueCount += 1; }
+    const overdue = clientIsOverdue(c);
+    if (overdue) tr.classList.add("overdue");
     const hint = nextDateHint(c.next);
     tr.innerHTML = `
       <td data-label="الاسم"><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
@@ -469,7 +492,7 @@ function renderCrm() {
     });
   });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
-    btn.onclick = () => { state.clients.splice(+btn.dataset.del, 1); save(); renderCrm(); };
+    btn.onclick = () => { if (!confirm("حذف العميل ده من المتابعة؟")) return; state.clients.splice(+btn.dataset.del, 1); save(); renderCrm(); };
   });
   tbody.querySelectorAll("[data-touch]").forEach((btn) => {
     btn.onclick = () => markContacted(+btn.dataset.touch);
@@ -539,6 +562,16 @@ function wire() {
     state.clients.push({ name: "", contact: "", source: "", status: "lead", last: "", next: "", value: 0, notes: "" });
     save(); renderCrm();
   };
+  const filters = document.getElementById("crm-filters");
+  if (filters) {
+    filters.querySelectorAll("[data-filter]").forEach((btn) => {
+      btn.onclick = () => {
+        crmFilter = btn.dataset.filter || "all";
+        filters.querySelectorAll("[data-filter]").forEach((b) => b.classList.toggle("active", b === btn));
+        renderCrm();
+      };
+    });
+  }
   document.getElementById("btn-export").onclick = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
     const a = document.createElement("a");

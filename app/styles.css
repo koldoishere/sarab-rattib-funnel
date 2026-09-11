@@ -208,3 +208,23 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
 
 .date-hint { font-size: .75rem; color: var(--muted); margin-top: .2rem; }
 .date-hint.late { color: #ff8a8a; }
+
+.crm-filters {
+  display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .85rem;
+}
+.chip {
+  background: transparent; color: var(--muted); border: 1px solid var(--border);
+  padding: .35rem .75rem; border-radius: 999px; font: inherit; font-size: .85rem;
+}
+.chip.active {
+  color: var(--bg); background: var(--green); border-color: var(--green); font-weight: 600;
+}
+.chip.chip-late.active {
+  color: #1a0606; background: #ff8a8a; border-color: #ff8a8a;
+}
+.chip:not(.active):hover { border-color: var(--green-dim); color: var(--text); }
+.empty-hint {
+  color: var(--muted); text-align: center; padding: 1.25rem 1rem;
+  border: 1px dashed var(--border); border-radius: var(--radius); margin: 0 0 .85rem;
+  background: var(--card);
+}
