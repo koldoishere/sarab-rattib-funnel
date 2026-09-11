@@ -10,6 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://koldoishere.github.io/sarab-rattib-funnel/logo-mark.png">
 <meta property="og:url" content="https://koldoishere.github.io/sarab-rattib-funnel/upsell.html">
+<meta name="twitter:card" content="summary">
 <link rel="canonical" href="https://koldoishere.github.io/sarab-rattib-funnel/upsell.html">
 <meta name="theme-color" content="#050706">
 <link rel="icon" type="image/png" href="logo-mark.png">
@@ -157,12 +158,26 @@
     font-size: 0.95rem;
   }
   .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(32, 224, 112, .25); }
+  .btn:focus-visible {
+    outline: 3px solid var(--oasis);
+    outline-offset: 3px;
+  }
   .btn-outline {
     background: transparent;
     color: var(--night);
     border: 1.5px solid var(--line);
   }
   .btn-outline:hover { border-color: var(--oasis); box-shadow: none; }
+  .btn-soft {
+    background: #e8f0eb;
+    color: var(--night);
+    border: 1.5px solid var(--line);
+  }
+  .btn-soft:hover {
+    border-color: var(--oasis);
+    box-shadow: none;
+    transform: translateY(-1px);
+  }
 
   .reassure {
     background: #e8f0eb;
@@ -173,11 +188,45 @@
     font-size: 0.98rem;
   }
   .reassure strong { color: var(--night); }
-  .reassure a {
+  .reassure a.plain {
     display: inline-block;
     margin-top: 0.85rem;
     color: var(--muted);
     font-size: 0.9rem;
+  }
+
+  /* Sticky primary action on mobile — Ep4: one clear next action */
+  .sticky-skip {
+    display: none;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 40;
+    background: rgba(5, 7, 6, 0.96);
+    border-top: 1px solid rgba(32, 224, 112, 0.35);
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -8px 28px rgba(0,0,0,.25);
+  }
+  .sticky-skip .inner {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .sticky-skip .hint {
+    color: rgba(245,248,246,0.75);
+    font-size: 0.78rem;
+    line-height: 1.3;
+  }
+  .sticky-skip .btn {
+    flex-shrink: 0;
+    padding: 0.7rem 1.1rem;
+    font-size: 0.9rem;
+  }
+  @media (max-width: 720px) {
+    .sticky-skip { display: block; }
+    body { padding-bottom: 5.5rem; }
   }
 
   footer {
@@ -211,13 +260,14 @@
 
 <section>
   <div class="wrap">
-    <p class="intro">Optional add-ons only. Useful if mid-project changes or fuzzy kickoffs keep costing you time — otherwise skip and stay with Rattib.</p>
+    <h2>Your next step</h2>
+    <p class="intro">One clear choice: stay with Rattib, or peek at an optional sister pack. Nothing here is required for Rattib to work.</p>
 
-    <div class="reassure" style="margin-bottom:1.35rem">
+    <div class="reassure" style="margin-bottom:1.35rem" role="region" aria-label="Primary next action">
       <strong>Already have Rattib? You’re set.</strong><br>
       Skip these unless you want a sharper layer later.
       <br>
-      <a class="btn btn-outline" href="index.html" style="margin-top:0.95rem">Skip — stay with Rattib</a>
+      <a class="btn" href="index.html" style="margin-top:0.95rem">Skip — stay with Rattib</a>
     </div>
 
     <div class="tool">
@@ -233,7 +283,7 @@
         <li>Change-request log (hours, price delta, approval)</li>
         <li>Notion templates + short English guide</li>
       </ul>
-      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/quoteforge-proposal-change-request-pack-for-freelancers/">View QuoteForge on Whop</a>
+      <a class="btn btn-soft" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/quoteforge-proposal-change-request-pack-for-freelancers/">View QuoteForge on Whop</a>
     </div>
 
     <div class="tool">
@@ -249,25 +299,32 @@
         <li>Kickoff agenda</li>
         <li>Risk log for freelancers &amp; developers</li>
       </ul>
-      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/scopelock-kickoff-scope-control-pack-for-freelancers-devs/">View ScopeLock on Whop</a>
+      <a class="btn btn-soft" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/scopelock-kickoff-scope-control-pack-for-freelancers-devs/">View ScopeLock on Whop</a>
     </div>
 
     <div class="reassure">
       <strong>Rattib is enough on its own.</strong><br>
       You already have pricing, proposals, light CRM, and a weekly board. Come back only if mid-project changes or fuzzy kickoffs keep costing you time.
       <br>
-      <a href="index.html">← Back to Rattib landing</a>
+      <a class="plain" href="index.html">← Back to Rattib landing</a>
     </div>
   </div>
 </section>
 
+<div class="sticky-skip" role="region" aria-label="Skip optional tools">
+  <div class="inner">
+    <span class="hint">Optional page · Rattib works alone</span>
+    <a class="btn" href="index.html">Skip — stay with Rattib</a>
+  </div>
+</div>
+
 <footer>
   <div class="wrap">
     <div class="mark">
-      <img src="logo-mark.png" width="24" height="24" alt="">
+      <img src="logo-mark.png" width="24" height="24" alt="Sarab">
       <strong style="color:var(--night)">Sarab</strong>
     </div>
-    From mirage to water · Koldo · Sarab
+    From mirage to water · Sarab
   </div>
 </footer>
 
