@@ -123,6 +123,43 @@ function paintPricingCalcs(tr, row) {
   if (spans.length < 4) return;
   const vals = c.empty ? ["—", "—", "—", "—"] : [money(c.price), money(c.usd), money(c.dep), money(c.bal)];
   spans.forEach((el, idx) => { el.textContent = vals[idx]; });
+  paintPricingTotals();
+}
+
+function pricingTotals() {
+  return state.pricing.reduce((acc, row) => {
+    const c = pricingCalcs(row);
+    if (c.empty) return acc;
+    acc.n += 1;
+    acc.price += c.price;
+    acc.usd += c.usd;
+    acc.dep += c.dep;
+    acc.bal += c.bal;
+    return acc;
+  }, { n: 0, price: 0, usd: 0, dep: 0, bal: 0 });
+}
+
+function paintPricingTotals() {
+  const foot = document.getElementById("pricing-tfoot");
+  if (!foot) return;
+  const t = pricingTotals();
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+  if (t.n === 0) {
+    foot.hidden = true;
+    return;
+  }
+  foot.hidden = false;
+  const count = document.getElementById("pricing-count");
+  if (count) count.textContent = `(${t.n})`;
+  const depCell = foot.querySelector('[data-label="المقدم"], [data-label^="مقدم"]');
+  if (depCell) depCell.setAttribute("data-label", `مقدم ${depositPct()}%`);
+  set("tot-price", money(t.price));
+  set("tot-usd", money(t.usd));
+  set("tot-dep", money(t.dep));
+  set("tot-bal", money(t.bal));
 }
 
 function renderPricing() {
@@ -191,6 +228,7 @@ function renderPricing() {
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
     btn.onclick = () => { state.pricing.splice(+btn.dataset.del, 1); save(); renderPricing(); };
   });
+  paintPricingTotals();
 }
 
 function proposalPlainText() {

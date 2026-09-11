@@ -59,6 +59,16 @@
             </tr>
           </thead>
           <tbody></tbody>
+          <tfoot id="pricing-tfoot" hidden>
+            <tr class="pricing-totals-row">
+              <td colspan="5" data-label="الإجمالي"><strong>إجمالي الصفوف المحسوبة</strong> <span class="muted" id="pricing-count"></span></td>
+              <td class="calc-cell" data-label="مقترح ج.م"><span class="calc" id="tot-price">—</span></td>
+              <td class="calc-cell" data-label="USD"><span class="calc" id="tot-usd">—</span></td>
+              <td class="calc-cell" data-label="المقدم"><span class="calc" id="tot-dep">—</span></td>
+              <td class="calc-cell" data-label="المتبقي"><span class="calc" id="tot-bal">—</span></td>
+              <td colspan="2" data-label=""></td>
+            </tr>
+          </tfoot>
         </table>
       </div>
       <button type="button" id="add-pricing" class="primary">+ صف تسعير</button>
