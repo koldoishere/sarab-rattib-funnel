@@ -102,8 +102,11 @@ function bindTabs() {
 }
 
 function depositPct() {
-  const p = n(state.proposal?.depositPct);
-  return p > 0 ? p : 50;
+  const raw = state.proposal?.depositPct;
+  if (raw === "" || raw == null) return 50;
+  const p = n(raw);
+  if (!Number.isFinite(p)) return 50;
+  return Math.min(100, Math.max(0, p));
 }
 
 function pricingCalcs(row) {
@@ -193,7 +196,8 @@ function renderPricing() {
 
 function proposalPlainText() {
   const p = state.proposal;
-  const deposit = Math.round(n(p.price) * n(p.depositPct) / 100);
+  const pct = depositPct();
+  const deposit = Math.round(n(p.price) * pct / 100);
   const balance = n(p.price) - deposit;
   return [
     `عرض سعر — ${p.project || "مشروع"}`,
@@ -208,7 +212,7 @@ function proposalPlainText() {
     `المراجعات: ${p.revisions || "—"}`,
     "",
     `السعر: ${money(n(p.price))} ج.م`,
-    `المقدم (${n(p.depositPct)}%): ${money(deposit)} ج.م`,
+    `المقدم (${pct}%): ${money(deposit)} ج.م`,
     `المتبقي عند التسليم: ${money(balance)} ج.م`,
     `طرق الدفع: ${p.payments || "—"}`,
     "",
@@ -252,9 +256,10 @@ function openProposalWhatsApp() {
 
 function proposalDepositBalance() {
   const p = state.proposal;
-  const deposit = Math.round(n(p.price) * n(p.depositPct) / 100);
+  const pct = depositPct();
+  const deposit = Math.round(n(p.price) * pct / 100);
   const balance = n(p.price) - deposit;
-  return { deposit, balance };
+  return { deposit, balance, pct };
 }
 
 function paintProposalCalcs() {
@@ -299,7 +304,7 @@ function renderProposal() {
   box.querySelectorAll("[data-k]").forEach((el) => {
     el.addEventListener("input", () => {
       const k = el.dataset.k;
-      state.proposal[k] = el.type === "number" ? n(el.value) : el.value;
+      state.proposal[k] = el.type === "number" ? (el.value === "" ? "" : n(el.value)) : el.value;
       save();
       if (k === "price" || k === "depositPct") {
         paintProposalCalcs();
@@ -474,6 +479,20 @@ function weekTotal() {
   return state.week.reduce((sum, w) => sum + n(w.hours), 0);
 }
 
+function resetWeek() {
+  if (!confirm("أسبوع جديد؟ هنتصفّر المهام والساعات والتسليمات وعلامات «تم».")) return;
+  state.week = state.week.map((w) => ({
+    day: w.day,
+    tasks: "",
+    hours: 0,
+    deliverables: "",
+    done: "☐",
+  }));
+  save();
+  renderWeek();
+  showToast("أسبوع جديد جاهز");
+}
+
 function renderWeek() {
   const tbody = document.querySelector("#week-table tbody");
   tbody.innerHTML = "";
@@ -509,6 +528,8 @@ function esc(s) {
 
 function wire() {
   bindTabs();
+  const newWeekBtn = document.getElementById("btn-new-week");
+  if (newWeekBtn) newWeekBtn.onclick = () => { resetWeek(); };
   document.getElementById("add-pricing").onclick = () => {
     state.pricing.push({ type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" });
     save(); renderPricing();
