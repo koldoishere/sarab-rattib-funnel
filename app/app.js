@@ -432,18 +432,18 @@ function renderCrm() {
     if (overdue) { tr.classList.add("overdue"); overdueCount += 1; }
     const hint = nextDateHint(c.next);
     tr.innerHTML = `
-      <td><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
-      <td><input data-i="${i}" data-k="contact" value="${esc(c.contact)}"></td>
-      <td><input data-i="${i}" data-k="source" value="${esc(c.source)}"></td>
-      <td><select data-i="${i}" data-k="status">${STATUS.map(s => `<option value="${s.value}" ${c.status===s.value?"selected":""}>${s.label}</option>`).join("")}</select></td>
-      <td><input data-i="${i}" data-k="last" type="date" value="${esc(c.last)}"></td>
-      <td>
+      <td data-label="الاسم"><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
+      <td data-label="التواصل"><input data-i="${i}" data-k="contact" value="${esc(c.contact)}"></td>
+      <td data-label="المصدر"><input data-i="${i}" data-k="source" value="${esc(c.source)}"></td>
+      <td data-label="الحالة"><select data-i="${i}" data-k="status">${STATUS.map(s => `<option value="${s.value}" ${c.status===s.value?"selected":""}>${s.label}</option>`).join("")}</select></td>
+      <td data-label="آخر تواصل"><input data-i="${i}" data-k="last" type="date" value="${esc(c.last)}"></td>
+      <td data-label="متابعة تالية">
         <input data-i="${i}" data-k="next" type="date" value="${esc(c.next)}">
         ${hint ? `<div class="date-hint${overdue ? " late" : ""}">${hint}</div>` : ""}
       </td>
-      <td class="num"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
-      <td><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>
-      <td class="row-actions">
+      <td class="num" data-label="القيمة"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
+      <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>
+      <td class="row-actions" data-label="إجراءات">
         <button type="button" class="ghost tiny" data-touch="${i}">تواصلت</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
@@ -503,11 +503,11 @@ function renderWeek() {
     if (w.day === todayName) tr.classList.add("today");
     const dayLabel = w.day === todayName ? `${esc(w.day)} <span class="today-pill">اليوم</span>` : esc(w.day);
     tr.innerHTML = `
-      <td>${dayLabel}</td>
-      <td><input data-i="${i}" data-k="tasks" value="${esc(w.tasks)}"></td>
-      <td class="num"><input data-i="${i}" data-k="hours" type="number" step="0.5" value="${w.hours}"></td>
-      <td><input data-i="${i}" data-k="deliverables" value="${esc(w.deliverables)}"></td>
-      <td><select data-i="${i}" data-k="done"><option ${w.done==="☐"?"selected":""}>☐</option><option ${w.done==="☑"?"selected":""}>☑</option></select></td>`;
+      <td data-label="اليوم">${dayLabel}</td>
+      <td data-label="المهام"><input data-i="${i}" data-k="tasks" value="${esc(w.tasks)}"></td>
+      <td class="num" data-label="ساعات التركيز"><input data-i="${i}" data-k="hours" type="number" step="0.5" value="${w.hours}"></td>
+      <td data-label="التسليمات"><input data-i="${i}" data-k="deliverables" value="${esc(w.deliverables)}"></td>
+      <td data-label="تم؟"><select data-i="${i}" data-k="done"><option ${w.done==="☐"?"selected":""}>☐</option><option ${w.done==="☑"?"selected":""}>☑</option></select></td>`;
     tbody.appendChild(tr);
   });
   document.getElementById("week-total").textContent = weekTotal();

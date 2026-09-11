@@ -79,28 +79,35 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
   border-color: #7a3030; color: #ffb4b4;
 }
 @media (max-width: 700px) {
-  /* CRM / week keep horizontal scroll; pricing becomes cards */
-  #panel-crm table,
-  #panel-week table { min-width: 720px; }
-
-  #panel-pricing .table-wrap {
+  /* Pricing / CRM / week: stack rows as cards on narrow screens */
+  #panel-pricing .table-wrap,
+  #panel-crm .table-wrap,
+  #panel-week .table-wrap {
     overflow: visible;
     border: none;
     background: transparent;
     border-radius: 0;
   }
-  #panel-pricing table {
+  #panel-pricing table,
+  #panel-crm table,
+  #panel-week table {
     min-width: 0;
     width: 100%;
     display: block;
   }
-  #panel-pricing thead { display: none; }
-  #panel-pricing tbody {
+  #panel-pricing thead,
+  #panel-crm thead,
+  #panel-week thead { display: none; }
+  #panel-pricing tbody,
+  #panel-crm tbody,
+  #panel-week tbody {
     display: flex;
     flex-direction: column;
     gap: .75rem;
   }
-  #panel-pricing tr {
+  #panel-pricing tr,
+  #panel-crm tr,
+  #panel-week tr {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: .55rem .65rem;
@@ -109,8 +116,12 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
     border: 1px solid var(--border);
     border-radius: var(--radius);
   }
-  #panel-pricing tr:nth-child(even) td { background: transparent; }
-  #panel-pricing td {
+  #panel-pricing tr:nth-child(even) td,
+  #panel-crm tr:nth-child(even) td,
+  #panel-week tr:nth-child(even) td { background: transparent; }
+  #panel-pricing td,
+  #panel-crm td,
+  #panel-week td {
     display: flex;
     flex-direction: column;
     gap: .25rem;
@@ -118,7 +129,9 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
     border: none;
     min-width: 0;
   }
-  #panel-pricing td::before {
+  #panel-pricing td::before,
+  #panel-crm td::before,
+  #panel-week td::before {
     content: attr(data-label);
     color: var(--muted);
     font-size: .72rem;
@@ -129,16 +142,41 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
   #panel-pricing td:nth-child(11) {
     grid-column: 1 / -1;
   }
+  #panel-crm td:nth-child(1),
+  #panel-crm td:nth-child(8),
+  #panel-crm td:nth-child(9) {
+    grid-column: 1 / -1;
+  }
+  #panel-week td:nth-child(1),
+  #panel-week td:nth-child(2),
+  #panel-week td:nth-child(4) {
+    grid-column: 1 / -1;
+  }
   #panel-pricing td.calc-cell {
     background: #0a1610;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: .4rem .5rem;
   }
-  #panel-pricing .row-actions {
+  #panel-pricing .row-actions,
+  #panel-crm .row-actions {
     justify-content: flex-start;
     flex-wrap: wrap;
     gap: .5rem;
+  }
+  #panel-crm tr.overdue {
+    box-shadow: inset 3px 0 0 var(--danger);
+  }
+  #panel-crm tr.overdue td {
+    box-shadow: none;
+  }
+  #panel-week tr.today {
+    box-shadow: inset 3px 0 0 var(--green);
+    background: #0d1a12;
+  }
+  #panel-week tr.today td {
+    box-shadow: none;
+    background: transparent;
   }
 }
 
