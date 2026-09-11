@@ -250,10 +250,24 @@ function openProposalWhatsApp() {
   showToast("اتفتح واتساب بالنص — راجع قبل الإرسال");
 }
 
-function renderProposal() {
+function proposalDepositBalance() {
   const p = state.proposal;
   const deposit = Math.round(n(p.price) * n(p.depositPct) / 100);
   const balance = n(p.price) - deposit;
+  return { deposit, balance };
+}
+
+function paintProposalCalcs() {
+  const { deposit, balance } = proposalDepositBalance();
+  const depEl = document.getElementById("proposal-deposit-calc");
+  const balEl = document.getElementById("proposal-balance-calc");
+  if (depEl) depEl.textContent = `${money(deposit)} ج.م`;
+  if (balEl) balEl.textContent = `${money(balance)} ج.م`;
+}
+
+function renderProposal() {
+  const p = state.proposal;
+  const { deposit, balance } = proposalDepositBalance();
   const fields = [
     ["date","تاريخ العرض","date"], ["validUntil","صالح حتى","date"],
     ["client","اسم العميل","text"], ["contact","جهة التواصل","text"],
@@ -272,10 +286,10 @@ function renderProposal() {
         : `<input data-k="${k}" type="${type}" value="${esc(p[k] ?? "")}">`}
     </label>`).join("") + `
     <label>المقدم المحسوب
-      <div class="calc">${money(deposit)} ج.م</div>
+      <div class="calc" id="proposal-deposit-calc">${money(deposit)} ج.م</div>
     </label>
     <label>المتبقي عند التسليم
-      <div class="calc">${money(balance)} ج.م</div>
+      <div class="calc" id="proposal-balance-calc">${money(balance)} ج.م</div>
     </label>
     <div class="full proposal-actions">
       <button type="button" id="btn-copy-wa" class="primary">نسخ للواتساب</button>
@@ -287,7 +301,10 @@ function renderProposal() {
       const k = el.dataset.k;
       state.proposal[k] = el.type === "number" ? n(el.value) : el.value;
       save();
-      if (k === "price" || k === "depositPct") { renderProposal(); if (k === "depositPct") renderPricing(); }
+      if (k === "price" || k === "depositPct") {
+        paintProposalCalcs();
+        if (k === "depositPct") renderPricing();
+      }
     });
   });
   const copyBtn = document.getElementById("btn-copy-wa");
