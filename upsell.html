@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Optional next tools — QuoteForge & ScopeLock · Sarab</title>
+<meta name="description" content="Optional sister tools after Rattib: QuoteForge and ScopeLock. Soft offers — Rattib works alone.">
+<meta name="theme-color" content="#050706">
+<link rel="icon" type="image/png" href="logo-square.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+  :root {
+    --night: #050706;
+    --oasis: #20E070;
+    --sand: #F5F8F6;
+    --ink: #121816;
+    --muted: #5a6b62;
+    --card: #ffffff;
+    --line: #d8e3dc;
+    --night-soft: #0c1510;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+    background: var(--sand);
+    color: var(--ink);
+    line-height: 1.65;
+  }
+  a { color: var(--night); }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 1.25rem; }
+
+  header {
+    background: linear-gradient(165deg, var(--night) 0%, var(--night-soft) 100%);
+    color: var(--sand);
+    padding: 2.5rem 0 2.75rem;
+    text-align: center;
+  }
+  .brand-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 1.1rem;
+  }
+  .brand-row img {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    border: 1px solid rgba(32, 224, 112, 0.45);
+  }
+  .pill {
+    border: 1px solid var(--oasis);
+    color: var(--oasis);
+    padding: 0.25rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  header h1 {
+    font-size: clamp(1.55rem, 5vw, 2rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.65rem;
+    line-height: 1.2;
+  }
+  header p {
+    max-width: 28em;
+    margin: 0 auto;
+    opacity: 0.9;
+    font-size: 1.02rem;
+  }
+  .soft-badge {
+    display: inline-block;
+    margin-top: 1.15rem;
+    background: rgba(32, 224, 112, 0.12);
+    color: var(--oasis);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.95rem;
+    border-radius: 8px;
+  }
+
+  section { padding: 2.25rem 0; }
+  section h2 {
+    color: var(--night);
+    font-size: 1.25rem;
+    margin-bottom: 0.85rem;
+    border-left: 4px solid var(--oasis);
+    padding-left: 0.7rem;
+  }
+
+  .intro {
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    max-width: 38em;
+  }
+
+  .tool {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.4rem 1.45rem;
+    margin-bottom: 1rem;
+  }
+  .tool-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.55rem;
+  }
+  .tool h3 { font-size: 1.2rem; color: var(--night); }
+  .price {
+    font-weight: 700;
+    color: #0a7a3c;
+    font-size: 1.1rem;
+  }
+  .optional-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: #e8f0eb;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    margin-bottom: 0.55rem;
+  }
+  .tool p { color: var(--muted); font-size: 0.98rem; margin-bottom: 0.75rem; }
+  .tool ul {
+    padding-left: 1.15rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin-bottom: 1.1rem;
+  }
+  .tool li { margin-bottom: 0.3rem; }
+
+  .btn {
+    display: inline-block;
+    background: var(--oasis);
+    color: var(--night);
+    text-decoration: none;
+    font-weight: 700;
+    padding: 0.75rem 1.45rem;
+    border-radius: 10px;
+    transition: transform .15s, box-shadow .15s;
+    font-size: 0.95rem;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(32, 224, 112, .25); }
+  .btn-outline {
+    background: transparent;
+    color: var(--night);
+    border: 1.5px solid var(--line);
+  }
+  .btn-outline:hover { border-color: var(--oasis); box-shadow: none; }
+
+  .reassure {
+    background: #e8f0eb;
+    border-radius: 12px;
+    padding: 1.25rem 1.35rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.98rem;
+  }
+  .reassure strong { color: var(--night); }
+  .reassure a {
+    display: inline-block;
+    margin-top: 0.85rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  footer {
+    text-align: center;
+    padding: 1.75rem 1rem 2.5rem;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  footer .mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.4rem;
+  }
+  footer .mark img { width: 24px; height: 24px; border-radius: 7px; }
+</style>
+</head>
+<body data-brand="sarab" data-page="upsell">
+
+<header>
+  <div class="wrap">
+    <div class="brand-row">
+      <img src="logo-square.png" width="44" height="44" alt="Sarab">
+      <span class="pill">Optional · not required</span>
+    </div>
+    <h1>Want a deeper tool next?</h1>
+    <p>Rattib works alone. These sister packs are optional — only if you want a sharper layer later.</p>
+    <div class="soft-badge">No pressure · no timers · soft offer</div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="intro">Think of this like “fries with that?” — useful for some people, skippable for everyone else. Skip anytime.</p>
+
+    <div class="tool">
+      <span class="optional-tag">Optional · $9</span>
+      <div class="tool-top">
+        <h3>QuoteForge</h3>
+        <span class="price">$9</span>
+      </div>
+      <p>Sharper proposals and a change-request log — fewer unpaid “small extras” eating your margin.</p>
+      <ul>
+        <li>Rate card (EGP + USD sample rows)</li>
+        <li>Proposal builder</li>
+        <li>Change-request log (hours, price delta, approval)</li>
+        <li>Notion templates + short English guide</li>
+      </ul>
+      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/quoteforge-proposal-change-request-pack-for-freelancers/">View QuoteForge on Whop</a>
+    </div>
+
+    <div class="tool">
+      <span class="optional-tag">Optional · $9</span>
+      <div class="tool-top">
+        <h3>ScopeLock</h3>
+        <span class="price">$9</span>
+      </div>
+      <p>Discovery → SOW → kickoff → risk log — lock scope before the work starts.</p>
+      <ul>
+        <li>Discovery questions</li>
+        <li>SOW checklist</li>
+        <li>Kickoff agenda</li>
+        <li>Risk log for freelancers &amp; developers</li>
+      </ul>
+      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/scopelock-kickoff-scope-control-pack-for-freelancers-devs/">View ScopeLock on Whop</a>
+    </div>
+
+    <div class="reassure">
+      <strong>Rattib is enough on its own.</strong><br>
+      You already have pricing, proposals, light CRM, and a weekly board. Come back only if mid-project changes or fuzzy kickoffs keep costing you time.
+      <br>
+      <a href="index.html">← Back to Rattib landing</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="mark">
+      <img src="logo-square.png" width="24" height="24" alt="">
+      <strong style="color:var(--night)">Sarab</strong>
+    </div>
+    From mirage to water · Koldo · Sarab
+  </div>
+</footer>
+
+</body>
+</html>

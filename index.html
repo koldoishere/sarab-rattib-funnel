@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rattib — Freelancer ops without the chaos · Sarab</title>
+<meta name="description" content="Rattib by Sarab: pricing, proposals, light client tracking, and a weekly work board. Excel, CSV, Notion, plus a short guide. $12 one-time on Whop.">
+<meta property="og:title" content="Rattib — Freelancer ops without the chaos · Sarab">
+<meta property="og:description" content="Pricing, proposals, light client tracking, and a weekly board. $12 one-time on Whop. No income promises.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#050706">
+<link rel="icon" type="image/png" href="logo-square.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+  :root {
+    --night: #050706;
+    --oasis: #20E070;
+    --sand: #F5F8F6;
+    --ink: #121816;
+    --muted: #5a6b62;
+    --card: #ffffff;
+    --line: #d8e3dc;
+    --night-soft: #0c1510;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+    background: var(--sand);
+    color: var(--ink);
+    line-height: 1.65;
+    padding-bottom: 4.5rem;
+  }
+  a { color: var(--night); }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 1.25rem; }
+
+  /* Sticky mobile CTA */
+  .sticky-cta {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 50;
+    background: rgba(5, 7, 6, 0.94);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(32, 224, 112, 0.35);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+  }
+  .sticky-cta .price { color: var(--oasis); font-weight: 700; font-size: 1.1rem; }
+  .sticky-cta .btn {
+    padding: 0.65rem 1.35rem;
+    font-size: 0.95rem;
+  }
+  @media (min-width: 768px) {
+    .sticky-cta { display: none; }
+    body { padding-bottom: 0; }
+  }
+
+  header {
+    background: linear-gradient(165deg, var(--night) 0%, var(--night-soft) 100%);
+    color: var(--sand);
+    padding: 2.75rem 0 3rem;
+    text-align: center;
+  }
+  .brand-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .brand-row img {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    border: 1px solid rgba(32, 224, 112, 0.45);
+    object-fit: cover;
+  }
+  .pill {
+    display: inline-block;
+    border: 1px solid var(--oasis);
+    color: var(--oasis);
+    padding: 0.28rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  header h1 {
+    font-size: clamp(2.35rem, 7vw, 3.4rem);
+    letter-spacing: -0.03em;
+    margin-bottom: 0.35rem;
+    line-height: 1.1;
+  }
+  header .tagline {
+    color: var(--oasis);
+    font-size: clamp(1.05rem, 3vw, 1.25rem);
+    margin-bottom: 0.85rem;
+    font-weight: 600;
+  }
+  header .one-liner {
+    max-width: 34em;
+    margin: 0 auto 1.5rem;
+    opacity: 0.92;
+    font-size: 1.05rem;
+  }
+  .price-pill {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    background: rgba(245, 248, 246, 0.08);
+    border: 1px solid var(--oasis);
+    padding: 0.55rem 1.3rem;
+    border-radius: 12px;
+    margin-bottom: 1.4rem;
+  }
+  .price-pill span { opacity: 0.85; font-size: 0.9rem; }
+  .price-pill strong { font-size: 1.85rem; color: var(--oasis); }
+
+  .btn {
+    display: inline-block;
+    background: var(--oasis);
+    color: var(--night);
+    text-decoration: none;
+    font-weight: 700;
+    padding: 0.9rem 1.9rem;
+    border-radius: 10px;
+    transition: transform .15s, box-shadow .15s;
+    border: none;
+    cursor: pointer;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(32, 224, 112, .28); }
+  .btn:focus-visible { outline: 2px solid var(--sand); outline-offset: 3px; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--sand);
+    border: 1px solid rgba(245, 248, 246, .35);
+    margin-left: 0.65rem;
+  }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 0.65rem; justify-content: center; align-items: center; }
+  .cta-row .btn-ghost { margin-left: 0; }
+
+  section { padding: 2.6rem 0; }
+  section h2 {
+    color: var(--night);
+    font-size: 1.4rem;
+    margin-bottom: 1.15rem;
+    border-left: 4px solid var(--oasis);
+    padding-left: 0.75rem;
+  }
+
+  .ba-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 640px) {
+    .ba-grid { grid-template-columns: 1fr; }
+  }
+  .ba-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.25rem 1.35rem;
+  }
+  .ba-card h3 { font-size: 1.05rem; margin-bottom: 0.65rem; color: var(--night); }
+  .ba-card.before { border-top: 3px solid #a67c6d; }
+  .ba-card.after { border-top: 3px solid var(--oasis); }
+  .ba-card ul { padding-left: 1.15rem; color: var(--muted); font-size: 0.95rem; }
+  .ba-card li { margin-bottom: 0.35rem; }
+  .ba-note {
+    margin-top: 1rem;
+    font-size: 0.92rem;
+    color: var(--muted);
+    max-width: 42em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.2rem 1.3rem;
+  }
+  .card h3 { color: var(--night); font-size: 1.05rem; margin-bottom: 0.4rem; }
+  .card p, .card li { color: var(--muted); font-size: 0.95rem; }
+  .card ul { padding-left: 1.1rem; }
+  .card .count {
+    display: inline-block;
+    background: rgba(32, 224, 112, 0.12);
+    color: #0a7a3c;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 0.45rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 640px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+  .yes { border-top: 3px solid var(--oasis); }
+  .no { border-top: 3px solid #a67c6d; }
+
+  .steps {
+    counter-reset: step;
+    list-style: none;
+  }
+  .steps li {
+    position: relative;
+    padding: 0.85rem 0 0.85rem 3rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+  }
+  .steps li:last-child { border-bottom: none; }
+  .steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 0.85rem;
+    width: 2rem; height: 2rem;
+    background: var(--night);
+    color: var(--oasis);
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .steps strong { color: var(--night); }
+
+  .cta-band {
+    background: var(--night);
+    color: var(--sand);
+    text-align: center;
+    padding: 2.5rem 1.25rem;
+    border-radius: 16px;
+  }
+  .cta-band h2 {
+    color: var(--sand);
+    border: none;
+    padding: 0;
+    margin-bottom: 0.5rem;
+  }
+  .cta-band p { opacity: 0.9; margin-bottom: 1.15rem; }
+  .cta-band .btn { margin-top: 0.25rem; }
+
+  details {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 0.65rem;
+  }
+  summary { cursor: pointer; font-weight: 600; color: var(--night); }
+  details p { margin-top: 0.5rem; color: var(--muted); }
+
+  .disclaimer {
+    background: #e8f0eb;
+    border-radius: 12px;
+    padding: 1.2rem 1.35rem;
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem 1rem 2.5rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  footer .mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  footer .mark img { width: 28px; height: 28px; border-radius: 8px; }
+  footer a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+</style>
+</head>
+<body data-brand="sarab" data-product="rattib">
+
+<!-- Primary sticky CTA (mobile) — one clear next action -->
+<div class="sticky-cta" role="region" aria-label="Buy Rattib">
+  <span class="price">$12</span>
+  <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Get Rattib on Whop</a>
+</div>
+
+<header>
+  <div class="wrap">
+    <div class="brand-row">
+      <img src="logo-square.png" width="52" height="52" alt="Sarab">
+      <span class="pill">Sarab · Rattib</span>
+    </div>
+    <h1>Rattib</h1>
+    <p class="tagline">Freelancer ops, without the chaos</p>
+    <p class="one-liner">Built for freelancers who still price and follow up from chat notes — especially Arabic/MENA indie work. Pricing, proposals, light CRM, and a weekly board in one $12 pack.</p>
+    <div class="price-pill">
+      <span>One-time</span>
+      <strong>$12</strong>
+    </div>
+    <div class="cta-row">
+      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Get Rattib on Whop</a>
+      <a class="btn btn-ghost" href="#inside">What’s inside</a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Before / after</h2>
+    <div class="ba-grid">
+      <div class="ba-card before">
+        <h3>Before Rattib</h3>
+        <ul>
+          <li>You price from memory in the chat window.</li>
+          <li>Every proposal is a new blank page.</li>
+          <li>Leads live in scattered DMs and notes.</li>
+          <li>Monday starts with “what am I even working on?”</li>
+        </ul>
+      </div>
+      <div class="ba-card after">
+        <h3>After ~30 minutes of setup</h3>
+        <ul>
+          <li>A pricing sheet you can reuse and adjust.</li>
+          <li>A proposal template with scope, terms, and revisions.</li>
+          <li>A light CRM: lead → proposal → won/lost + next follow-up.</li>
+          <li>A weekly board for focus blocks and deliverables.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="ba-note"><strong>What does not change:</strong> your craft, your outreach, and your market. Rattib organizes the work around them. It does not promise income or a flood of clients.</p>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap">
+    <h2>What’s inside</h2>
+    <div class="grid">
+      <div class="card">
+        <span class="count">1 · Guide</span>
+        <h3>Short guide</h3>
+        <p>PDF + HTML + Markdown — pricing logic through a 7-day setup plan.</p>
+      </div>
+      <div class="card">
+        <span class="count">5 · Sheets</span>
+        <h3>Excel workbook</h3>
+        <p>Pricing · Proposal · Clients (light CRM) · Weekly work · Instructions.</p>
+      </div>
+      <div class="card">
+        <span class="count">CSV</span>
+        <h3>CSV files</h3>
+        <p>Same sheets for Google Sheets / LibreOffice — import and go.</p>
+      </div>
+      <div class="card">
+        <span class="count">Notion</span>
+        <h3>Notion templates</h3>
+        <p>Proposal, client follow-up, weekly board — copy and adapt.</p>
+      </div>
+    </div>
+    <p class="ba-note">Everything is editable. English + Arabic READMEs included. The pack is a starting system, not a cage.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Who it’s for</h2>
+    <div class="two-col">
+      <div class="card yes">
+        <h3>A fit if you</h3>
+        <ul>
+          <li>Freelance (especially Arabic/MENA) and want clearer pricing/ops</li>
+          <li>Waste time on ad-hoc pricing and proposals</li>
+          <li>Want light client tracking without an enterprise CRM</li>
+          <li>Prefer templates you can open today (Excel / Sheets / Notion)</li>
+        </ul>
+      </div>
+      <div class="card no">
+        <h3>Not a fit if you</h3>
+        <ul>
+          <li>Want guaranteed income or “get rich” promises</li>
+          <li>Need a long video course, coaching, or private community</li>
+          <li>Already run a heavy institutional process</li>
+          <li>Expect Rattib to find clients for you</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>What’s not in the pack</h2>
+    <div class="card">
+      <ul>
+        <li>No video course or coaching calls</li>
+        <li>No lead lists or paid client intros</li>
+        <li>No fake testimonials or guaranteed earnings</li>
+        <li>No pressure scripts that make you sell awkwardly</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Day 1 setup (~30 min)</h2>
+    <ol class="steps">
+      <li><strong>Open the guide</strong> — skim who it’s for and what’s inside.</li>
+      <li><strong>Open Excel → Instructions, then Pricing</strong> — set real rates for your market.</li>
+      <li><strong>Customize Proposal</strong> for your next project (even a draft).</li>
+      <li><strong>Log current leads</strong> in the light CRM.</li>
+      <li><strong>Plan next week</strong> on the weekly board.</li>
+    </ol>
+    <p class="ba-note">About 30 minutes the first time; 10–15 minutes weekly after that.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>Get Rattib — $12</h2>
+      <p>Instant delivery on Whop · one-time purchase · edit everything</p>
+      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Buy on Whop — $12</a>
+      <p style="margin-top:1rem;font-size:0.92rem;opacity:0.92"><a href="upsell.html" style="color:inherit;text-decoration:underline">Optional next tools</a> (QuoteForge / ScopeLock) — Rattib works alone.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>FAQ</h2>
+    <details>
+      <summary>Will this get me clients?</summary>
+      <p>No. Rattib helps you price, propose, follow up, and plan the week. Winning clients still depends on skill, outreach, and reputation.</p>
+    </details>
+    <details>
+      <summary>I already have Notion / Sheets</summary>
+      <p>Good. Rattib gives you structure and copy-ready templates so you are not designing the system under deadline pressure.</p>
+    </details>
+    <details>
+      <summary>Is $12 worth it?</summary>
+      <p>One calm setup afternoon vs. another month of improvising rates and scopes. If you never open the files, Whop’s refund policy on the product page still applies.</p>
+    </details>
+    <details>
+      <summary>Do I need the sister products?</summary>
+      <p>No. Rattib stands alone. QuoteForge ($9) and ScopeLock ($9) are optional next tools if you want deeper proposals or tighter kickoff/scope control later.</p>
+    </details>
+    <details>
+      <summary>Refunds?</summary>
+      <p>Follow the refund policy shown on the Whop product page. Honest description is the best way to keep refunds low.</p>
+    </details>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Honest note</h2>
+    <div class="disclaimer">
+      Rattib is an ops toolkit from <strong>Sarab</strong>. Results vary with experience, time, and market.
+      Marketing stays clear: we say what is included and what is not. No guaranteed income. No fabricated proof.
+      Use the pack responsibly, and sell your work with integrity.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="mark">
+      <img src="logo-square.png" width="28" height="28" alt="">
+      <strong style="color:var(--night)">Rattib</strong> · by Sarab
+    </div>
+    From mirage to water<br>
+    Koldo · Sarab · <a href="bio.html" style="color:inherit">Creator bio link</a>
+  </div>
+</footer>
+
+</body>
+</html>
