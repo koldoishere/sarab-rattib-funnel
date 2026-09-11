@@ -280,6 +280,7 @@ function renderProposal() {
     <div class="full proposal-actions">
       <button type="button" id="btn-copy-wa" class="primary">نسخ للواتساب</button>
       <button type="button" id="btn-open-wa" class="ghost">فتح واتساب</button>
+      <button type="button" id="btn-add-crm" class="ghost">أضف للعملاء</button>
     </div>`;
   box.querySelectorAll("[data-k]").forEach((el) => {
     el.addEventListener("input", () => {
@@ -293,6 +294,8 @@ function renderProposal() {
   if (copyBtn) copyBtn.onclick = () => { copyProposalWhatsApp(); };
   const openBtn = document.getElementById("btn-open-wa");
   if (openBtn) openBtn.onclick = () => { openProposalWhatsApp(); };
+  const addCrmBtn = document.getElementById("btn-add-crm");
+  if (addCrmBtn) addCrmBtn.onclick = () => { addProposalToCrm(); };
 }
 
 
@@ -316,6 +319,75 @@ function nextDateHint(iso) {
   return `بعد ${diff} أيام`;
 }
 
+
+function crmSortKey(c) {
+  const overdue = c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate();
+  const next = c.next || "9999-99-99";
+  return [overdue ? 0 : 1, next, (c.name || "").toLowerCase()];
+}
+
+function sortedClientIndexes() {
+  return state.clients
+    .map((c, i) => ({ c, i }))
+    .sort((a, b) => {
+      const ka = crmSortKey(a.c);
+      const kb = crmSortKey(b.c);
+      for (let k = 0; k < ka.length; k++) {
+        if (ka[k] < kb[k]) return -1;
+        if (ka[k] > kb[k]) return 1;
+      }
+      return a.i - b.i;
+    });
+}
+
+function addProposalToCrm() {
+  const p = state.proposal || {};
+  const name = String(p.client || "").trim();
+  if (!name) {
+    alert("اكتب اسم العميل في عرض السعر أولاً");
+    return;
+  }
+  const contact = String(p.contact || "").trim();
+  const value = Math.round(n(p.price));
+  const notesParts = [];
+  if (p.project) notesParts.push(p.project);
+  if (p.summary) notesParts.push(p.summary);
+  const notes = notesParts.join(" — ");
+  const idx = state.clients.findIndex(
+    (c) => String(c.name || "").trim().toLowerCase() === name.toLowerCase()
+  );
+  if (idx >= 0) {
+    const c = state.clients[idx];
+    if (contact) c.contact = contact;
+    if (value) c.value = value;
+    if (notes) c.notes = notes;
+    c.status = c.status === "lost" ? "proposal" : (c.status === "won" ? c.status : "proposal");
+    c.last = localISODate();
+    c.next = addDaysISO(c.last, 3);
+    save();
+    renderCrm();
+    document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === "crm"));
+    document.querySelectorAll(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === "panel-crm"));
+    showToast("اتحدّث العميل في المتابعة");
+    return;
+  }
+  state.clients.push({
+    name,
+    contact,
+    source: "عرض سعر",
+    status: "proposal",
+    last: localISODate(),
+    next: addDaysISO(localISODate(), 3),
+    value,
+    notes,
+  });
+  save();
+  renderCrm();
+  document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === "crm"));
+  document.querySelectorAll(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === "panel-crm"));
+  showToast("اتضاف للعملاء — متابعة بعد 3 أيام");
+}
+
 function markContacted(i) {
   const c = state.clients[i];
   if (!c) return;
@@ -331,7 +403,7 @@ function renderCrm() {
   const tbody = document.querySelector("#crm-table tbody");
   tbody.innerHTML = "";
   let overdueCount = 0;
-  state.clients.forEach((c, i) => {
+  sortedClientIndexes().forEach(({ c, i }) => {
     const tr = document.createElement("tr");
     const overdue = c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate();
     if (overdue) { tr.classList.add("overdue"); overdueCount += 1; }
