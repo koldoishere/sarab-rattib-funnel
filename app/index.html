@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>رتّب · Rattib — نظام الفريلانسر في مكان واحد</title>
+<meta name="description" content="تسعير + عرض سعر + CRM + أسبوع شغل في تطبيق واحد. منتج من Sarab.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="mark">S</span>
+      <div>
+        <strong>رتّب · Rattib</strong>
+        <small>تحت Sarab · من غير فوضى</small>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" id="btn-export" class="ghost">تصدير</button>
+      <button type="button" id="btn-import" class="ghost">استيراد</button>
+      <input type="file" id="import-file" accept="application/json" hidden>
+      <button type="button" id="btn-reset" class="ghost danger">مسح البيانات</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button type="button" class="tab active" data-tab="pricing">التسعير</button>
+    <button type="button" class="tab" data-tab="proposal">عرض السعر</button>
+    <button type="button" class="tab" data-tab="crm">العملاء</button>
+    <button type="button" class="tab" data-tab="week">أسبوع الشغل</button>
+  </nav>
+
+  <main>
+    <section id="panel-pricing" class="panel active">
+      <div class="panel-head">
+        <h1>التسعير</h1>
+        <label class="fx">سعر الصرف (ج.م لكل $1)
+          <input type="number" id="fx-rate" min="1" step="0.1" value="50">
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table id="pricing-table">
+          <thead>
+            <tr>
+              <th>نوع المشروع</th>
+              <th>ساعات</th>
+              <th>سعر/س</th>
+              <th>تكاليف</th>
+              <th>هامش %</th>
+              <th>مقترح ج.م</th>
+              <th>USD</th>
+              <th>مقدم 50%</th>
+              <th>المتبقي</th>
+              <th>ملاحظات</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button type="button" id="add-pricing" class="primary">+ صف تسعير</button>
+    </section>
+
+    <section id="panel-proposal" class="panel">
+      <h1>عرض السعر</h1>
+      <div class="form-grid" id="proposal-form"></div>
+    </section>
+
+    <section id="panel-crm" class="panel">
+      <div class="panel-head">
+        <h1>متابعة العملاء</h1>
+        <button type="button" id="add-client" class="primary">+ عميل</button>
+      </div>
+      <div class="table-wrap">
+        <table id="crm-table">
+          <thead>
+            <tr>
+              <th>الاسم</th>
+              <th>التواصل</th>
+              <th>المصدر</th>
+              <th>الحالة</th>
+              <th>آخر تواصل</th>
+              <th>متابعة تالية</th>
+              <th>القيمة</th>
+              <th>ملاحظات</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="panel-week" class="panel">
+      <div class="panel-head">
+        <h1>أسبوع الشغل</h1>
+        <p class="muted">مجموع ساعات التركيز: <strong id="week-total">0</strong></p>
+      </div>
+      <div class="table-wrap">
+        <table id="week-table">
+          <thead>
+            <tr>
+              <th>اليوم</th>
+              <th>المهام</th>
+              <th>ساعات التركيز</th>
+              <th>التسليمات</th>
+              <th>تم؟</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>Sarab · Rattib MVP — أدوات تنظيم، مفيش ضمان دخل</span>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
