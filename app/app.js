@@ -191,6 +191,7 @@ function proposalPlainText() {
   return [
     `عرض سعر — ${p.project || "مشروع"}`,
     `للعميل: ${p.client || "—"}`,
+    `التواصل: ${p.contact || "—"}`,
     `التاريخ: ${p.date || "—"} · صالح حتى: ${p.validUntil || "—"}`,
     "",
     `الملخص: ${p.summary || "—"}`,
@@ -211,6 +212,15 @@ function proposalPlainText() {
   ].join("\n");
 }
 
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.hidden = false;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.hidden = true; }, 2200);
+}
+
 async function copyProposalWhatsApp() {
   const text = proposalPlainText();
   try {
@@ -223,13 +233,14 @@ async function copyProposalWhatsApp() {
     document.execCommand("copy");
     ta.remove();
   }
-  const toast = document.getElementById("toast");
-  if (toast) {
-    toast.textContent = "تم نسخ العرض — الصقه في واتساب";
-    toast.hidden = false;
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => { toast.hidden = true; }, 2200);
-  }
+  showToast("تم نسخ العرض — الصقه في واتساب");
+}
+
+function openProposalWhatsApp() {
+  const text = proposalPlainText();
+  const url = "https://wa.me/?text=" + encodeURIComponent(text);
+  window.open(url, "_blank", "noopener,noreferrer");
+  showToast("اتفتح واتساب بالنص — راجع قبل الإرسال");
 }
 
 function renderProposal() {
@@ -261,6 +272,7 @@ function renderProposal() {
     </label>
     <div class="full proposal-actions">
       <button type="button" id="btn-copy-wa" class="primary">نسخ للواتساب</button>
+      <button type="button" id="btn-open-wa" class="ghost">فتح واتساب</button>
     </div>`;
   box.querySelectorAll("[data-k]").forEach((el) => {
     el.addEventListener("input", () => {
@@ -272,6 +284,8 @@ function renderProposal() {
   });
   const copyBtn = document.getElementById("btn-copy-wa");
   if (copyBtn) copyBtn.onclick = () => { copyProposalWhatsApp(); };
+  const openBtn = document.getElementById("btn-open-wa");
+  if (openBtn) openBtn.onclick = () => { openProposalWhatsApp(); };
 }
 
 function renderCrm() {
@@ -325,10 +339,13 @@ function weekTotal() {
 function renderWeek() {
   const tbody = document.querySelector("#week-table tbody");
   tbody.innerHTML = "";
+  const todayName = DAYS[new Date().getDay()];
   state.week.forEach((w, i) => {
     const tr = document.createElement("tr");
+    if (w.day === todayName) tr.classList.add("today");
+    const dayLabel = w.day === todayName ? `${esc(w.day)} <span class="today-pill">اليوم</span>` : esc(w.day);
     tr.innerHTML = `
-      <td>${esc(w.day)}</td>
+      <td>${dayLabel}</td>
       <td><input data-i="${i}" data-k="tasks" value="${esc(w.tasks)}"></td>
       <td class="num"><input data-i="${i}" data-k="hours" type="number" step="0.5" value="${w.hours}"></td>
       <td><input data-i="${i}" data-k="deliverables" value="${esc(w.deliverables)}"></td>

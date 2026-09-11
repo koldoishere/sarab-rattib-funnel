@@ -99,3 +99,11 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
   border: 1px solid var(--green); box-shadow: 0 8px 24px rgba(0,0,0,.35);
   z-index: 50; font-size: .9rem; font-weight: 600;
 }
+
+tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
+.today-pill {
+  display: inline-block; margin-inline-start: .35rem; padding: .05rem .4rem;
+  border-radius: 999px; background: var(--green-dim); color: var(--green);
+  font-size: .72rem; font-weight: 700; vertical-align: middle;
+}
+.proposal-actions .ghost { margin-top: 0; }
