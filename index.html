@@ -46,14 +46,15 @@
     position: fixed;
     bottom: 0; left: 0; right: 0;
     z-index: 50;
-    background: rgba(5, 7, 6, 0.94);
+    background: rgba(5, 7, 6, 0.96);
     backdrop-filter: blur(10px);
     border-top: 1px solid rgba(32, 224, 112, 0.35);
-    padding: 0.75rem 1rem;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.85rem;
+    box-shadow: 0 -8px 28px rgba(0,0,0,.22);
   }
   .sticky-cta .price { color: var(--oasis); font-weight: 700; font-size: 1.1rem; }
   .sticky-cta .btn {
@@ -138,15 +139,31 @@
     cursor: pointer;
   }
   .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(32, 224, 112, .28); }
-  .btn:focus-visible { outline: 2px solid var(--sand); outline-offset: 3px; }
+  .btn:focus-visible {
+    outline: 3px solid var(--oasis);
+    outline-offset: 3px;
+  }
   .btn-ghost {
     background: transparent;
     color: var(--sand);
     border: 1px solid rgba(245, 248, 246, .35);
     margin-left: 0.65rem;
   }
+  .btn-ghost:focus-visible {
+    outline-color: var(--sand);
+  }
   .cta-row { display: flex; flex-wrap: wrap; gap: 0.65rem; justify-content: center; align-items: center; }
   .cta-row .btn-ghost { margin-left: 0; }
+  a:focus-visible {
+    outline: 2px solid var(--oasis);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .btn { transition: none; }
+    .btn:hover { transform: none; box-shadow: none; }
+  }
 
   section { padding: 2.6rem 0; }
   section h2 {
@@ -364,7 +381,7 @@
     </div>
     <h1>Rattib</h1>
     <p class="tagline">Freelancer ops, without the chaos</p>
-    <p class="one-liner">For freelancers who still price and follow up from chat notes — especially Arabic/MENA indie work. Open the pack, set your rates once, reuse proposals, and run a light CRM + weekly board. One $12 pack. No income promises.</p>
+    <p class="one-liner">For freelancers who still price and follow up from chat notes — especially Arabic/MENA indie work. Set rates once, reuse proposals, and run a light CRM + weekly board. One clear next step: get the $12 pack. No income promises.</p>
     <div class="price-pill">
       <span>One-time</span>
       <strong>$12</strong>
@@ -372,7 +389,7 @@
     <div class="cta-row">
       <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Get Rattib on Whop — $12</a>
     </div>
-    <p class="cta-sub" style="margin-top:0.85rem;font-size:0.9rem;opacity:0.8"><a href="#inside" style="color:inherit;text-decoration:underline">What’s inside</a><span aria-hidden="true"> · </span><a href="app/" style="color:inherit;text-decoration:underline">Try free web preview</a></p>
+    <p class="cta-sub" style="margin-top:0.85rem;font-size:0.9rem;opacity:0.8"><span style="opacity:0.85">Or explore:</span> <a href="#inside" style="color:inherit;text-decoration:underline">What’s inside</a><span aria-hidden="true"> · </span><a href="app/" style="color:inherit;text-decoration:underline">Free web preview</a></p>
     <p style="margin-top:0.85rem;font-size:0.88rem;opacity:0.78;max-width:34em;margin-left:auto;margin-right:auto">Instant download after checkout · one-time $12 · Excel / CSV / Notion · no income claims</p>
   </div>
 </header>
