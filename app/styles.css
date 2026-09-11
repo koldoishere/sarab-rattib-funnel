@@ -107,3 +107,6 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   font-size: .72rem; font-weight: 700; vertical-align: middle;
 }
 .proposal-actions .ghost { margin-top: 0; }
+
+.date-hint { font-size: .75rem; color: var(--muted); margin-top: .2rem; }
+.date-hint.late { color: #ff8a8a; }

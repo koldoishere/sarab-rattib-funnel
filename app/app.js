@@ -101,12 +101,17 @@ function bindTabs() {
   });
 }
 
+function depositPct() {
+  const p = n(state.proposal?.depositPct);
+  return p > 0 ? p : 50;
+}
+
 function pricingCalcs(row) {
   const empty = row.hours === "" && row.rate === "";
   if (empty) return { empty: true, price: 0, usd: 0, dep: 0, bal: 0 };
   const price = suggested(row);
   const usd = state.fx ? Math.round(price / state.fx) : 0;
-  const dep = Math.round(price * 0.5);
+  const dep = Math.round(price * (depositPct() / 100));
   const bal = price - dep;
   return { empty: false, price, usd, dep, bal };
 }
@@ -123,6 +128,8 @@ function renderPricing() {
   const fx = document.getElementById("fx-rate");
   fx.value = state.fx;
   fx.onchange = () => { state.fx = n(fx.value) || 50; save(); renderPricing(); };
+  const depHead = document.getElementById("th-deposit");
+  if (depHead) depHead.textContent = `مقدم ${depositPct()}%`;
 
   const tbody = document.querySelector("#pricing-table tbody");
   tbody.innerHTML = "";
@@ -279,13 +286,45 @@ function renderProposal() {
       const k = el.dataset.k;
       state.proposal[k] = el.type === "number" ? n(el.value) : el.value;
       save();
-      if (k === "price" || k === "depositPct") renderProposal();
+      if (k === "price" || k === "depositPct") { renderProposal(); if (k === "depositPct") renderPricing(); }
     });
   });
   const copyBtn = document.getElementById("btn-copy-wa");
   if (copyBtn) copyBtn.onclick = () => { copyProposalWhatsApp(); };
   const openBtn = document.getElementById("btn-open-wa");
   if (openBtn) openBtn.onclick = () => { openProposalWhatsApp(); };
+}
+
+
+function addDaysISO(iso, days) {
+  const [y, m, d] = (iso || localISODate()).split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  dt.setDate(dt.getDate() + days);
+  return localISODate(dt);
+}
+
+function nextDateHint(iso) {
+  if (!iso) return "";
+  const today = localISODate();
+  const t0 = new Date(today + "T12:00:00");
+  const t1 = new Date(iso + "T12:00:00");
+  const diff = Math.round((t1 - t0) / 86400000);
+  if (diff === 0) return "اليوم";
+  if (diff === 1) return "بكرة";
+  if (diff === -1) return "متأخر يوم";
+  if (diff < 0) return `متأخر ${Math.abs(diff)} أيام`;
+  return `بعد ${diff} أيام`;
+}
+
+function markContacted(i) {
+  const c = state.clients[i];
+  if (!c) return;
+  c.last = localISODate();
+  c.next = addDaysISO(c.last, 3);
+  if (c.status === "lost") c.status = "lead";
+  save();
+  renderCrm();
+  showToast("اتسجّل تواصل — المتابعة بعد 3 أيام");
 }
 
 function renderCrm() {
@@ -296,16 +335,23 @@ function renderCrm() {
     const tr = document.createElement("tr");
     const overdue = c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate();
     if (overdue) { tr.classList.add("overdue"); overdueCount += 1; }
+    const hint = nextDateHint(c.next);
     tr.innerHTML = `
       <td><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
       <td><input data-i="${i}" data-k="contact" value="${esc(c.contact)}"></td>
       <td><input data-i="${i}" data-k="source" value="${esc(c.source)}"></td>
       <td><select data-i="${i}" data-k="status">${STATUS.map(s => `<option value="${s.value}" ${c.status===s.value?"selected":""}>${s.label}</option>`).join("")}</select></td>
       <td><input data-i="${i}" data-k="last" type="date" value="${esc(c.last)}"></td>
-      <td><input data-i="${i}" data-k="next" type="date" value="${esc(c.next)}"></td>
+      <td>
+        <input data-i="${i}" data-k="next" type="date" value="${esc(c.next)}">
+        ${hint ? `<div class="date-hint${overdue ? " late" : ""}">${hint}</div>` : ""}
+      </td>
       <td class="num"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
       <td><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>
-      <td><button type="button" class="icon-btn" data-del="${i}">✕</button></td>`;
+      <td class="row-actions">
+        <button type="button" class="ghost tiny" data-touch="${i}">تواصلت</button>
+        <button type="button" class="icon-btn" data-del="${i}">✕</button>
+      </td>`;
     tbody.appendChild(tr);
   });
   const badge = document.getElementById("crm-overdue-badge");
@@ -329,6 +375,9 @@ function renderCrm() {
   });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
     btn.onclick = () => { state.clients.splice(+btn.dataset.del, 1); save(); renderCrm(); };
+  });
+  tbody.querySelectorAll("[data-touch]").forEach((btn) => {
+    btn.onclick = () => markContacted(+btn.dataset.touch);
   });
 }
 
