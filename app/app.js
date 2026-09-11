@@ -7,6 +7,19 @@ const STATUS = [
 ];
 const DAYS = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 
+function localISODate(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function isoDay(offset = 0) {
+  const d = new Date();
+  d.setHours(12, 0, 0, 0);
+  d.setDate(d.getDate() + offset);
+  return localISODate(d);
+}
+
 const seed = () => ({
   fx: 50,
   pricing: [
@@ -19,8 +32,8 @@ const seed = () => ({
     { type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" },
   ],
   proposal: {
-    date: "2026-09-10",
-    validUntil: "2026-09-24",
+    date: isoDay(0),
+    validUntil: isoDay(14),
     client: "شركة نور للتجارة",
     contact: "محمد علي — واتساب",
     project: "صفحة هبوط + فورم تواصل",
@@ -36,10 +49,10 @@ const seed = () => ({
     next: "رد بالموافقة + طريقة دفع المقدم، أو طلب تعديل النطاق",
   },
   clients: [
-    { name: "أحمد منصور", contact: "واتساب", source: "إحالة", status: "proposal", last: "2026-09-01", next: "2026-09-08", value: 15000, notes: "بستنى موافقة شريكه" },
-    { name: "سارة حسين", contact: "sara@mail.com", source: "لينكدإن", status: "lead", last: "2026-09-05", next: "2026-09-10", value: 40000, notes: "متجر بسيط" },
-    { name: "TechNest", contact: "Slack", source: "Upwork", status: "won", last: "2026-08-20", next: "", value: 22000, notes: "مرحلة 2 محتملة" },
-    { name: "خالد عمر", contact: "واتساب", source: "تويتر", status: "lost", last: "2026-08-15", next: "", value: 5000, notes: "الميزانية أقل من النطاق" },
+    { name: "أحمد منصور", contact: "واتساب", source: "إحالة", status: "proposal", last: isoDay(-11), next: isoDay(-4), value: 15000, notes: "بستنى موافقة شريكه" },
+    { name: "سارة حسين", contact: "sara@mail.com", source: "لينكدإن", status: "lead", last: isoDay(-7), next: isoDay(-2), value: 40000, notes: "متجر بسيط" },
+    { name: "TechNest", contact: "Slack", source: "Upwork", status: "won", last: isoDay(-23), next: "", value: 22000, notes: "مرحلة 2 محتملة" },
+    { name: "خالد عمر", contact: "واتساب", source: "تويتر", status: "lost", last: isoDay(-28), next: "", value: 5000, notes: "الميزانية أقل من النطاق" },
   ],
   week: [
     { day: "الأحد", tasks: "بناء الصفحة الرئيسية + هيكل المشروع", hours: 4, deliverables: "—", done: "☐" },
@@ -128,7 +141,10 @@ function renderPricing() {
       <td><span class="calc">${c.empty ? "—" : money(c.dep)}</span></td>
       <td><span class="calc">${c.empty ? "—" : money(c.bal)}</span></td>
       <td><input data-i="${i}" data-k="notes" value="${esc(row.notes)}"></td>
-      <td><button type="button" class="icon-btn" data-del="${i}">✕</button></td>`;
+      <td class="row-actions">
+        <button type="button" class="ghost tiny" data-use="${i}" title="ضع السعر والمشروع في عرض السعر">للعرض</button>
+        <button type="button" class="icon-btn" data-del="${i}">✕</button>
+      </td>`;
     tbody.appendChild(tr);
   });
   tbody.querySelectorAll("input").forEach((inp) => {
@@ -142,9 +158,78 @@ function renderPricing() {
       }
     });
   });
+  tbody.querySelectorAll("[data-use]").forEach((btn) => {
+    btn.onclick = () => {
+      const row = state.pricing[+btn.dataset.use];
+      const c = pricingCalcs(row);
+      if (c.empty) { alert("املأ الساعات وسعر الساعة أولاً"); return; }
+      state.proposal.project = row.type || state.proposal.project;
+      state.proposal.price = Math.round(c.price);
+      if (row.notes) state.proposal.summary = row.notes;
+      save();
+      document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === "proposal"));
+      document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-proposal"));
+      renderProposal();
+      const toast = document.getElementById("toast");
+      if (toast) {
+        toast.textContent = "اتنقل لعرض السعر بالسعر المحسوب";
+        toast.hidden = false;
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => { toast.hidden = true; }, 2200);
+      }
+    };
+  });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
     btn.onclick = () => { state.pricing.splice(+btn.dataset.del, 1); save(); renderPricing(); };
   });
+}
+
+function proposalPlainText() {
+  const p = state.proposal;
+  const deposit = Math.round(n(p.price) * n(p.depositPct) / 100);
+  const balance = n(p.price) - deposit;
+  return [
+    `عرض سعر — ${p.project || "مشروع"}`,
+    `للعميل: ${p.client || "—"}`,
+    `التاريخ: ${p.date || "—"} · صالح حتى: ${p.validUntil || "—"}`,
+    "",
+    `الملخص: ${p.summary || "—"}`,
+    `داخل النطاق: ${p.inScope || "—"}`,
+    `خارج النطاق: ${p.outScope || "—"}`,
+    `المدة: ${p.duration || "—"}`,
+    `المراجعات: ${p.revisions || "—"}`,
+    "",
+    `السعر: ${money(n(p.price))} ج.م`,
+    `المقدم (${n(p.depositPct)}%): ${money(deposit)} ج.م`,
+    `المتبقي عند التسليم: ${money(balance)} ج.م`,
+    `طرق الدفع: ${p.payments || "—"}`,
+    "",
+    `الشروط: ${p.terms || "—"}`,
+    `الخطوة التالية: ${p.next || "—"}`,
+    "",
+    "— عبر رتّب (Rattib) من Sarab",
+  ].join("\n");
+}
+
+async function copyProposalWhatsApp() {
+  const text = proposalPlainText();
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  const toast = document.getElementById("toast");
+  if (toast) {
+    toast.textContent = "تم نسخ العرض — الصقه في واتساب";
+    toast.hidden = false;
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => { toast.hidden = true; }, 2200);
+  }
 }
 
 function renderProposal() {
@@ -173,7 +258,10 @@ function renderProposal() {
     </label>
     <label>المتبقي عند التسليم
       <div class="calc">${money(balance)} ج.م</div>
-    </label>`;
+    </label>
+    <div class="full proposal-actions">
+      <button type="button" id="btn-copy-wa" class="primary">نسخ للواتساب</button>
+    </div>`;
   box.querySelectorAll("[data-k]").forEach((el) => {
     el.addEventListener("input", () => {
       const k = el.dataset.k;
@@ -182,15 +270,18 @@ function renderProposal() {
       if (k === "price" || k === "depositPct") renderProposal();
     });
   });
+  const copyBtn = document.getElementById("btn-copy-wa");
+  if (copyBtn) copyBtn.onclick = () => { copyProposalWhatsApp(); };
 }
 
 function renderCrm() {
   const tbody = document.querySelector("#crm-table tbody");
   tbody.innerHTML = "";
+  let overdueCount = 0;
   state.clients.forEach((c, i) => {
     const tr = document.createElement("tr");
-    const overdue = c.next && ["lead","proposal"].includes(c.status) && c.next < new Date().toISOString().slice(0,10);
-    if (overdue) tr.classList.add("overdue");
+    const overdue = c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate();
+    if (overdue) { tr.classList.add("overdue"); overdueCount += 1; }
     tr.innerHTML = `
       <td><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
       <td><input data-i="${i}" data-k="contact" value="${esc(c.contact)}"></td>
@@ -203,6 +294,11 @@ function renderCrm() {
       <td><button type="button" class="icon-btn" data-del="${i}">✕</button></td>`;
     tbody.appendChild(tr);
   });
+  const badge = document.getElementById("crm-overdue-badge");
+  if (badge) {
+    badge.hidden = overdueCount === 0;
+    badge.textContent = overdueCount ? `${overdueCount} متأخر` : "";
+  }
   tbody.querySelectorAll("input,select").forEach((el) => {
     el.addEventListener("change", () => {
       const i = +el.dataset.i; const k = el.dataset.k;
@@ -281,6 +377,7 @@ function wire() {
       state = { ...seed(), ...data };
       save(); renderAll();
     } catch { alert("ملف غير صالح"); }
+    e.target.value = "";
   };
   document.getElementById("btn-reset").onclick = () => {
     if (!confirm("مسح كل البيانات والرجوع للأمثلة؟")) return;

@@ -29,7 +29,7 @@
   <nav class="tabs" role="tablist">
     <button type="button" class="tab active" data-tab="pricing">التسعير</button>
     <button type="button" class="tab" data-tab="proposal">عرض السعر</button>
-    <button type="button" class="tab" data-tab="crm">العملاء</button>
+    <button type="button" class="tab" data-tab="crm">العملاء <span id="crm-overdue-badge" class="badge" hidden></span></button>
     <button type="button" class="tab" data-tab="week">أسبوع الشغل</button>
   </nav>
 
@@ -119,6 +119,7 @@
   <footer class="foot">
     <span>Sarab · Rattib MVP — أدوات تنظيم، مفيش ضمان دخل</span>
   </footer>
+  <div id="toast" class="toast" hidden></div>
   <script src="app.js"></script>
 </body>
 </html>
