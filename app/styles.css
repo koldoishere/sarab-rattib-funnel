@@ -73,6 +73,11 @@ button { font: inherit; cursor: pointer; }
 .form-grid label { display: flex; flex-direction: column; gap: .35rem; color: var(--muted); font-size: .9rem; }
 .form-grid .full { grid-column: 1 / -1; }
 .foot { padding: 1rem 1.25rem; color: var(--muted); border-top: 1px solid var(--border); font-size: .85rem; }
+
+tr.overdue td { box-shadow: inset 3px 0 0 var(--danger); }
+tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
+  border-color: #7a3030; color: #ffb4b4;
+}
 @media (max-width: 700px) {
   table { min-width: 720px; }
 }

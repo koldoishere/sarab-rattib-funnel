@@ -1,5 +1,10 @@
 const STORAGE_KEY = "rattib-app-v1";
-const STATUS = ["lead", "proposal", "won", "lost"];
+const STATUS = [
+  { value: "lead", label: "عميل محتمل" },
+  { value: "proposal", label: "عرض سعر" },
+  { value: "won", label: "تم الاتفاق" },
+  { value: "lost", label: "خسارة" },
+];
 const DAYS = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 
 const seed = () => ({
@@ -83,6 +88,24 @@ function bindTabs() {
   });
 }
 
+function pricingCalcs(row) {
+  const empty = row.hours === "" && row.rate === "";
+  if (empty) return { empty: true, price: 0, usd: 0, dep: 0, bal: 0 };
+  const price = suggested(row);
+  const usd = state.fx ? Math.round(price / state.fx) : 0;
+  const dep = Math.round(price * 0.5);
+  const bal = price - dep;
+  return { empty: false, price, usd, dep, bal };
+}
+
+function paintPricingCalcs(tr, row) {
+  const c = pricingCalcs(row);
+  const spans = tr.querySelectorAll("span.calc");
+  if (spans.length < 4) return;
+  const vals = c.empty ? ["—", "—", "—", "—"] : [money(c.price), money(c.usd), money(c.dep), money(c.bal)];
+  spans.forEach((el, idx) => { el.textContent = vals[idx]; });
+}
+
 function renderPricing() {
   const fx = document.getElementById("fx-rate");
   fx.value = state.fx;
@@ -91,21 +114,19 @@ function renderPricing() {
   const tbody = document.querySelector("#pricing-table tbody");
   tbody.innerHTML = "";
   state.pricing.forEach((row, i) => {
-    const price = suggested(row);
-    const usd = state.fx ? Math.round(price / state.fx) : 0;
-    const dep = Math.round(price * 0.5);
-    const bal = price - dep;
+    const c = pricingCalcs(row);
     const tr = document.createElement("tr");
+    tr.dataset.row = String(i);
     tr.innerHTML = `
       <td><input data-i="${i}" data-k="type" value="${esc(row.type)}"></td>
       <td class="num"><input data-i="${i}" data-k="hours" type="number" value="${row.hours}"></td>
       <td class="num"><input data-i="${i}" data-k="rate" type="number" value="${row.rate}"></td>
       <td class="num"><input data-i="${i}" data-k="costs" type="number" value="${row.costs}"></td>
       <td class="num"><input data-i="${i}" data-k="margin" type="number" value="${row.margin}"></td>
-      <td><span class="calc">${row.hours === "" && row.rate === "" ? "—" : money(price)}</span></td>
-      <td><span class="calc">${row.hours === "" && row.rate === "" ? "—" : money(usd)}</span></td>
-      <td><span class="calc">${row.hours === "" && row.rate === "" ? "—" : money(dep)}</span></td>
-      <td><span class="calc">${row.hours === "" && row.rate === "" ? "—" : money(bal)}</span></td>
+      <td><span class="calc">${c.empty ? "—" : money(c.price)}</span></td>
+      <td><span class="calc">${c.empty ? "—" : money(c.usd)}</span></td>
+      <td><span class="calc">${c.empty ? "—" : money(c.dep)}</span></td>
+      <td><span class="calc">${c.empty ? "—" : money(c.bal)}</span></td>
       <td><input data-i="${i}" data-k="notes" value="${esc(row.notes)}"></td>
       <td><button type="button" class="icon-btn" data-del="${i}">✕</button></td>`;
     tbody.appendChild(tr);
@@ -115,7 +136,10 @@ function renderPricing() {
       const i = +inp.dataset.i; const k = inp.dataset.k;
       state.pricing[i][k] = inp.type === "number" ? (inp.value === "" ? "" : n(inp.value)) : inp.value;
       save();
-      if (["hours","rate","costs","margin"].includes(k)) renderPricing();
+      if (["hours","rate","costs","margin"].includes(k)) {
+        const tr = tbody.querySelector(`tr[data-row="${i}"]`);
+        if (tr) paintPricingCalcs(tr, state.pricing[i]);
+      }
     });
   });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
@@ -165,11 +189,13 @@ function renderCrm() {
   tbody.innerHTML = "";
   state.clients.forEach((c, i) => {
     const tr = document.createElement("tr");
+    const overdue = c.next && ["lead","proposal"].includes(c.status) && c.next < new Date().toISOString().slice(0,10);
+    if (overdue) tr.classList.add("overdue");
     tr.innerHTML = `
       <td><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
       <td><input data-i="${i}" data-k="contact" value="${esc(c.contact)}"></td>
       <td><input data-i="${i}" data-k="source" value="${esc(c.source)}"></td>
-      <td><select data-i="${i}" data-k="status">${STATUS.map(s => `<option value="${s}" ${c.status===s?"selected":""}>${s}</option>`).join("")}</select></td>
+      <td><select data-i="${i}" data-k="status">${STATUS.map(s => `<option value="${s.value}" ${c.status===s.value?"selected":""}>${s.label}</option>`).join("")}</select></td>
       <td><input data-i="${i}" data-k="last" type="date" value="${esc(c.last)}"></td>
       <td><input data-i="${i}" data-k="next" type="date" value="${esc(c.next)}"></td>
       <td class="num"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
@@ -182,6 +208,7 @@ function renderCrm() {
       const i = +el.dataset.i; const k = el.dataset.k;
       state.clients[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
+      if (k === "status" || k === "next") renderCrm();
     });
     el.addEventListener("input", () => {
       if (el.tagName === "SELECT") return;
@@ -195,12 +222,14 @@ function renderCrm() {
   });
 }
 
+function weekTotal() {
+  return state.week.reduce((sum, w) => sum + n(w.hours), 0);
+}
+
 function renderWeek() {
   const tbody = document.querySelector("#week-table tbody");
   tbody.innerHTML = "";
-  let total = 0;
   state.week.forEach((w, i) => {
-    total += n(w.hours);
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${esc(w.day)}</td>
@@ -210,13 +239,13 @@ function renderWeek() {
       <td><select data-i="${i}" data-k="done"><option ${w.done==="☐"?"selected":""}>☐</option><option ${w.done==="☑"?"selected":""}>☑</option></select></td>`;
     tbody.appendChild(tr);
   });
-  document.getElementById("week-total").textContent = total;
+  document.getElementById("week-total").textContent = weekTotal();
   tbody.querySelectorAll("input,select").forEach((el) => {
     const handler = () => {
       const i = +el.dataset.i; const k = el.dataset.k;
       state.week[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
-      if (k === "hours") renderWeek();
+      if (k === "hours") document.getElementById("week-total").textContent = weekTotal();
     };
     el.addEventListener("change", handler);
     el.addEventListener("input", handler);
