@@ -65,14 +65,11 @@ const seed = () => ({
   ],
 });
 
-let state = load();
-let crmFilter = "all";
-
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return seed();
-    return { ...seed(), ...JSON.parse(raw) };
+    return normalizeImportedState(JSON.parse(raw));
   } catch {
     return seed();
   }
@@ -286,12 +283,17 @@ function renderProposal() {
     ["next","الخطوة التالية","textarea", true],
   ];
   const box = document.getElementById("proposal-form");
-  box.innerHTML = fields.map(([k,label,type,full]) => `
-    <label class="${full ? "full" : ""}">${label}
-      ${type === "textarea"
-        ? `<textarea data-k="${k}">${esc(p[k] ?? "")}</textarea>`
-        : `<input data-k="${k}" type="${type}" value="${esc(p[k] ?? "")}">`}
-    </label>`).join("") + `
+  box.innerHTML = fields.map(([k,label,type,full]) => {
+    const ar = type === "date" ? formatArDate(p[k]) : "";
+    const control = type === "textarea"
+      ? `<textarea data-k="${k}">${esc(p[k] ?? "")}</textarea>`
+      : type === "date"
+        ? `<input data-k="${k}" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(p[k] ?? "")}">${ar ? `<div class="date-hint">${ar}</div>` : ""}`
+        : `<input data-k="${k}" type="${type}" value="${esc(p[k] ?? "")}">`;
+    return `<label class="${full ? "full" : ""}">${label}
+      ${control}
+    </label>`;
+  }).join("") + `
     <label>المقدم المحسوب
       <div class="calc" id="proposal-deposit-calc">${money(deposit)} ج.م</div>
     </label>
@@ -328,6 +330,20 @@ function addDaysISO(iso, days) {
   const dt = new Date(y, m - 1, d);
   dt.setDate(dt.getDate() + days);
   return localISODate(dt);
+}
+
+function formatArDate(iso) {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "";
+  try {
+    return new Date(iso + "T12:00:00").toLocaleDateString("ar-EG", {
+      weekday: "short",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
 }
 
 function nextDateHint(iso) {
@@ -459,9 +475,13 @@ function renderCrm() {
       <td data-label="التواصل"><input data-i="${i}" data-k="contact" value="${esc(c.contact)}"></td>
       <td data-label="المصدر"><input data-i="${i}" data-k="source" value="${esc(c.source)}"></td>
       <td data-label="الحالة"><select data-i="${i}" data-k="status">${STATUS.map(s => `<option value="${s.value}" ${c.status===s.value?"selected":""}>${s.label}</option>`).join("")}</select></td>
-      <td data-label="آخر تواصل"><input data-i="${i}" data-k="last" type="date" value="${esc(c.last)}"></td>
+      <td data-label="آخر تواصل">
+        <input data-i="${i}" data-k="last" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(c.last)}">
+        ${c.last && formatArDate(c.last) ? `<div class="date-hint">${formatArDate(c.last)}</div>` : ""}
+      </td>
       <td data-label="متابعة تالية">
-        <input data-i="${i}" data-k="next" type="date" value="${esc(c.next)}">
+        <input data-i="${i}" data-k="next" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(c.next)}">
+        ${c.next && formatArDate(c.next) ? `<div class="date-hint">${formatArDate(c.next)}</div>` : ""}
         ${hint ? `<div class="date-hint${overdue ? " late" : ""}">${hint}</div>` : ""}
       </td>
       <td class="num" data-label="القيمة"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
@@ -736,5 +756,8 @@ function wire() {
   };
   renderAll();
 }
+let state = load();
+let crmFilter = "all";
+
 function renderAll() { renderPricing(); renderProposal(); renderCrm(); renderWeek(); }
 wire();
