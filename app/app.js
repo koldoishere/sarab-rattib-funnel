@@ -248,7 +248,15 @@ async function copyProposalWhatsApp() {
 
 function openProposalWhatsApp() {
   const text = proposalPlainText();
-  const url = "https://wa.me/?text=" + encodeURIComponent(text);
+  const encoded = encodeURIComponent(text);
+  const url = "https://wa.me/?text=" + encoded;
+  // wa.me links break when the URL gets too long; fall back to copy + empty chat
+  if (url.length > 1800) {
+    copyProposalWhatsApp();
+    window.open("https://wa.me/", "_blank", "noopener,noreferrer");
+    showToast("العرض طويل — اتنسخ، الصقه في واتساب");
+    return;
+  }
   window.open(url, "_blank", "noopener,noreferrer");
   showToast("اتفتح واتساب بالنص — راجع قبل الإرسال");
 }
@@ -314,6 +322,19 @@ function renderProposal() {
         paintProposalCalcs();
         if (k === "depositPct") renderPricing();
       }
+      if (el.type === "date") {
+        const hint = el.parentElement && el.parentElement.querySelector(".date-hint");
+        const ar = formatArDate(el.value);
+        if (hint) {
+          if (ar) hint.textContent = ar;
+          else hint.remove();
+        } else if (ar) {
+          const div = document.createElement("div");
+          div.className = "date-hint";
+          div.textContent = ar;
+          el.insertAdjacentElement("afterend", div);
+        }
+      }
     });
   });
   const copyBtn = document.getElementById("btn-copy-wa");
@@ -364,7 +385,17 @@ function clientIsOverdue(c) {
   return !!(c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate());
 }
 
+function clientMatchesQuery(c) {
+  const q = (crmQuery || "").trim().toLowerCase();
+  if (!q) return true;
+  const hay = [c.name, c.contact, c.source, c.notes]
+    .map((v) => String(v || "").toLowerCase())
+    .join(" ");
+  return hay.includes(q);
+}
+
 function clientMatchesFilter(c) {
+  if (!clientMatchesQuery(c)) return false;
   if (crmFilter === "all") return true;
   if (crmFilter === "overdue") return clientIsOverdue(c);
   return c.status === crmFilter;
@@ -460,7 +491,9 @@ function renderCrm() {
     emptyEl.hidden = visible.length > 0;
     emptyEl.textContent = state.clients.length === 0
       ? "لسه مفيش عملاء — اضغط «+ عميل» أو «أضف للعملاء» من عرض السعر."
-      : "مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.";
+      : (crmQuery || "").trim()
+        ? "مفيش نتائج للبحث ده — جرّب كلمة تانية أو امسح البحث."
+        : "مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.";
   }
   if (wrap) wrap.hidden = visible.length === 0;
   // badge counts all overdue, not just filtered
@@ -502,7 +535,7 @@ function renderCrm() {
       const i = +el.dataset.i; const k = el.dataset.k;
       state.clients[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
-      if (k === "status" || k === "next") renderCrm();
+      if (k === "status" || k === "next" || k === "last") renderCrm();
     });
     el.addEventListener("input", () => {
       if (el.tagName === "SELECT") return;
@@ -720,6 +753,16 @@ function wire() {
       };
     });
   }
+  const search = document.getElementById("crm-search");
+  if (search) {
+    search.value = crmQuery;
+    search.addEventListener("input", () => {
+      crmQuery = search.value || "";
+      renderCrm();
+      // keep focus/caret — search lives outside renderCrm
+      search.focus();
+    });
+  }
   document.getElementById("btn-export").onclick = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
@@ -758,6 +801,7 @@ function wire() {
 }
 let state = load();
 let crmFilter = "all";
+let crmQuery = "";
 
 function renderAll() { renderPricing(); renderProposal(); renderCrm(); renderWeek(); }
 wire();
