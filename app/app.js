@@ -546,6 +546,134 @@ function renderWeek() {
   });
 }
 
+
+const STATUS_VALUES = new Set(STATUS.map((s) => s.value));
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isPlainObject(v) {
+  return !!v && typeof v === "object" && !Array.isArray(v);
+}
+
+function cleanStr(v, max = 2000) {
+  if (v == null) return "";
+  return String(v).slice(0, max);
+}
+
+function cleanNum(v, fallback = 0) {
+  if (v === "" || v == null) return v === "" ? "" : fallback;
+  const x = Number(v);
+  return Number.isFinite(x) ? x : fallback;
+}
+
+function cleanDate(v) {
+  const s = cleanStr(v, 32).trim();
+  return ISO_DATE_RE.test(s) ? s : "";
+}
+
+function cleanStatus(v) {
+  const s = cleanStr(v, 32);
+  return STATUS_VALUES.has(s) ? s : "lead";
+}
+
+function cleanDone(v) {
+  return v === "☑" ? "☑" : "☐";
+}
+
+/** Validate + normalize a Rattib export. Throws Error with Arabic message on bad shape. */
+function normalizeImportedState(data) {
+  if (!isPlainObject(data)) throw new Error("الملف مش JSON كائن صالح");
+  // reject prototype-pollution keys and require at least one known section
+  const keys = Object.keys(data);
+  if (keys.some((k) => k === "__proto__" || k === "constructor" || k === "prototype")) {
+    throw new Error("الملف فيه مفاتيح مش مسموحة");
+  }
+  const hasSection = ["fx", "pricing", "proposal", "clients", "week"].some((k) => k in data);
+  if (!hasSection) throw new Error("الملف مش تصدير رتّب — مفيش أقسام معروفة");
+
+  const base = seed();
+  const out = { ...base };
+
+  if ("fx" in data) {
+    const fx = Number(data.fx);
+    if (!Number.isFinite(fx) || fx <= 0 || fx > 1e6) throw new Error("سعر الصرف غير صالح");
+    out.fx = fx;
+  }
+
+  if ("pricing" in data) {
+    if (!Array.isArray(data.pricing)) throw new Error("قائمة التسعير لازم تكون مصفوفة");
+    if (data.pricing.length > 200) throw new Error("عدد صفوف التسعير أكبر من المسموح");
+    out.pricing = data.pricing.map((row) => {
+      if (!isPlainObject(row)) throw new Error("صف تسعير غير صالح");
+      return {
+        type: cleanStr(row.type, 200),
+        hours: row.hours === "" || row.hours == null ? "" : cleanNum(row.hours, 0),
+        rate: row.rate === "" || row.rate == null ? "" : cleanNum(row.rate, 0),
+        costs: row.costs === "" || row.costs == null ? "" : cleanNum(row.costs, 0),
+        margin: row.margin === "" || row.margin == null ? 25 : cleanNum(row.margin, 25),
+        notes: cleanStr(row.notes, 500),
+      };
+    });
+  }
+
+  if ("proposal" in data) {
+    if (!isPlainObject(data.proposal)) throw new Error("عرض السعر غير صالح");
+    const p = data.proposal;
+    out.proposal = {
+      ...base.proposal,
+      date: cleanDate(p.date) || base.proposal.date,
+      validUntil: cleanDate(p.validUntil) || base.proposal.validUntil,
+      client: cleanStr(p.client, 200),
+      contact: cleanStr(p.contact, 200),
+      project: cleanStr(p.project, 200),
+      summary: cleanStr(p.summary, 1000),
+      inScope: cleanStr(p.inScope, 2000),
+      outScope: cleanStr(p.outScope, 2000),
+      duration: cleanStr(p.duration, 200),
+      price: cleanNum(p.price, 0),
+      depositPct: Math.min(100, Math.max(0, cleanNum(p.depositPct, 50))),
+      revisions: cleanStr(p.revisions, 100),
+      payments: cleanStr(p.payments, 300),
+      terms: cleanStr(p.terms, 2000),
+      next: cleanStr(p.next, 500),
+    };
+  }
+
+  if ("clients" in data) {
+    if (!Array.isArray(data.clients)) throw new Error("قائمة العملاء لازم تكون مصفوفة");
+    if (data.clients.length > 2000) throw new Error("عدد العملاء أكبر من المسموح");
+    out.clients = data.clients.map((c) => {
+      if (!isPlainObject(c)) throw new Error("سجل عميل غير صالح");
+      return {
+        name: cleanStr(c.name, 200),
+        contact: cleanStr(c.contact, 200),
+        source: cleanStr(c.source, 100),
+        status: cleanStatus(c.status),
+        last: cleanDate(c.last),
+        next: cleanDate(c.next),
+        value: cleanNum(c.value, 0),
+        notes: cleanStr(c.notes, 500),
+      };
+    });
+  }
+
+  if ("week" in data) {
+    if (!Array.isArray(data.week)) throw new Error("أسبوع الشغل لازم يكون مصفوفة");
+    if (data.week.length !== 7) throw new Error("أسبوع الشغل لازم 7 أيام");
+    out.week = data.week.map((w, i) => {
+      if (!isPlainObject(w)) throw new Error("يوم أسبوع غير صالح");
+      return {
+        day: cleanStr(w.day, 40) || DAYS[i],
+        tasks: cleanStr(w.tasks, 1000),
+        hours: cleanNum(w.hours, 0),
+        deliverables: cleanStr(w.deliverables, 500),
+        done: cleanDone(w.done),
+      };
+    });
+  }
+
+  return out;
+}
+
 function esc(s) {
   return String(s ?? "").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
 }
@@ -583,10 +711,23 @@ function wire() {
   document.getElementById("import-file").onchange = async (e) => {
     const file = e.target.files?.[0]; if (!file) return;
     try {
-      const data = JSON.parse(await file.text());
-      state = { ...seed(), ...data };
-      save(); renderAll();
-    } catch { alert("ملف غير صالح"); }
+      if (file.size > 2_000_000) throw new Error("الملف كبير أوي (حد أقصى 2MB)");
+      const text = await file.text();
+      let data;
+      try { data = JSON.parse(text); }
+      catch { throw new Error("الملف مش JSON صالح"); }
+      const next = normalizeImportedState(data);
+      if (!confirm("استيراد الملف هيستبدل البيانات الحالية. كمّل؟")) {
+        e.target.value = "";
+        return;
+      }
+      state = next;
+      save();
+      renderAll();
+      showToast("تم استيراد البيانات بأمان");
+    } catch (err) {
+      alert(err?.message || "ملف غير صالح");
+    }
     e.target.value = "";
   };
   document.getElementById("btn-reset").onclick = () => {
