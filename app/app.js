@@ -188,7 +188,7 @@ function renderPricing() {
       <td class="calc-cell" data-label="المتبقي"><span class="calc">${c.empty ? "—" : money(c.bal)}</span></td>
       <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(row.notes)}"></td>
       <td class="row-actions" data-label="إجراءات">
-        <button type="button" class="ghost tiny" data-use="${i}" title="ضع السعر والمشروع في عرض السعر">للعرض</button>
+        <button type="button" class="ghost tiny" data-use="${i}" title="ضع السعر والمشروع في عرض السعر">انقل للعرض</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
     tbody.appendChild(tr);
