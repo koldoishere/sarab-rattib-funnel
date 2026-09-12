@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://koldoishere.github.io/sarab-rattib-funnel/">
 <meta property="og:image" content="https://koldoishere.github.io/sarab-rattib-funnel/og-share.png">
 <link rel="canonical" href="https://koldoishere.github.io/sarab-rattib-funnel/">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#050706">
 <link rel="icon" type="image/png" href="logo-mark.png">
 <link rel="apple-touch-icon" href="logo-mark.png">
@@ -93,7 +93,7 @@
   header {
     background: linear-gradient(165deg, var(--night) 0%, var(--night-soft) 100%);
     color: var(--sand);
-    padding: 2.75rem 0 3rem;
+    padding: calc(2.75rem + env(safe-area-inset-top, 0px)) 0 3rem;
     text-align: center;
   }
   .brand-row {
@@ -305,6 +305,25 @@
   }
   .cta-band p { opacity: 0.9; margin-bottom: 1.15rem; }
   .cta-band .btn { margin-top: 0.25rem; }
+  .cta-band .primary-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.78;
+    margin: 0 0 0.55rem;
+  }
+  .cta-band .cta-sub-quiet {
+    margin-top: 1rem;
+    margin-bottom: 0;
+    font-size: 0.92rem;
+    opacity: 0.88;
+  }
+  .cta-band .cta-sub-quiet a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 
   details {
     background: var(--card);
@@ -395,7 +414,7 @@
     <span style="color:rgba(245,248,246,0.7);font-size:0.72rem;font-weight:500">Instant download</span>
   </div>
   <div class="sticky-cta-actions">
-    <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Get Rattib — $12</a>
+    <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib — $12</a>
     <a class="link-quiet" href="app/">Free preview</a>
   </div>
 </div>
@@ -403,7 +422,7 @@
 <header>
   <div class="wrap">
     <div class="brand-row">
-      <img src="logo-mark.png" width="52" height="52" alt="Sarab">
+      <img src="logo-mark.png" width="52" height="52" alt="Sarab" decoding="async">
       <span class="pill">Rattib · by Sarab</span>
     </div>
     <h1>Rattib</h1>
@@ -414,7 +433,7 @@
       <strong>$12</strong>
     </div>
     <div class="cta-row">
-      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Get Rattib on Whop — $12</a>
+      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib on Whop — $12</a>
     </div>
     <p class="cta-sub" style="margin-top:0.85rem;font-size:0.9rem;opacity:0.8"><span style="opacity:0.85">Or explore:</span> <a href="#inside" style="color:inherit;text-decoration:underline">What’s inside</a><span aria-hidden="true"> · </span><a href="app/" style="color:inherit;text-decoration:underline">Free web preview</a></p>
     <p style="margin-top:0.85rem;font-size:0.88rem;opacity:0.78;max-width:34em;margin-left:auto;margin-right:auto">Instant download after checkout · one-time $12 · Excel / CSV / Notion · no income claims</p>
@@ -559,12 +578,13 @@
 
 <section>
   <div class="wrap">
-    <div class="cta-band">
+    <div class="cta-band" role="region" aria-label="Primary next action">
+      <p class="primary-label">One clear next step</p>
       <h2>Get Rattib — $12</h2>
-      <p style="margin:0.35rem 0 0;font-size:0.95rem;opacity:0.9">Also try the <a href="app/" style="color:inherit;text-decoration:underline">all-in-one web app</a> (pricing · proposal · CRM · week) — free preview; Whop delivers the full pack.</p>
-      <p>Instant delivery on Whop · one-time purchase · edit everything</p>
-      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Buy on Whop — $12</a>
-      <p style="margin-top:1rem;font-size:0.92rem;opacity:0.92"><a href="upsell.html" style="color:inherit;text-decoration:underline">Optional next tools</a> (QuoteForge / ScopeLock) — Rattib works alone.</p>
+      <p>Instant delivery on Whop · one-time purchase · edit everything · no income promises</p>
+      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Buy on Whop — $12</a>
+      <p class="cta-sub-quiet">Or explore the <a href="app/">free web app preview</a> (pricing · proposal · CRM · week) — Whop still delivers the full pack.</p>
+      <p class="cta-sub-quiet"><a href="upsell.html">Optional next tools</a> (QuoteForge / ScopeLock) — Rattib works alone.</p>
     </div>
   </div>
 </section>
@@ -641,7 +661,7 @@
 <footer>
   <div class="wrap">
     <div class="mark">
-      <img src="logo-mark.png" width="28" height="28" alt="">
+      <img src="logo-mark.png" width="28" height="28" alt="" decoding="async">
       <strong style="color:var(--night)">Rattib</strong> · by Sarab
     </div>
     From mirage to water<br>
