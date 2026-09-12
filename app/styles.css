@@ -237,6 +237,14 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
 .chip.chip-late.active {
   color: #1a0606; background: #ff8a8a; border-color: #ff8a8a;
 }
+.chip.chip-today.active {
+  color: #04110a; background: #7dffb0; border-color: #7dffb0;
+}
+.crm-pipeline {
+  margin-top: .35rem;
+  font-size: .88rem;
+  font-variant-numeric: tabular-nums;
+}
 .chip:not(.active):hover { border-color: var(--green-dim); color: var(--text); }
 .empty-hint {
   color: var(--muted); text-align: center; padding: 1.25rem 1rem;

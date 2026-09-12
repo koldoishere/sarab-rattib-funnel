@@ -423,6 +423,10 @@ function clientIsOverdue(c) {
   return !!(c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate());
 }
 
+function clientIsDueToday(c) {
+  return !!(c.next && ["lead","proposal"].includes(c.status) && c.next === localISODate());
+}
+
 function clientMatchesQuery(c) {
   const q = (crmQuery || "").trim().toLowerCase();
   if (!q) return true;
@@ -435,6 +439,7 @@ function clientMatchesQuery(c) {
 function clientMatchesFilter(c) {
   if (!clientMatchesQuery(c)) return false;
   if (crmFilter === "all") return true;
+  if (crmFilter === "today") return clientIsDueToday(c);
   if (crmFilter === "overdue") return clientIsOverdue(c);
   return c.status === crmFilter;
 }
@@ -561,6 +566,22 @@ function snoozeClient(i, days) {
   showToast(d === 7 ? "اتأجلت المتابعة أسبوع" : `اتأجلت المتابعة ${d} أيام`);
 }
 
+function paintCrmPipeline(visible) {
+  const el = document.getElementById("crm-pipeline");
+  if (!el) return;
+  if (!visible.length) {
+    el.hidden = true;
+    el.textContent = "";
+    return;
+  }
+  const sum = visible.reduce((acc, { c }) => acc + n(c.value), 0);
+  const todayN = state.clients.filter(clientIsDueToday).length;
+  const parts = [`الظاهر: ${visible.length} · قيمة ${money(sum)} ج.م`];
+  if (crmFilter !== "today" && todayN > 0) parts.push(`${todayN} متابعة النهاردة`);
+  el.textContent = parts.join(" · ");
+  el.hidden = false;
+}
+
 function renderCrm() {
   const tbody = document.querySelector("#crm-table tbody");
   tbody.innerHTML = "";
@@ -574,9 +595,12 @@ function renderCrm() {
       ? "لسه مفيش عملاء — اضغط «+ عميل» أو «أضف للعملاء» من عرض السعر."
       : (crmQuery || "").trim()
         ? "مفيش نتائج للبحث ده — جرّب كلمة تانية أو امسح البحث."
-        : "مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.";
+        : crmFilter === "today"
+          ? "مفيش متابعات النهاردة — لو في متأخرين جرّب «متأخر»."
+          : "مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.";
   }
   if (wrap) wrap.hidden = visible.length === 0;
+  paintCrmPipeline(visible);
   // badge counts all overdue, not just filtered
   state.clients.forEach((c) => { if (clientIsOverdue(c)) overdueCount += 1; });
   visible.forEach(({ c, i }) => {
