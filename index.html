@@ -379,11 +379,78 @@
     height: auto;
   }
   .preview-card figcaption {
-    padding: 0.65rem 1rem 0.85rem;
+    padding: 0.65rem 1rem 0.35rem;
     font-size: 0.82rem;
     color: var(--muted);
     letter-spacing: 0.02em;
   }
+
+  .preview-card { position: relative; }
+  .preview-card button.preview-zoom {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: zoom-in;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .preview-card button.preview-zoom:focus-visible {
+    outline: 3px solid var(--oasis);
+    outline-offset: -3px;
+  }
+  .preview-hint {
+    display: none;
+    padding: 0 1rem 0.75rem;
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--oasis);
+    opacity: 0.9;
+  }
+  @media (max-width: 819px) {
+    .preview-hint { display: block; }
+  }
+  .preview-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem;
+    background: rgba(5,7,6,0.92);
+    backdrop-filter: blur(6px);
+  }
+  .preview-lightbox.is-open { display: flex; }
+  .preview-lightbox img {
+    max-width: 100%;
+    max-height: min(92vh, 100%);
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(32,224,112,0.35);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.45);
+    background: #0a0f0c;
+  }
+  .preview-lightbox .lb-close {
+    position: absolute;
+    top: max(0.75rem, env(safe-area-inset-top));
+    inset-inline-end: max(0.75rem, env(safe-area-inset-right));
+    background: var(--oasis);
+    color: var(--night);
+    border: 0;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.55rem 0.95rem;
+    cursor: pointer;
+    min-height: 2.75rem;
+  }
+  .preview-lightbox .lb-close:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+  }
+  body.lb-open { overflow: hidden; }
 
 </style>
 <script type="application/ld+json">
@@ -471,23 +538,27 @@
 <section id="preview" style="padding:2.5rem 0 0.5rem">
   <div class="wrap">
     <h2>Product preview</h2>
-    <p class="ba-note" style="margin-bottom:1.25rem">Live screens from the free web app preview — pricing, proposal, weekly board, and CRM (filters + follow-up). Pack files match the same ops flow.</p>
+    <p class="ba-note" style="margin-bottom:1.25rem">Live screens from the free web app preview — pricing, proposal, weekly board, and CRM (filters + follow-up). On mobile, tap a screen to enlarge and read the Arabic UI. Pack files match the same ops flow.</p>
     <div class="preview-grid">
       <figure class="preview-card">
-        <img src="preview-pricing-hq.png" width="1280" height="800" alt="Rattib pricing: انقل للعرض / نسخ, deposit + USD, live totals" loading="lazy" decoding="async">
+        <button type="button" class="preview-zoom" aria-label="Enlarge preview"><img src="preview-pricing-hq.png" width="1280" height="800" alt="Rattib pricing: انقل للعرض / نسخ, deposit + USD, live totals" loading="lazy" decoding="async"></button>
         <figcaption>App · Pricing · انقل للعرض · totals</figcaption>
+        <p class="preview-hint">Tap to enlarge · pinch or scroll to read Arabic text</p>
       </figure>
       <figure class="preview-card">
-        <img src="preview-proposal-hq.png" width="1280" height="800" alt="Rattib proposal: contact with WhatsApp 01011112222, 50% deposit, open WhatsApp" loading="lazy" decoding="async">
+        <button type="button" class="preview-zoom" aria-label="Enlarge preview"><img src="preview-proposal-hq.png" width="1280" height="800" alt="Rattib proposal: contact with WhatsApp 01011112222, 50% deposit, open WhatsApp" loading="lazy" decoding="async"></button>
         <figcaption>App · Proposal · واتساب + رقم</figcaption>
+        <p class="preview-hint">Tap to enlarge · pinch or scroll to read Arabic text</p>
       </figure>
       <figure class="preview-card">
-        <img src="preview-weekly-hq.png" width="1280" height="800" alt="Rattib weekly board: اليوم on السبت (Africa/Cairo), one-tap تم / مش بعد" loading="lazy" decoding="async">
+        <button type="button" class="preview-zoom" aria-label="Enlarge preview"><img src="preview-weekly-hq.png" width="1280" height="800" alt="Rattib weekly board: اليوم on السبت (Africa/Cairo), one-tap تم / مش بعد" loading="lazy" decoding="async"></button>
         <figcaption>App · Weekly · السبت اليوم · تم / مش بعد</figcaption>
+        <p class="preview-hint">Tap to enlarge · pinch or scroll to read Arabic text</p>
       </figure>
       <figure class="preview-card">
-        <img src="preview-crm-hq.png" width="1280" height="800" alt="Rattib CRM: full Arabic status labels, filters, النهاردة, تواصلت / WhatsApp" loading="lazy" decoding="async">
+        <button type="button" class="preview-zoom" aria-label="Enlarge preview"><img src="preview-crm-hq.png" width="1280" height="800" alt="Rattib CRM: full Arabic status labels, filters, النهاردة, تواصلت / WhatsApp" loading="lazy" decoding="async"></button>
         <figcaption>App · CRM · filters · تواصلت</figcaption>
+        <p class="preview-hint">Tap to enlarge · pinch or scroll to read Arabic text</p>
       </figure>
     </div>
   </div>
@@ -668,6 +739,48 @@
     Koldo · Sarab · <a href="bio.html" style="color:inherit">Creator bio link</a>
   </div>
 </footer>
+
+
+<div class="preview-lightbox" id="preview-lightbox" hidden role="dialog" aria-modal="true" aria-label="Enlarged product preview">
+  <button type="button" class="lb-close" id="lb-close">Close</button>
+  <img id="lb-img" src="" alt="">
+</div>
+<script>
+(function () {
+  var lb = document.getElementById("preview-lightbox");
+  var img = document.getElementById("lb-img");
+  var closeBtn = document.getElementById("lb-close");
+  if (!lb || !img || !closeBtn) return;
+  function openLb(src, alt) {
+    img.src = src;
+    img.alt = alt || "";
+    lb.hidden = false;
+    lb.classList.add("is-open");
+    document.body.classList.add("lb-open");
+    closeBtn.focus();
+  }
+  function closeLb() {
+    lb.classList.remove("is-open");
+    lb.hidden = true;
+    img.removeAttribute("src");
+    document.body.classList.remove("lb-open");
+  }
+  document.querySelectorAll("button.preview-zoom").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var i = btn.querySelector("img");
+      if (!i) return;
+      openLb(i.currentSrc || i.src, i.alt);
+    });
+  });
+  closeBtn.addEventListener("click", closeLb);
+  lb.addEventListener("click", function (e) {
+    if (e.target === lb) closeLb();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && lb.classList.contains("is-open")) closeLb();
+  });
+})();
+</script>
 
 </body>
 </html>
