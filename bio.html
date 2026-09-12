@@ -2,21 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rattib · by Sarab</title>
-<meta name="description" content="Rattib by Sarab — pricing, proposals, light CRM, weekly board for freelancers. $12 on Whop. Instant download. No income promises.">
+<meta name="description" content="Rattib by Sarab — pricing, proposals, light CRM, weekly board. One clear next step: Get Rattib for $12 on Whop. Instant download. No income promises.">
 <meta property="og:title" content="Rattib · by Sarab">
-<meta property="og:description" content="Freelancer ops pack: pricing · proposals · light CRM · weekly board. $12 one-time on Whop.">
+<meta property="og:description" content="Freelancer ops pack: pricing · proposals · light CRM · weekly board. $12 one-time on Whop. No income promises.">
+<meta property="og:type" content="website">
 <meta property="og:url" content="https://koldoishere.github.io/sarab-rattib-funnel/bio.html">
 <meta property="og:image" content="https://koldoishere.github.io/sarab-rattib-funnel/og-share.png">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="https://koldoishere.github.io/sarab-rattib-funnel/bio.html">
 <meta name="theme-color" content="#050706">
 <link rel="icon" type="image/png" href="logo-mark.png">
 <link rel="apple-touch-icon" href="logo-mark.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap">
 <style>
   :root {
     --night: #050706;
@@ -30,11 +31,15 @@
     background: var(--night);
     color: var(--sand);
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem 1.25rem;
+    padding: calc(2rem + env(safe-area-inset-top, 0px))
+             calc(1.25rem + env(safe-area-inset-right, 0px))
+             calc(2rem + env(safe-area-inset-bottom, 0px))
+             calc(1.25rem + env(safe-area-inset-left, 0px));
     line-height: 1.55;
     text-align: center;
   }
@@ -139,6 +144,18 @@
     margin: 0 auto 1.5rem;
     max-width: 22em;
   }
+
+  .cta-block {
+    margin-top: 0.15rem;
+  }
+  .next-step {
+    color: var(--sand);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.65rem;
+    opacity: 0.92;
+  }
   .chips span {
     border: 1px solid rgba(32, 224, 112, 0.35);
     color: var(--oasis);
@@ -154,16 +171,19 @@
 <body data-brand="sarab" data-page="bio">
 
 <div class="card">
-  <img class="logo" src="logo-mark.png" width="88" height="88" alt="Sarab">
+  <img class="logo" src="logo-mark.png" width="88" height="88" alt="Sarab" decoding="async">
   <div class="wordmark">Sarab</div>
   <h1>Rattib</h1>
   <p class="tag">Freelancer ops, without the chaos</p>
-  <p class="blurb">For freelancers who still run pricing and follow-ups from chat notes — especially Arabic / MENA indie work. Pricing sheet now auto-splits 50% deposit and balance on delivery. Instant Whop delivery. No income promises.</p>
+  <p class="blurb">For freelancers who still price and follow up from chat notes — especially Arabic / MENA indie work. Pricing auto-splits 50% deposit and balance on delivery. No income promises.</p>
   <div class="chips" aria-label="What’s inside">
     <span>Pricing</span><span>50% deposit</span><span>Proposals</span><span>Light CRM</span><span>Weekly board</span>
   </div>
-  <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Get Rattib — $12</a>
-  <a class="link-quiet" href="app/">جرّب الـweb app مجاناً</a>
+  <div class="cta-block">
+    <p class="next-step">One clear next step</p>
+    <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" rel="noopener noreferrer">Get Rattib — $12</a>
+    <a class="link-quiet" href="app/">جرّب الـweb app مجاناً</a>
+  </div>
   <p class="price">One-time on Whop · <strong>instant download</strong> · no subscription · Excel / CSV / Notion</p>
   <p class="price" style="margin-top:0.35rem">Built by a freelancer for freelancers · English storefront · Arabic READMEs inside</p>
 </div>
