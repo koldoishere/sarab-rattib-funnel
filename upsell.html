@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Optional next tools — QuoteForge & ScopeLock · Sarab</title>
 <meta name="description" content="Optional sister tools after Rattib: QuoteForge and ScopeLock. Soft offers — Rattib works alone. No pressure upsell.">
 <meta property="og:title" content="Optional next tools — QuoteForge & ScopeLock · Sarab">
@@ -161,6 +161,19 @@
   .btn:focus-visible {
     outline: 3px solid var(--oasis);
     outline-offset: 3px;
+  }
+  a:focus-visible {
+    outline: 2px solid var(--oasis);
+    outline-offset: 3px;
+  }
+  .reassure a.plain:focus-visible {
+    outline: 2px solid var(--oasis);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+    .btn:hover { transform: none; box-shadow: none; }
   }
   .btn-outline {
     background: transparent;
@@ -321,7 +334,7 @@
 <footer>
   <div class="wrap">
     <div class="mark">
-      <img src="logo-mark.png" width="24" height="24" alt="Sarab">
+      <img src="logo-mark.png" width="24" height="24" alt="">
       <strong style="color:var(--night)">Sarab</strong>
     </div>
     From mirage to water · Sarab
