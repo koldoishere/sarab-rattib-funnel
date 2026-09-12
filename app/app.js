@@ -317,6 +317,7 @@ function renderPricing() {
       <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(row.notes)}"></td>
       <td class="row-actions" data-label="إجراءات">
         <button type="button" class="ghost tiny" data-use="${i}" title="ضع السعر والمشروع في عرض السعر">انقل للعرض</button>
+        <button type="button" class="ghost tiny" data-copy-row="${i}" title="نسخ صف التسعير كنص عربي">نسخ نص</button>
         <button type="button" class="ghost tiny" data-dup="${i}" title="نسخ الصف تحتها">نسخ</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
@@ -356,6 +357,9 @@ function renderPricing() {
         },
       });
     };
+  });
+  tbody.querySelectorAll("[data-copy-row]").forEach((btn) => {
+    btn.onclick = () => { copyPricingRow(+btn.dataset.copyRow); };
   });
   tbody.querySelectorAll("[data-dup]").forEach((btn) => {
     btn.onclick = () => duplicatePricingRow(+btn.dataset.dup);
@@ -1294,6 +1298,33 @@ function pricingPlainText() {
     if (notes) lines.push(`  ملاحظات: ${notes}`);
   });
   return lines.join("\n");
+}
+
+function pricingRowPlainText(row, i = 0) {
+  const c = pricingCalcs(row);
+  const type = String(row.type || "").trim() || `صف ${i + 1}`;
+  const lines = [
+    "صف تسعير — رتّب",
+    `سعر الصرف: ${state.fx} ج.م لكل $1 · مقدم ${depositPct()}%`,
+    "",
+  ];
+  if (c.empty) {
+    lines.push(`☐ ${type} — ناقص ساعات/سعر ساعة`);
+  } else {
+    lines.push(`• ${type}: ${row.hours}س × ${money(row.rate)} + تكاليف ${money(row.costs)} (هامش ${row.margin}%) → ${money(c.price)} ج.م / ${money(c.usd)} USD`);
+    lines.push(`  مقدم ${money(c.dep)} · متبقي ${money(c.bal)}`);
+  }
+  const notes = String(row.notes || "").trim();
+  if (notes) lines.push(`  ملاحظات: ${notes}`);
+  return lines.join("\n");
+}
+
+async function copyPricingRow(i) {
+  if (i < 0 || i >= state.pricing.length) return;
+  const row = state.pricing[i];
+  await copyTextToClipboard(pricingRowPlainText(row, i));
+  const type = String(row.type || "").trim();
+  showToast(type ? `اتنسخ «${type}»` : "اتنسخ صف التسعير");
 }
 
 async function copyPricingSummary() {
