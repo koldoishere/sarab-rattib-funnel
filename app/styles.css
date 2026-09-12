@@ -333,3 +333,24 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   line-height: 1.2;
   min-height: 0;
 }
+
+.week-done-cell { vertical-align: middle; }
+.done-toggle {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  padding: .4rem .7rem; border-radius: 999px; cursor: pointer; font: inherit;
+}
+.done-toggle:hover { border-color: var(--accent, #6ee7a8); color: var(--text, #e8f5ee); }
+.done-toggle.on {
+  background: color-mix(in srgb, var(--accent, #6ee7a8) 18%, transparent);
+  border-color: var(--accent, #6ee7a8); color: var(--accent, #6ee7a8);
+}
+.done-toggle:focus-visible { outline: 2px solid var(--accent, #6ee7a8); outline-offset: 2px; }
+.done-toggle-label { font-size: .88rem; }
+tr.week-done td[data-label="المهام"] input,
+tr.week-done td[data-label="التسليمات"] input {
+  text-decoration: line-through; opacity: .78;
+}
+@media (max-width: 700px) {
+  .done-toggle { width: 100%; justify-content: center; padding: .55rem .75rem; }
+}

@@ -772,6 +772,15 @@ function resetWeek() {
   showToast(carry ? "اترحّلت المهام الناقصة" : "أسبوع جديد جاهز");
 }
 
+function toggleWeekDone(i) {
+  const w = state.week[i];
+  if (!w) return;
+  w.done = w.done === "☑" ? "☐" : "☑";
+  save();
+  renderWeek();
+  showToast(w.done === "☑" ? `«${w.day}» بقت مكتملة` : `«${w.day}» رجعت مش مكتملة`);
+}
+
 function renderWeek() {
   const tbody = document.querySelector("#week-table tbody");
   tbody.innerHTML = "";
@@ -779,25 +788,35 @@ function renderWeek() {
   state.week.forEach((w, i) => {
     const tr = document.createElement("tr");
     if (w.day === todayName) tr.classList.add("today");
+    if (w.done === "☑") tr.classList.add("week-done");
     const dayLabel = w.day === todayName ? `${esc(w.day)} <span class="today-pill">اليوم</span>` : esc(w.day);
+    const doneOn = w.done === "☑";
     tr.innerHTML = `
       <td data-label="اليوم">${dayLabel}</td>
       <td data-label="المهام"><input data-i="${i}" data-k="tasks" value="${esc(w.tasks)}"></td>
       <td class="num" data-label="ساعات التركيز"><input data-i="${i}" data-k="hours" type="number" step="0.5" value="${w.hours}"></td>
       <td data-label="التسليمات"><input data-i="${i}" data-k="deliverables" value="${esc(w.deliverables)}"></td>
-      <td data-label="تم؟"><select data-i="${i}" data-k="done"><option ${w.done==="☐"?"selected":""}>☐</option><option ${w.done==="☑"?"selected":""}>☑</option></select></td>`;
+      <td data-label="تم؟" class="week-done-cell">
+        <button type="button" class="done-toggle${doneOn ? " on" : ""}" data-done-toggle="${i}" aria-pressed="${doneOn ? "true" : "false"}" title="${doneOn ? "إلغاء اكتمال اليوم" : "تعليم اليوم كمكتمل"}">
+          <span aria-hidden="true">${doneOn ? "☑" : "☐"}</span>
+          <span class="done-toggle-label">${doneOn ? "تم" : "مش بعد"}</span>
+        </button>
+      </td>`;
     tbody.appendChild(tr);
   });
   paintWeekProgress();
-  tbody.querySelectorAll("input,select").forEach((el) => {
+  tbody.querySelectorAll("input").forEach((el) => {
     const handler = () => {
       const i = +el.dataset.i; const k = el.dataset.k;
       state.week[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
-      if (k === "hours" || k === "done") paintWeekProgress();
+      if (k === "hours") paintWeekProgress();
     };
     el.addEventListener("change", handler);
     el.addEventListener("input", handler);
+  });
+  tbody.querySelectorAll("[data-done-toggle]").forEach((btn) => {
+    btn.onclick = () => toggleWeekDone(+btn.dataset.doneToggle);
   });
 }
 
