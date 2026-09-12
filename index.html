@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap">
 <style>
   :root {
+    color-scheme: light;
     --night: #050706;
     --oasis: #20E070;
     --sand: #F5F8F6;
@@ -69,12 +70,17 @@
     gap: 0.35rem;
   }
   .sticky-cta .link-quiet {
-    color: rgba(245, 248, 246, 0.72);
-    font-size: 0.78rem;
-    font-weight: 500;
+    color: #c5d2cb;
+    font-size: 0.82rem;
+    font-weight: 600;
     text-align: center;
     text-decoration: underline;
     text-underline-offset: 2px;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
   }
   .sticky-cta .link-quiet:hover { color: var(--oasis); }
   .sticky-cta .link-quiet:focus-visible {
@@ -751,7 +757,9 @@
   var img = document.getElementById("lb-img");
   var closeBtn = document.getElementById("lb-close");
   if (!lb || !img || !closeBtn) return;
-  function openLb(src, alt) {
+  var lastFocus = null;
+  function openLb(src, alt, opener) {
+    lastFocus = opener || document.activeElement;
     img.src = src;
     img.alt = alt || "";
     lb.hidden = false;
@@ -764,12 +772,16 @@
     lb.hidden = true;
     img.removeAttribute("src");
     document.body.classList.remove("lb-open");
+    if (lastFocus && typeof lastFocus.focus === "function") {
+      try { lastFocus.focus(); } catch (e) {}
+    }
+    lastFocus = null;
   }
   document.querySelectorAll("button.preview-zoom").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var i = btn.querySelector("img");
       if (!i) return;
-      openLb(i.currentSrc || i.src, i.alt);
+      openLb(i.currentSrc || i.src, i.alt, btn);
     });
   });
   closeBtn.addEventListener("click", closeLb);
