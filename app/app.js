@@ -338,13 +338,23 @@ function renderPricing() {
       const row = state.pricing[+btn.dataset.use];
       const c = pricingCalcs(row);
       if (c.empty) { alert("املأ الساعات وسعر الساعة أولاً"); return; }
+      const previous = JSON.parse(JSON.stringify(state.proposal));
       state.proposal.project = row.type || state.proposal.project;
       state.proposal.price = Math.round(c.price);
       if (row.notes) state.proposal.summary = row.notes;
       save();
       goTab("proposal");
       renderProposal();
-      showToast("اتنقل لعرض السعر بالسعر المحسوب");
+      showToast("اتنقل لعرض السعر بالسعر المحسوب", {
+        actionLabel: "تراجع",
+        ms: 6000,
+        onAction: () => {
+          state.proposal = previous;
+          save();
+          renderProposal();
+          showToast("رجع عرض السعر زي ما كان");
+        },
+      });
     };
   });
   tbody.querySelectorAll("[data-dup]").forEach((btn) => {
@@ -363,6 +373,7 @@ function fillProposalFromPricing() {
     alert("املأ صف تسعير واحد على الأقل (ساعات وسعر الساعة) أولاً");
     return;
   }
+  const previous = JSON.parse(JSON.stringify(state.proposal));
   const price = Math.round(t.price);
   state.proposal.price = price;
   const types = state.pricing
@@ -374,7 +385,16 @@ function fillProposalFromPricing() {
   save();
   goTab("proposal");
   renderProposal();
-  showToast(`اتنقل إجمالي التسعير: ${money(price)} ج.م`);
+  showToast(`اتنقل إجمالي التسعير: ${money(price)} ج.م`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      state.proposal = previous;
+      save();
+      renderProposal();
+      showToast("رجع عرض السعر زي ما كان");
+    },
+  });
 }
 
 function proposalPlainText() {
