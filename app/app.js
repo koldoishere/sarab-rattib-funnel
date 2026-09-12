@@ -832,14 +832,27 @@ function paintCrmPipeline(visible) {
   if (!el) return;
   if (!visible.length) {
     el.hidden = true;
-    el.textContent = "";
+    el.replaceChildren();
     return;
   }
   const sum = visible.reduce((acc, { c }) => acc + n(c.value), 0);
-  const todayN = state.clients.filter(clientIsDueToday).length;
-  const parts = [`الظاهر: ${visible.length} · قيمة ${money(sum)} ج.م`];
-  if (crmFilter !== "today" && todayN > 0) parts.push(`${todayN} متابعة النهاردة`);
-  el.textContent = parts.join(" · ");
+  // Respect current search, same as chip counts.
+  const todayN = crmFilterCount("today");
+  el.replaceChildren();
+  el.append(document.createTextNode(`الظاهر: ${visible.length} · قيمة ${money(sum)} ج.م`));
+  if (crmFilter !== "today" && todayN > 0) {
+    el.append(document.createTextNode(" · "));
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "pipeline-jump";
+    btn.textContent = `${todayN} متابعة النهاردة`;
+    btn.title = "عرض متابعات النهاردة";
+    btn.onclick = () => {
+      setCrmFilter("today");
+      showToast("تصفية متابعات النهاردة");
+    };
+    el.appendChild(btn);
+  }
   el.hidden = false;
 }
 

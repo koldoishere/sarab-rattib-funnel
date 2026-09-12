@@ -436,3 +436,23 @@ tr.week-done td[data-label="التسليمات"] input {
     width: 100%;
   }
 }
+
+/* Clickable CRM pipeline jump (parity with overdue tab badge) */
+.pipeline-jump {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: var(--accent, #6ee7a8);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.pipeline-jump:hover { filter: brightness(1.08); }
+.pipeline-jump:focus-visible {
+  outline: 2px solid var(--accent, #6ee7a8);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
