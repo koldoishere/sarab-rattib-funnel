@@ -548,6 +548,19 @@ function markContacted(i) {
   showToast("اتسجّل تواصل — المتابعة بعد 3 أيام");
 }
 
+function snoozeClient(i, days) {
+  const c = state.clients[i];
+  if (!c) return;
+  const d = Math.max(1, Math.min(30, Number(days) || 3));
+  const today = localISODate();
+  // From today if overdue/empty; otherwise push from the scheduled next date
+  const base = c.next && c.next >= today ? c.next : today;
+  c.next = addDaysISO(base, d);
+  save();
+  renderCrm();
+  showToast(d === 7 ? "اتأجلت المتابعة أسبوع" : `اتأجلت المتابعة ${d} أيام`);
+}
+
 function renderCrm() {
   const tbody = document.querySelector("#crm-table tbody");
   tbody.innerHTML = "";
@@ -584,6 +597,10 @@ function renderCrm() {
         <input data-i="${i}" data-k="next" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(c.next)}">
         ${c.next && formatArDate(c.next) ? `<div class="date-hint">${formatArDate(c.next)}</div>` : ""}
         ${hint ? `<div class="date-hint${overdue ? " late" : ""}">${hint}</div>` : ""}
+        <div class="snooze-row" role="group" aria-label="تأجيل المتابعة">
+          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="3" title="تأجيل 3 أيام">+3</button>
+          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="7" title="تأجيل أسبوع">+7</button>
+        </div>
       </td>
       <td class="num" data-label="القيمة"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
       <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>
@@ -621,6 +638,9 @@ function renderCrm() {
   });
   tbody.querySelectorAll("[data-wa]").forEach((btn) => {
     btn.onclick = () => openClientWhatsApp(+btn.dataset.wa);
+  });
+  tbody.querySelectorAll("[data-snooze]").forEach((btn) => {
+    btn.onclick = () => snoozeClient(+btn.dataset.snooze, +btn.dataset.days);
   });
 }
 
