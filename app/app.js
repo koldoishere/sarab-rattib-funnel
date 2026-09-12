@@ -1173,7 +1173,20 @@ function wire() {
   };
   document.getElementById("btn-reset").onclick = () => {
     if (!confirm("مسح كل البيانات والرجوع للأمثلة؟")) return;
-    state = seed(); save(); renderAll();
+    const previous = JSON.parse(JSON.stringify(state));
+    state = seed();
+    save();
+    renderAll();
+    showToast("اتمسحت البيانات — رجعت للأمثلة", {
+      actionLabel: "تراجع",
+      ms: 6000,
+      onAction: () => {
+        state = previous;
+        save();
+        renderAll();
+        showToast("رجعت بياناتك");
+      },
+    });
   };
   renderAll();
 }
