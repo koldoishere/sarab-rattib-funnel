@@ -468,7 +468,18 @@ function duplicatePricingRow(i) {
   const label = (copy.type && String(copy.type).trim())
     ? `اتنسخ صف «${copy.type}»`
     : "اتنسخ صف التسعير";
-  showToast(label);
+  showToast(label, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      const removeAt = state.pricing.indexOf(copy);
+      if (removeAt < 0) return;
+      state.pricing.splice(removeAt, 1);
+      save();
+      renderPricing();
+      showToast("اتلغت النسخة");
+    },
+  });
 }
 
 function deletePricingRow(i) {
