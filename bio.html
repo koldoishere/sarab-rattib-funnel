@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Rattib · by Sarab</title>
-<meta name="description" content="Rattib by Sarab — pricing, proposals, light CRM, weekly board. One clear next step: Get Rattib for $12 on Whop. Instant download. No income promises.">
+<meta name="description" content="Rattib by Sarab — one clear next step: Get Rattib for $12 on Whop. Pricing (50% deposit), proposals, light CRM, weekly board. Instant download. No income promises.">
 <meta property="og:title" content="Rattib · by Sarab">
 <meta property="og:description" content="Freelancer ops pack: pricing · proposals · light CRM · weekly board. $12 one-time on Whop. No income promises.">
 <meta property="og:type" content="website">
@@ -20,12 +20,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap">
 <style>
   :root {
+    color-scheme: dark;
     --night: #050706;
     --oasis: #20E070;
     --sand: #F5F8F6;
     --muted: #8a9a90;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  a { -webkit-tap-highlight-color: transparent; }
   body {
     font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
     background: var(--night);
@@ -149,12 +151,15 @@
     margin-top: 0.15rem;
   }
   .next-step {
-    color: var(--sand);
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     margin-bottom: 0.65rem;
-    opacity: 0.92;
+  }
+  .cta-block .btn {
+    box-shadow: 0 0 0 1px rgba(32, 224, 112, 0.25);
   }
   .chips span {
     border: 1px solid rgba(32, 224, 112, 0.35);
@@ -175,17 +180,18 @@
   <div class="wordmark">Sarab</div>
   <h1>Rattib</h1>
   <p class="tag">Freelancer ops, without the chaos</p>
-  <p class="blurb">For freelancers who still price and follow up from chat notes — especially Arabic / MENA indie work. Pricing auto-splits 50% deposit and balance on delivery. No income promises.</p>
+  <p class="blurb">For freelancers still pricing and following up from chat notes — especially Arabic / MENA indie work. One pack: rates with 50% deposit + balance, proposals, light CRM, weekly board. No income promises.</p>
   <div class="chips" aria-label="What’s inside">
     <span>Pricing</span><span>50% deposit</span><span>Proposals</span><span>Light CRM</span><span>Weekly board</span>
   </div>
-  <div class="cta-block">
+  <div class="cta-block" role="region" aria-label="Primary next action">
     <p class="next-step">One clear next step</p>
-    <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" rel="noopener noreferrer">Get Rattib — $12</a>
-    <a class="link-quiet" href="app/">جرّب الـweb app مجاناً</a>
+    <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib — $12</a>
+    <a class="link-quiet" href="app/" lang="ar" dir="rtl">جرّب الـweb app مجاناً</a>
   </div>
   <p class="price">One-time on Whop · <strong>instant download</strong> · no subscription · Excel / CSV / Notion</p>
   <p class="price" style="margin-top:0.35rem">Built by a freelancer for freelancers · English storefront · Arabic READMEs inside</p>
+  <p class="price" style="margin-top:0.55rem"><a class="link-quiet" href="index.html" style="margin-top:0">Full landing</a></p>
 </div>
 
 <footer>From mirage to water</footer>
