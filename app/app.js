@@ -1303,6 +1303,51 @@ async function copyWeekSummary() {
   showToast("اتنسخ ملخص الأسبوع");
 }
 
+
+function todayWeekRow() {
+  const todayName = DAYS[cairoDayOfWeek()];
+  const i = state.week.findIndex((w) => w.day === todayName);
+  if (i < 0) return null;
+  return { w: state.week[i], i, day: todayName };
+}
+
+function todayWeekPlainText() {
+  const row = todayWeekRow();
+  if (!row) return "";
+  const { w, day } = row;
+  const mark = w.done === "☑" ? "☑" : "☐";
+  const lines = [
+    `يوم الشغل — رتّب · ${day} (اليوم)`,
+    `${mark} ${day}`,
+  ];
+  if (String(w.tasks || "").trim()) lines.push(`  المهام: ${w.tasks}`);
+  if (n(w.hours)) lines.push(`  الساعات: ${w.hours}`);
+  const del = String(w.deliverables || "").trim();
+  if (del && del !== "—") lines.push(`  التسليمات: ${w.deliverables}`);
+  return lines.join("\n");
+}
+
+function todayWeekHasContent() {
+  const row = todayWeekRow();
+  if (!row) return false;
+  const { w } = row;
+  if (String(w.tasks || "").trim()) return true;
+  if (n(w.hours)) return true;
+  const del = String(w.deliverables || "").trim();
+  return !!(del && del !== "—");
+}
+
+async function copyTodayWeek() {
+  if (!todayWeekHasContent()) {
+    showToast("مفيش محتوى لليوم ده للنسخ — حط مهام أو ساعات أولاً");
+    return;
+  }
+  await copyTextToClipboard(todayWeekPlainText());
+  const row = todayWeekRow();
+  showToast(`اتنسخ يوم «${row ? row.day : "اليوم"}»`);
+}
+
+
 function weekHasCarryTasks() {
   return state.week.some((w) => w.done !== "☑" && String(w.tasks || "").trim());
 }
@@ -1548,6 +1593,8 @@ function wire() {
   bindTabs();
   const newWeekBtn = document.getElementById("btn-new-week");
   if (newWeekBtn) newWeekBtn.onclick = () => { resetWeek(); };
+  const copyTodayBtn = document.getElementById("btn-copy-today");
+  if (copyTodayBtn) copyTodayBtn.onclick = () => { copyTodayWeek(); };
   const copyWeekBtn = document.getElementById("btn-copy-week");
   if (copyWeekBtn) copyWeekBtn.onclick = () => { copyWeekSummary(); };
   const copyCrmBtn = document.getElementById("btn-copy-crm");
