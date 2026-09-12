@@ -703,6 +703,49 @@ function weekTotal() {
   return state.week.reduce((sum, w) => sum + n(w.hours), 0);
 }
 
+function weekDoneCount() {
+  return state.week.filter((w) => w.done === "☑").length;
+}
+
+function paintWeekProgress() {
+  const doneEl = document.getElementById("week-done");
+  const totEl = document.getElementById("week-total");
+  if (doneEl) doneEl.textContent = String(weekDoneCount());
+  if (totEl) totEl.textContent = String(weekTotal());
+}
+
+function weekPlainText() {
+  const lines = [
+    "ملخص أسبوع الشغل — رتّب",
+    `تم ${weekDoneCount()} من 7 · ساعات التركيز: ${weekTotal()}`,
+    "",
+  ];
+  state.week.forEach((w) => {
+    const mark = w.done === "☑" ? "☑" : "☐";
+    lines.push(`${mark} ${w.day}`);
+    if (String(w.tasks || "").trim()) lines.push(`  المهام: ${w.tasks}`);
+    if (n(w.hours)) lines.push(`  الساعات: ${w.hours}`);
+    const del = String(w.deliverables || "").trim();
+    if (del && del !== "—") lines.push(`  التسليمات: ${w.deliverables}`);
+  });
+  return lines.join("\n");
+}
+
+async function copyWeekSummary() {
+  const text = weekPlainText();
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+  showToast("اتنسخ ملخص الأسبوع");
+}
+
 function resetWeek() {
   if (!confirm("أسبوع جديد؟ هنتصفّر المهام والساعات والتسليمات وعلامات «تم».")) return;
   state.week = state.week.map((w) => ({
@@ -733,13 +776,13 @@ function renderWeek() {
       <td data-label="تم؟"><select data-i="${i}" data-k="done"><option ${w.done==="☐"?"selected":""}>☐</option><option ${w.done==="☑"?"selected":""}>☑</option></select></td>`;
     tbody.appendChild(tr);
   });
-  document.getElementById("week-total").textContent = weekTotal();
+  paintWeekProgress();
   tbody.querySelectorAll("input,select").forEach((el) => {
     const handler = () => {
       const i = +el.dataset.i; const k = el.dataset.k;
       state.week[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
-      if (k === "hours") document.getElementById("week-total").textContent = weekTotal();
+      if (k === "hours" || k === "done") paintWeekProgress();
     };
     el.addEventListener("change", handler);
     el.addEventListener("input", handler);
@@ -882,6 +925,8 @@ function wire() {
   bindTabs();
   const newWeekBtn = document.getElementById("btn-new-week");
   if (newWeekBtn) newWeekBtn.onclick = () => { resetWeek(); };
+  const copyWeekBtn = document.getElementById("btn-copy-week");
+  if (copyWeekBtn) copyWeekBtn.onclick = () => { copyWeekSummary(); };
   document.getElementById("add-pricing").onclick = () => {
     state.pricing.push({ type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" });
     save(); renderPricing();

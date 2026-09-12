@@ -125,9 +125,12 @@
       <div class="panel-head">
         <div>
           <h1>أسبوع الشغل</h1>
-          <p class="muted">مجموع ساعات التركيز: <strong id="week-total">0</strong></p>
+          <p class="muted">تم <strong id="week-done">0</strong> من 7 · ساعات التركيز: <strong id="week-total">0</strong></p>
         </div>
-        <button type="button" id="btn-new-week" class="ghost">أسبوع جديد</button>
+        <div class="panel-actions">
+          <button type="button" id="btn-copy-week" class="ghost">نسخ الملخص</button>
+          <button type="button" id="btn-new-week" class="ghost">أسبوع جديد</button>
+        </div>
       </div>
       <div class="table-wrap">
         <table id="week-table">
