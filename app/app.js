@@ -1477,6 +1477,43 @@ function resetWeek() {
   });
 }
 
+function clearWeekDay(i) {
+  const w = state.week[i];
+  if (!w) return;
+  const hasContent = weekDayHasContent(i);
+  const doneOn = w.done === "☑";
+  if (!hasContent && !doneOn) {
+    showToast(`«${w.day}» فاضي أصلاً`);
+    return;
+  }
+  const prev = {
+    tasks: w.tasks,
+    hours: w.hours,
+    deliverables: w.deliverables,
+    done: w.done,
+  };
+  w.tasks = "";
+  w.hours = 0;
+  w.deliverables = "";
+  w.done = "☐";
+  save();
+  renderWeek();
+  showToast(`اتمسح يوم «${w.day}»`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      if (state.week.indexOf(w) < 0) return;
+      w.tasks = prev.tasks;
+      w.hours = prev.hours;
+      w.deliverables = prev.deliverables;
+      w.done = prev.done;
+      save();
+      renderWeek();
+      showToast(`رجع يوم «${w.day}»`);
+    },
+  });
+}
+
 function toggleWeekDone(i) {
   const w = state.week[i];
   if (!w) return;
@@ -1525,6 +1562,7 @@ function renderWeek() {
       </td>
       <td class="row-actions week-row-actions" data-label="إجراءات">
         <button type="button" class="ghost tiny" data-copy-day="${i}" title="نسخ بطاقة اليوم كنص عربي">نسخ نص</button>
+        <button type="button" class="ghost tiny" data-clear-day="${i}" title="مسح مهام وساعات وتسليمات اليوم">مسح</button>
       </td>`;
     tbody.appendChild(tr);
   });
@@ -1544,6 +1582,9 @@ function renderWeek() {
   });
   tbody.querySelectorAll("[data-copy-day]").forEach((btn) => {
     btn.onclick = () => copyWeekDay(+btn.dataset.copyDay);
+  });
+  tbody.querySelectorAll("[data-clear-day]").forEach((btn) => {
+    btn.onclick = () => clearWeekDay(+btn.dataset.clearDay);
   });
   const todayRow = tbody.querySelector("tr.today");
   if (todayRow) {
