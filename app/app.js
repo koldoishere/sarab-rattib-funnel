@@ -1169,10 +1169,20 @@ function wire() {
         e.target.value = "";
         return;
       }
+      const previous = JSON.parse(JSON.stringify(state));
       state = next;
       save();
       renderAll();
-      showToast("تم استيراد البيانات بأمان");
+      showToast("تم استيراد البيانات بأمان", {
+        actionLabel: "تراجع",
+        ms: 6000,
+        onAction: () => {
+          state = previous;
+          save();
+          renderAll();
+          showToast("رجعت البيانات قبل الاستيراد");
+        },
+      });
     } catch (err) {
       alert(err?.message || "ملف غير صالح");
     }
