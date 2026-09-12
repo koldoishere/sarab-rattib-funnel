@@ -493,6 +493,44 @@ function deletePricingRow(i) {
   });
 }
 
+function duplicateClient(i) {
+  if (i < 0 || i >= state.clients.length) return;
+  const src = state.clients[i];
+  const copy = {
+    name: src.name ?? "",
+    contact: src.contact ?? "",
+    source: src.source ?? "",
+    status: ["lead", "proposal", "won", "lost"].includes(src.status) ? src.status : "lead",
+    last: src.last ?? "",
+    next: src.next ?? "",
+    value: n(src.value),
+    notes: src.notes ?? "",
+  };
+  // Fresh follow-up window for the clone (keep status/value/notes/contact).
+  if (["lead", "proposal"].includes(copy.status) && !copy.next) {
+    copy.next = isoDay(3);
+  }
+  const at = i + 1;
+  state.clients.splice(at, 0, copy);
+  save();
+  renderCrm();
+  const label = (copy.name && String(copy.name).trim())
+    ? `اتنسخ «${copy.name}»`
+    : "اتنسخ العميل";
+  showToast(label, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      const removeAt = state.clients.indexOf(copy);
+      if (removeAt < 0) return;
+      state.clients.splice(removeAt, 1);
+      save();
+      renderCrm();
+      showToast("اتلغت النسخة");
+    },
+  });
+}
+
 function deleteClient(i) {
   if (!confirm("حذف العميل ده من المتابعة؟")) return;
   if (i < 0 || i >= state.clients.length) return;
@@ -969,6 +1007,7 @@ function renderCrm() {
       <td class="row-actions" data-label="إجراءات">
         ${whatsappPhone(c.contact) ? `<button type="button" class="ghost tiny" data-wa="${i}" title="فتح واتساب">واتساب</button>` : ""}
         <button type="button" class="ghost tiny" data-touch="${i}">تواصلت</button>
+        <button type="button" class="ghost tiny" data-dup="${i}" title="نسخ العميل تحتها">نسخ</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
     tbody.appendChild(tr);
@@ -999,6 +1038,9 @@ function renderCrm() {
   });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
     btn.onclick = () => deleteClient(+btn.dataset.del);
+  });
+  tbody.querySelectorAll("[data-dup]").forEach((btn) => {
+    btn.onclick = () => duplicateClient(+btn.dataset.dup);
   });
   tbody.querySelectorAll("[data-touch]").forEach((btn) => {
     btn.onclick = () => markContacted(+btn.dataset.touch);
