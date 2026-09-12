@@ -586,6 +586,18 @@ function whatsappPhone(raw) {
   return digits;
 }
 
+function clientFollowUpText(c) {
+  const name = String(c.name || "").trim() || "أستاذنا";
+  const note = String(c.notes || "").trim().slice(0, 80);
+  const lines = [`السلام عليكم ${name}،`];
+  if (clientIsOverdue(c)) lines.push("متابعة سريعة بخصوص كلامنا الأخير.");
+  else if (clientIsDueToday(c)) lines.push("متابعة زي ما اتفقنا النهاردة.");
+  else lines.push("حابب أطمن على الموضوع.");
+  if (note) lines.push(`بخصوص: ${note}`);
+  lines.push("لو مناسب نكمّل؟");
+  return lines.join("\n");
+}
+
 function openClientWhatsApp(i) {
   const c = state.clients[i];
   if (!c) return;
@@ -594,8 +606,12 @@ function openClientWhatsApp(i) {
     showToast("حط رقم واتساب في خانة التواصل أولاً");
     return;
   }
-  window.open("https://wa.me/" + phone, "_blank", "noopener,noreferrer");
-  showToast("اتفتح واتساب — راجع قبل الإرسال");
+  // Prefill a short Arabic follow-up; keep URL short so wa.me does not break.
+  const text = clientFollowUpText(c);
+  let url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(text);
+  if (url.length > 1800) url = "https://wa.me/" + phone;
+  window.open(url, "_blank", "noopener,noreferrer");
+  showToast("اتفتح واتساب بمسودة متابعة — راجع قبل الإرسال");
 }
 
 function markContacted(i) {
