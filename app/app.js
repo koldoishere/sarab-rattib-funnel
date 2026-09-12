@@ -983,32 +983,47 @@ function setClientNextToday(i) {
   });
 }
 
+function appendPipelineJump(el, filterId, count, label, title, toastMsg) {
+  if (!count || crmFilter === filterId) return;
+  el.append(document.createTextNode(" · "));
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "pipeline-jump";
+  btn.textContent = label;
+  btn.title = title;
+  btn.onclick = () => {
+    setCrmFilter(filterId);
+    showToast(toastMsg);
+  };
+  el.appendChild(btn);
+}
+
 function paintCrmPipeline(visible) {
   const el = document.getElementById("crm-pipeline");
   if (!el) return;
+  const overdueN = crmFilterCount("overdue");
+  const todayN = crmFilterCount("today");
+  // Keep jumps reachable even when the current filter/search is empty.
   if (!visible.length) {
-    el.hidden = true;
+    if (!overdueN && !todayN) {
+      el.hidden = true;
+      el.replaceChildren();
+      return;
+    }
     el.replaceChildren();
+    el.append(document.createTextNode("مفيش ظاهر في التصفية دي"));
+    appendPipelineJump(el, "overdue", overdueN, `${overdueN} متأخر`, "عرض المتابعات المتأخرة", "تصفية المتابعات المتأخرة");
+    appendPipelineJump(el, "today", todayN, `${todayN} متابعة النهاردة`, "عرض متابعات النهاردة", "تصفية متابعات النهاردة");
+    el.hidden = false;
     return;
   }
   const sum = visible.reduce((acc, { c }) => acc + n(c.value), 0);
   // Respect current search, same as chip counts.
-  const todayN = crmFilterCount("today");
   el.replaceChildren();
   el.append(document.createTextNode(`الظاهر: ${visible.length} · قيمة ${money(sum)} ج.م`));
-  if (crmFilter !== "today" && todayN > 0) {
-    el.append(document.createTextNode(" · "));
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "pipeline-jump";
-    btn.textContent = `${todayN} متابعة النهاردة`;
-    btn.title = "عرض متابعات النهاردة";
-    btn.onclick = () => {
-      setCrmFilter("today");
-      showToast("تصفية متابعات النهاردة");
-    };
-    el.appendChild(btn);
-  }
+  // Overdue first (more urgent), then today — parity jumps.
+  appendPipelineJump(el, "overdue", overdueN, `${overdueN} متأخر`, "عرض المتابعات المتأخرة", "تصفية المتابعات المتأخرة");
+  appendPipelineJump(el, "today", todayN, `${todayN} متابعة النهاردة`, "عرض متابعات النهاردة", "تصفية متابعات النهاردة");
   el.hidden = false;
 }
 
