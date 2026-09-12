@@ -119,6 +119,13 @@ function activateTab(name) {
   if (panel) panel.classList.add("active");
 }
 
+/** Programmatic navigation — keep rattib-ui-v1 in sync with tab clicks. */
+function goTab(name) {
+  if (!TAB_IDS.includes(name)) return;
+  activateTab(name);
+  saveUi({ tab: name });
+}
+
 function paintCrmFilterChips() {
   const filters = document.getElementById("crm-filters");
   if (!filters) return;
@@ -130,9 +137,7 @@ function paintCrmFilterChips() {
 function bindTabs() {
   document.querySelectorAll(".tab").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const tab = btn.dataset.tab;
-      activateTab(tab);
-      saveUi({ tab });
+      goTab(btn.dataset.tab);
     });
   });
   const saved = loadUi().tab;
@@ -254,8 +259,7 @@ function renderPricing() {
       state.proposal.price = Math.round(c.price);
       if (row.notes) state.proposal.summary = row.notes;
       save();
-      document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === "proposal"));
-      document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-proposal"));
+      goTab("proposal");
       renderProposal();
       showToast("اتنقل لعرض السعر بالسعر المحسوب");
     };
@@ -285,8 +289,7 @@ function fillProposalFromPricing() {
     state.proposal.project = types.slice(0, 3).join(" + ");
   }
   save();
-  document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === "proposal"));
-  document.querySelectorAll(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === "panel-proposal"));
+  goTab("proposal");
   renderProposal();
   showToast(`اتنقل إجمالي التسعير: ${money(price)} ج.م`);
 }
@@ -613,6 +616,21 @@ function sortedClientIndexes() {
     });
 }
 
+
+function revealClientInCrm(i) {
+  const c = state.clients[i];
+  if (!c) {
+    goTab("crm");
+    return;
+  }
+  if (!clientMatchesFilter(c)) {
+    crmFilter = "all";
+    saveUi({ crmFilter });
+    paintCrmFilterChips();
+  }
+  goTab("crm");
+}
+
 function addProposalToCrm() {
   const p = state.proposal || {};
   const name = String(p.client || "").trim();
@@ -638,9 +656,8 @@ function addProposalToCrm() {
     c.last = localISODate();
     c.next = addDaysISO(c.last, 3);
     save();
+    revealClientInCrm(idx);
     renderCrm();
-    document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === "crm"));
-    document.querySelectorAll(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === "panel-crm"));
     showToast("اتحدّث العميل في المتابعة");
     return;
   }
@@ -655,9 +672,8 @@ function addProposalToCrm() {
     notes,
   });
   save();
+  revealClientInCrm(state.clients.length - 1);
   renderCrm();
-  document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === "crm"));
-  document.querySelectorAll(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === "panel-crm"));
   showToast("اتضاف للعملاء — متابعة بعد 3 أيام");
 }
 
@@ -1193,8 +1209,12 @@ function wire() {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "rattib-data.json";
+    const stamp = localISODate();
+    const filename = `rattib-${stamp}.json`;
+    a.download = filename;
     a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    showToast(`اتصدر ${filename}`);
   };
   document.getElementById("btn-import").onclick = () => document.getElementById("import-file").click();
   document.getElementById("import-file").onchange = async (e) => {
