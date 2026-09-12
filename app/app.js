@@ -1242,10 +1242,21 @@ function resetWeek() {
 function toggleWeekDone(i) {
   const w = state.week[i];
   if (!w) return;
+  const prevDone = w.done;
   w.done = w.done === "☑" ? "☐" : "☑";
   save();
   renderWeek();
-  showToast(w.done === "☑" ? `«${w.day}» بقت مكتملة` : `«${w.day}» رجعت مش مكتملة`);
+  showToast(w.done === "☑" ? `«${w.day}» بقت مكتملة` : `«${w.day}» رجعت مش مكتملة`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      if (state.week.indexOf(w) < 0) return;
+      w.done = prevDone;
+      save();
+      renderWeek();
+      showToast(`اتلغى تغيير «${w.day}»`);
+    },
+  });
 }
 
 function renderWeek() {
