@@ -507,6 +507,36 @@ function addProposalToCrm() {
   showToast("اتضاف للعملاء — متابعة بعد 3 أيام");
 }
 
+
+function whatsappPhone(raw) {
+  const s = String(raw || "").trim();
+  if (!s || s.includes("@")) return null;
+  const wa = s.match(/(?:https?:\/\/)?(?:wa\.me\/|api\.whatsapp\.com\/send\?phone=)(\+?\d{8,15})/i);
+  if (wa) {
+    const d = wa[1].replace(/\D/g, "");
+    return d.length >= 8 && d.length <= 15 ? d : null;
+  }
+  let digits = s.replace(/[^\d+]/g, "");
+  if (digits.startsWith("+")) digits = digits.slice(1);
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  // Egyptian local mobile 01x… → 201x…
+  if (/^01[0125]\d{8}$/.test(digits)) digits = "20" + digits.slice(1);
+  if (!/^\d{10,15}$/.test(digits)) return null;
+  return digits;
+}
+
+function openClientWhatsApp(i) {
+  const c = state.clients[i];
+  if (!c) return;
+  const phone = whatsappPhone(c.contact);
+  if (!phone) {
+    showToast("حط رقم واتساب في خانة التواصل أولاً");
+    return;
+  }
+  window.open("https://wa.me/" + phone, "_blank", "noopener,noreferrer");
+  showToast("اتفتح واتساب — راجع قبل الإرسال");
+}
+
 function markContacted(i) {
   const c = state.clients[i];
   if (!c) return;
@@ -558,6 +588,7 @@ function renderCrm() {
       <td class="num" data-label="القيمة"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
       <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>
       <td class="row-actions" data-label="إجراءات">
+        ${whatsappPhone(c.contact) ? `<button type="button" class="ghost tiny" data-wa="${i}" title="فتح واتساب">واتساب</button>` : ""}
         <button type="button" class="ghost tiny" data-touch="${i}">تواصلت</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
@@ -573,7 +604,7 @@ function renderCrm() {
       const i = +el.dataset.i; const k = el.dataset.k;
       state.clients[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
-      if (k === "status" || k === "next" || k === "last") renderCrm();
+      if (k === "status" || k === "next" || k === "last" || k === "contact") renderCrm();
     });
     el.addEventListener("input", () => {
       if (el.tagName === "SELECT") return;
@@ -587,6 +618,9 @@ function renderCrm() {
   });
   tbody.querySelectorAll("[data-touch]").forEach((btn) => {
     btn.onclick = () => markContacted(+btn.dataset.touch);
+  });
+  tbody.querySelectorAll("[data-wa]").forEach((btn) => {
+    btn.onclick = () => openClientWhatsApp(+btn.dataset.wa);
   });
 }
 
