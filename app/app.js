@@ -684,6 +684,16 @@ function snoozeClient(i, days) {
   showToast(d === 7 ? "اتأجلت المتابعة أسبوع" : `اتأجلت المتابعة ${d} أيام`);
 }
 
+function setClientNextToday(i) {
+  const c = state.clients[i];
+  if (!c) return;
+  if (!["lead", "proposal"].includes(c.status)) return;
+  c.next = localISODate();
+  save();
+  renderCrm();
+  showToast("المتابعة بقت النهاردة");
+}
+
 function paintCrmPipeline(visible) {
   const el = document.getElementById("crm-pipeline");
   if (!el) return;
@@ -745,7 +755,8 @@ function renderCrm() {
     const hint = nextDateHint(c.next);
     const showSnooze = ["lead", "proposal"].includes(c.status);
     const snoozeHtml = showSnooze ? `
-        <div class="snooze-row" role="group" aria-label="تأجيل المتابعة">
+        <div class="snooze-row" role="group" aria-label="متابعة سريعة">
+          <button type="button" class="ghost tiny" data-today="${i}" title="خلي المتابعة النهاردة">اليوم</button>
           <button type="button" class="ghost tiny" data-snooze="${i}" data-days="3" title="تأجيل 3 أيام">+3</button>
           <button type="button" class="ghost tiny" data-snooze="${i}" data-days="7" title="تأجيل أسبوع">+7</button>
         </div>` : "";
@@ -808,6 +819,9 @@ function renderCrm() {
   });
   tbody.querySelectorAll("[data-snooze]").forEach((btn) => {
     btn.onclick = () => snoozeClient(+btn.dataset.snooze, +btn.dataset.days);
+  });
+  tbody.querySelectorAll("[data-today]").forEach((btn) => {
+    btn.onclick = () => setClientNextToday(+btn.dataset.today);
   });
 }
 
