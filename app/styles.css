@@ -456,3 +456,19 @@ tr.week-done td[data-label="التسليمات"] input {
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+/* CRM: follow-ups due today (parity with week tr.today; overdue still wins) */
+tr.due-today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
+tr.due-today input[data-k="next"], tr.due-today select[data-k="status"] {
+  border-color: rgba(110, 231, 168, .45);
+}
+@media (max-width: 700px) {
+  #panel-crm tr.due-today {
+    box-shadow: inset 3px 0 0 var(--green);
+    background: #0d1a12;
+  }
+  #panel-crm tr.due-today td {
+    box-shadow: none;
+    background: transparent;
+  }
+}

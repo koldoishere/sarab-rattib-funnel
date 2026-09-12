@@ -667,9 +667,12 @@ function clientMatchesFilter(c) {
 }
 
 function crmSortKey(c) {
-  const overdue = c.next && ["lead","proposal"].includes(c.status) && c.next < localISODate();
+  const overdue = clientIsOverdue(c);
+  const dueToday = clientIsDueToday(c);
   const next = c.next || "9999-99-99";
-  return [overdue ? 0 : 1, next, (c.name || "").toLowerCase()];
+  // overdue first, then due today, then everyone else by next date
+  const tier = overdue ? 0 : (dueToday ? 1 : 2);
+  return [tier, next, (c.name || "").toLowerCase()];
 }
 
 function sortedClientIndexes() {
@@ -899,7 +902,9 @@ function renderCrm() {
   visible.forEach(({ c, i }) => {
     const tr = document.createElement("tr");
     const overdue = clientIsOverdue(c);
+    const dueToday = clientIsDueToday(c);
     if (overdue) tr.classList.add("overdue");
+    else if (dueToday) tr.classList.add("due-today");
     const hint = nextDateHint(c.next);
     const showSnooze = ["lead", "proposal"].includes(c.status);
     const snoozeHtml = showSnooze ? `
