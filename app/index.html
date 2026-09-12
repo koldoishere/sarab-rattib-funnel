@@ -101,7 +101,10 @@
       </div>
       <label class="crm-search">
         <span class="sr-only">بحث في العملاء</span>
-        <input type="search" id="crm-search" placeholder="بحث بالاسم / التواصل / المصدر / الملاحظات" autocomplete="off" enterkeyhint="search">
+        <span class="crm-search-wrap">
+          <input type="search" id="crm-search" placeholder="بحث بالاسم / التواصل / المصدر / الملاحظات" autocomplete="off" enterkeyhint="search">
+          <button type="button" id="crm-search-clear" class="crm-search-clear" hidden title="مسح البحث" aria-label="مسح البحث">✕</button>
+        </span>
       </label>
       <p class="empty-hint" id="crm-empty" hidden>مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.</p>
       <div class="table-wrap">

@@ -301,16 +301,32 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
 }
 
 .crm-search { display: block; margin: 0 0 .85rem; }
+.crm-search-wrap { position: relative; display: block; }
 .crm-search input {
   width: 100%;
   background: var(--input);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: .55rem 1rem;
+  padding-block: .55rem;
+  padding-inline: 1rem 2.4rem;
   font: inherit;
 }
 .crm-search input::placeholder { color: var(--muted); }
+.crm-search-clear {
+  position: absolute;
+  inset-inline-end: .35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.7rem; height: 1.7rem;
+  border: 0; border-radius: 999px;
+  background: transparent; color: var(--muted);
+  font: inherit; font-size: .85rem; line-height: 1;
+  cursor: pointer; padding: 0;
+}
+.crm-search-clear:hover { color: var(--text); background: rgba(255,255,255,.06); }
+.crm-search-clear:focus-visible { outline: 2px solid var(--accent, #6ee7a8); outline-offset: 1px; }
+#crm-overdue-badge { cursor: pointer; }
 .sr-only {
   position: absolute;
   width: 1px; height: 1px;

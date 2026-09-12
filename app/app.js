@@ -126,6 +126,37 @@ function goTab(name) {
   saveUi({ tab: name });
 }
 
+function dismissToast() {
+  const toast = document.getElementById("toast");
+  if (!toast || toast.hidden) return false;
+  clearTimeout(toast._t);
+  toast.hidden = true;
+  return true;
+}
+
+function paintCrmSearchClear() {
+  const clearBtn = document.getElementById("crm-search-clear");
+  if (!clearBtn) return;
+  clearBtn.hidden = !(crmQuery || "").trim();
+}
+
+function clearCrmSearch() {
+  const search = document.getElementById("crm-search");
+  crmQuery = "";
+  if (search) search.value = "";
+  paintCrmSearchClear();
+  renderCrm();
+  if (search) search.focus();
+}
+
+function setCrmFilter(id) {
+  if (!CRM_FILTER_IDS.includes(id)) return;
+  crmFilter = id;
+  saveUi({ crmFilter });
+  paintCrmFilterChips();
+  renderCrm();
+}
+
 const CRM_FILTER_LABELS = {
   all: "الكل",
   today: "النهاردة",
@@ -170,6 +201,15 @@ function bindTabs() {
       goTab(btn.dataset.tab);
     });
   });
+  const overdueBadge = document.getElementById("crm-overdue-badge");
+  if (overdueBadge) {
+    overdueBadge.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setCrmFilter("overdue");
+      goTab("crm");
+      showToast("تصفية المتأخرين");
+    });
+  }
   const saved = loadUi().tab;
   if (TAB_IDS.includes(saved)) activateTab(saved);
 }
@@ -840,6 +880,7 @@ function renderCrm() {
   if (wrap) wrap.hidden = visible.length === 0;
   paintCrmPipeline(visible);
   paintCrmFilterChips();
+  paintCrmSearchClear();
   // badge counts all overdue, not just filtered
   state.clients.forEach((c) => { if (clientIsOverdue(c)) overdueCount += 1; });
   visible.forEach(({ c, i }) => {
@@ -1231,11 +1272,41 @@ function wire() {
     search.value = crmQuery;
     search.addEventListener("input", () => {
       crmQuery = search.value || "";
+      paintCrmSearchClear();
       renderCrm();
       // keep focus/caret — search lives outside renderCrm
       search.focus();
     });
   }
+  const searchClear = document.getElementById("crm-search-clear");
+  if (searchClear) {
+    searchClear.onclick = () => { clearCrmSearch(); };
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (e.target && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName))) {
+      // still allow Escape to clear CRM search when typing in the search box
+      if (e.target.id === "crm-search" && (crmQuery || "").trim()) {
+        e.preventDefault();
+        clearCrmSearch();
+        return;
+      }
+      // dismiss toast even while editing other fields
+      if (dismissToast()) {
+        e.preventDefault();
+        return;
+      }
+      return;
+    }
+    if (dismissToast()) {
+      e.preventDefault();
+      return;
+    }
+    if ((crmQuery || "").trim()) {
+      e.preventDefault();
+      clearCrmSearch();
+    }
+  });
   document.getElementById("btn-export").onclick = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
