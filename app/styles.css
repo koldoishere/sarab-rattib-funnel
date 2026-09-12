@@ -201,6 +201,17 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
   #panel-pricing .row-actions .icon-btn {
     justify-self: end;
   }
+  /* CRM: wrap واتساب/تواصلت; keep نسخ + ✕ on a compact trailing row */
+  #panel-crm .row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem .5rem;
+    width: 100%;
+  }
+  #panel-crm .row-actions [data-dup],
+  #panel-crm .row-actions .icon-btn {
+    margin-inline-start: 0;
+  }
   #panel-crm tr.overdue {
     box-shadow: inset 3px 0 0 var(--danger);
   }
