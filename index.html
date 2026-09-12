@@ -31,7 +31,11 @@
     --night-soft: #0c1510;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    /* Keep keyboard focus / in-page anchors clear of mobile sticky CTA (WCAG 2.4.11) */
+    scroll-padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
+  }
   body {
     font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
     background: var(--sand);
@@ -94,6 +98,7 @@
   @media (min-width: 768px) {
     .sticky-cta { display: none; }
     body { padding-bottom: 0; }
+    html { scroll-padding-bottom: 0; }
   }
 
   header {
@@ -824,7 +829,16 @@
     if (e.target === lb) closeLb();
   });
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && lb.classList.contains("is-open")) closeLb();
+    if (!lb.classList.contains("is-open")) return;
+    if (e.key === "Escape") {
+      closeLb();
+      return;
+    }
+    /* Single control in dialog — keep Tab from escaping to page behind */
+    if (e.key === "Tab") {
+      e.preventDefault();
+      closeBtn.focus();
+    }
   });
 })();
 </script>
