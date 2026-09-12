@@ -35,7 +35,7 @@ const seed = () => ({
     date: isoDay(0),
     validUntil: isoDay(14),
     client: "شركة نور للتجارة",
-    contact: "محمد علي — واتساب",
+    contact: "محمد علي — واتساب 01011112222",
     project: "صفحة هبوط + فورم تواصل",
     summary: "صفحة متجاوبة تعرض العرض وتجمع طلبات التواصل",
     inScope: "تصميم متجاوب، أقسام أساسية، فورم مربوط بالإيميل، تسليم ملفات/كود",
@@ -386,16 +386,23 @@ async function copyProposalWhatsApp() {
 function openProposalWhatsApp() {
   const text = proposalPlainText();
   const encoded = encodeURIComponent(text);
-  const url = "https://wa.me/?text=" + encoded;
-  // wa.me links break when the URL gets too long; fall back to copy + empty chat
+  // Prefer chat with the proposal contact number (CRM parity) when one is parseable.
+  const phone = whatsappPhone(state.proposal?.contact);
+  const base = phone ? ("https://wa.me/" + phone) : "https://wa.me/";
+  const url = base + "?text=" + encoded;
+  // wa.me links break when the URL gets too long; fall back to copy + (phone) chat
   if (url.length > 1800) {
     copyProposalWhatsApp();
-    window.open("https://wa.me/", "_blank", "noopener,noreferrer");
-    showToast("العرض طويل — اتنسخ، الصقه في واتساب");
+    window.open(base, "_blank", "noopener,noreferrer");
+    showToast(phone
+      ? "العرض طويل — اتنسخ، الصقه في واتساب للعميل"
+      : "العرض طويل — اتنسخ، الصقه في واتساب");
     return;
   }
   window.open(url, "_blank", "noopener,noreferrer");
-  showToast("اتفتح واتساب بالنص — راجع قبل الإرسال");
+  showToast(phone
+    ? "اتفتح واتساب للعميل بالنص — راجع قبل الإرسال"
+    : "اتفتح واتساب بالنص — راجع قبل الإرسال");
 }
 
 function proposalDepositBalance() {
