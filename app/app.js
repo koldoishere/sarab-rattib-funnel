@@ -1043,11 +1043,13 @@ function renderCrm() {
         <input data-i="${i}" data-k="last" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(c.last)}">
         ${c.last && formatArDate(c.last) ? `<div class="date-hint">${formatArDate(c.last)}</div>` : ""}
       </td>
-      <td data-label="متابعة تالية">
-        <input data-i="${i}" data-k="next" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(c.next)}">
+      <td data-label="متابعة تالية" class="${["won","lost"].includes(c.status) ? "next-closed" : ""}">
+        ${["won","lost"].includes(c.status)
+          ? `<span class="muted next-na">—</span>`
+          : `<input data-i="${i}" data-k="next" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(c.next)}">
         ${c.next && formatArDate(c.next) ? `<div class="date-hint">${formatArDate(c.next)}</div>` : ""}
         ${hint ? `<div class="date-hint${overdue ? " late" : ""}">${hint}</div>` : ""}
-        ${snoozeHtml}
+        ${snoozeHtml}`}
       </td>
       <td class="num" data-label="القيمة"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
       <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>

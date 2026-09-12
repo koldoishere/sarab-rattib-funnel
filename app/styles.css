@@ -483,3 +483,6 @@ tr.due-today input[data-k="next"], tr.due-today select[data-k="status"] {
     background: transparent;
   }
 }
+
+.next-na { display: inline-block; padding: .35rem 0; color: var(--muted); }
+td.next-closed { opacity: .85; }
