@@ -106,19 +106,32 @@
   }
 
   .link-quiet {
-    display: inline-block;
-    margin-top: 0.85rem;
-    font-size: 0.88rem;
-    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.95rem;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.98rem;
+    line-height: 1.35;
+    color: #c5d2cb;
     text-decoration: underline;
     text-underline-offset: 3px;
-    font-weight: 500;
+    font-weight: 600;
+    border-radius: 8px;
   }
   .link-quiet:hover { color: var(--oasis); }
   .link-quiet:focus-visible {
     outline: 2px solid var(--oasis);
     outline-offset: 3px;
-    border-radius: 4px;
+  }
+  /* Full landing stays quieter under the price line */
+  .price .link-quiet {
+    min-height: 0;
+    padding: 0;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--muted);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -186,7 +199,7 @@
   </div>
   <div class="cta-block" role="region" aria-label="Primary next action">
     <p class="next-step">One clear next step</p>
-    <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib — $12</a>
+    <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib on Whop — $12</a>
     <a class="link-quiet" href="app/" lang="ar" dir="rtl">جرّب الـweb app مجاناً</a>
   </div>
   <p class="price">One-time on Whop · <strong>instant download</strong> · no subscription · Excel / CSV / Notion</p>
