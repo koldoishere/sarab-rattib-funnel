@@ -36,7 +36,7 @@
     background: var(--sand);
     color: var(--ink);
     line-height: 1.65;
-    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));;
   }
   a { color: var(--night); }
   .wrap { max-width: 880px; margin: 0 auto; padding: 0 1.25rem; }
@@ -61,6 +61,28 @@
     padding: 0.65rem 1.35rem;
     font-size: 0.95rem;
   }
+
+  .sticky-cta-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+  .sticky-cta .link-quiet {
+    color: rgba(245, 248, 246, 0.72);
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .sticky-cta .link-quiet:hover { color: var(--oasis); }
+  .sticky-cta .link-quiet:focus-visible {
+    outline: 2px solid var(--oasis);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
 
 
   @media (min-width: 768px) {
@@ -372,7 +394,10 @@
     <span class="price">$12</span>
     <span style="color:rgba(245,248,246,0.7);font-size:0.72rem;font-weight:500">Instant download</span>
   </div>
-  <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Get Rattib — $12</a>
+  <div class="sticky-cta-actions">
+    <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/">Get Rattib — $12</a>
+    <a class="link-quiet" href="app/">Free preview</a>
+  </div>
 </div>
 
 <header>
