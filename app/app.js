@@ -749,18 +749,27 @@ async function copyWeekSummary() {
   showToast("اتنسخ ملخص الأسبوع");
 }
 
+function weekHasCarryTasks() {
+  return state.week.some((w) => w.done !== "☑" && String(w.tasks || "").trim());
+}
+
 function resetWeek() {
-  if (!confirm("أسبوع جديد؟ هنتصفّر المهام والساعات والتسليمات وعلامات «تم».")) return;
-  state.week = state.week.map((w) => ({
-    day: w.day,
-    tasks: "",
-    hours: 0,
-    deliverables: "",
-    done: "☐",
-  }));
+  if (!confirm("أسبوع جديد؟ هنتصفّر الساعات والتسليمات وعلامات «تم» (والمهام إلا لو اخترت ترحيل الناقص).")) return;
+  const carryable = weekHasCarryTasks();
+  const carry = carryable && confirm("في مهام ناقصة لسه مش «تم». ترحيل المهام الناقصة للأسبوع الجديد؟\n\nموافق = تفضل المهام زي ما هي على الأيام الناقصة.\nإلغاء = أسبوع فاضي بالكامل.");
+  state.week = state.week.map((w) => {
+    const keepTasks = carry && w.done !== "☑" && String(w.tasks || "").trim();
+    return {
+      day: w.day,
+      tasks: keepTasks ? w.tasks : "",
+      hours: 0,
+      deliverables: "",
+      done: "☐",
+    };
+  });
   save();
   renderWeek();
-  showToast("أسبوع جديد جاهز");
+  showToast(carry ? "اترحّلت المهام الناقصة" : "أسبوع جديد جاهز");
 }
 
 function renderWeek() {
