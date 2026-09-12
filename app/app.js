@@ -234,7 +234,7 @@ function proposalPlainText() {
     `عرض سعر — ${p.project || "مشروع"}`,
     `للعميل: ${p.client || "—"}`,
     `التواصل: ${p.contact || "—"}`,
-    `التاريخ: ${p.date || "—"} · صالح حتى: ${p.validUntil || "—"}`,
+    `التاريخ: ${formatArDate(p.date) || p.date || "—"} · صالح حتى: ${formatArDate(p.validUntil) || p.validUntil || "—"}`,
     "",
     `الملخص: ${p.summary || "—"}`,
     `داخل النطاق: ${p.inScope || "—"}`,
