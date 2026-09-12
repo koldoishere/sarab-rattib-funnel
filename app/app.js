@@ -658,19 +658,17 @@ function paintCrmPipeline(visible) {
 function onClientStatusChange(i, prev, nextStatus) {
   const c = state.clients[i];
   if (!c || prev === nextStatus) return;
+  let toast = "";
   if (nextStatus === "won" || nextStatus === "lost") {
     c.next = "";
-    save();
-    renderCrm();
-    showToast(nextStatus === "won" ? "تم الاتفاق — اتشالت المتابعة" : "اتسجّلت كخسارة — اتشالت المتابعة");
-    return;
-  }
-  if ((nextStatus === "lead" || nextStatus === "proposal") && !String(c.next || "").trim()) {
+    toast = nextStatus === "won" ? "تم الاتفاق — اتشالت المتابعة" : "اتسجّلت كخسارة — اتشالت المتابعة";
+  } else if ((nextStatus === "lead" || nextStatus === "proposal") && !String(c.next || "").trim()) {
     c.next = addDaysISO(localISODate(), 3);
-    save();
-    renderCrm();
-    showToast("رجعت للمتابعة — بعد 3 أيام");
+    toast = "رجعت للمتابعة — بعد 3 أيام";
   }
+  save();
+  renderCrm();
+  if (toast) showToast(toast);
 }
 
 function renderCrm() {
