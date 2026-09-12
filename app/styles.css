@@ -277,6 +277,23 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   font-variant-numeric: tabular-nums;
 }
 .chip:not(.active):hover { border-color: var(--green-dim); color: var(--text); }
+.chip-count {
+  display: inline-block;
+  min-width: 1.1em;
+  margin-inline-start: .15rem;
+  padding: 0 .35rem;
+  border-radius: 999px;
+  font-size: .72em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  background: rgba(255,255,255,.1);
+  color: inherit;
+  opacity: .92;
+}
+.chip.active .chip-count {
+  background: rgba(0,0,0,.18);
+}
 .empty-hint {
   color: var(--muted); text-align: center; padding: 1.25rem 1rem;
   border: 1px dashed var(--border); border-radius: var(--radius); margin: 0 0 .85rem;

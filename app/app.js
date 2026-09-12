@@ -126,11 +126,41 @@ function goTab(name) {
   saveUi({ tab: name });
 }
 
+const CRM_FILTER_LABELS = {
+  all: "الكل",
+  today: "النهاردة",
+  overdue: "متأخر",
+  lead: "عميل محتمل",
+  proposal: "عرض سعر",
+  won: "تم الاتفاق",
+  lost: "خسارة",
+};
+
+/** Count clients for a chip given current search (ignore selected filter). */
+function crmFilterCount(filterId) {
+  return state.clients.filter((c) => {
+    if (!clientMatchesQuery(c)) return false;
+    if (filterId === "all") return true;
+    if (filterId === "today") return clientIsDueToday(c);
+    if (filterId === "overdue") return clientIsOverdue(c);
+    return c.status === filterId;
+  }).length;
+}
+
 function paintCrmFilterChips() {
   const filters = document.getElementById("crm-filters");
   if (!filters) return;
   filters.querySelectorAll("[data-filter]").forEach((b) => {
-    b.classList.toggle("active", b.dataset.filter === crmFilter);
+    const id = b.dataset.filter || "all";
+    b.classList.toggle("active", id === crmFilter);
+    const label = CRM_FILTER_LABELS[id] || id;
+    const count = crmFilterCount(id);
+    b.replaceChildren();
+    b.append(document.createTextNode(label + "\u00a0"));
+    const badge = document.createElement("span");
+    badge.className = "chip-count";
+    badge.textContent = String(count);
+    b.appendChild(badge);
   });
 }
 
@@ -809,6 +839,7 @@ function renderCrm() {
   }
   if (wrap) wrap.hidden = visible.length === 0;
   paintCrmPipeline(visible);
+  paintCrmFilterChips();
   // badge counts all overdue, not just filtered
   state.clients.forEach((c) => { if (clientIsOverdue(c)) overdueCount += 1; });
   visible.forEach(({ c, i }) => {
