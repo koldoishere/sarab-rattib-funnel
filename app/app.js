@@ -225,6 +225,28 @@ function renderPricing() {
   paintPricingTotals();
 }
 
+
+function fillProposalFromPricing() {
+  const t = pricingTotals();
+  if (t.n === 0) {
+    alert("املأ صف تسعير واحد على الأقل (ساعات وسعر الساعة) أولاً");
+    return;
+  }
+  const price = Math.round(t.price);
+  state.proposal.price = price;
+  const types = state.pricing
+    .map((r) => String(r.type || "").trim())
+    .filter(Boolean);
+  if (types.length && !String(state.proposal.project || "").trim()) {
+    state.proposal.project = types.slice(0, 3).join(" + ");
+  }
+  save();
+  document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === "proposal"));
+  document.querySelectorAll(".panel").forEach((panel) => panel.classList.toggle("active", panel.id === "panel-proposal"));
+  renderProposal();
+  showToast(`اتنقل إجمالي التسعير: ${money(price)} ج.م`);
+}
+
 function proposalPlainText() {
   const p = state.proposal;
   const pct = depositPct();
@@ -380,6 +402,7 @@ function renderProposal() {
     <div class="full proposal-actions">
       <button type="button" id="btn-copy-wa" class="primary">نسخ للواتساب</button>
       <button type="button" id="btn-open-wa" class="ghost">فتح واتساب</button>
+      <button type="button" id="btn-from-pricing" class="ghost" title="انقل إجمالي صفوف التسعير المحسوبة إلى سعر العرض">من التسعير</button>
       <button type="button" id="btn-add-crm" class="ghost">أضف للعملاء</button>
     </div>`;
   box.querySelectorAll("[data-k]").forEach((el) => {
@@ -412,6 +435,8 @@ function renderProposal() {
   if (openBtn) openBtn.onclick = () => { openProposalWhatsApp(); };
   const addCrmBtn = document.getElementById("btn-add-crm");
   if (addCrmBtn) addCrmBtn.onclick = () => { addProposalToCrm(); };
+  const fromPricingBtn = document.getElementById("btn-from-pricing");
+  if (fromPricingBtn) fromPricingBtn.onclick = () => { fillProposalFromPricing(); };
 }
 
 
@@ -962,6 +987,8 @@ function wire() {
     state.pricing.push({ type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" });
     save(); renderPricing();
   };
+  const toProposalBtn = document.getElementById("btn-to-proposal");
+  if (toProposalBtn) toProposalBtn.onclick = () => { fillProposalFromPricing(); };
   document.getElementById("add-client").onclick = () => {
     state.clients.push({ name: "", contact: "", source: "", status: "lead", last: "", next: "", value: 0, notes: "" });
     save(); renderCrm();
