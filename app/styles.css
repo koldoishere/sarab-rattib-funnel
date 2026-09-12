@@ -354,3 +354,5 @@ tr.week-done td[data-label="التسليمات"] input {
 @media (max-width: 700px) {
   .done-toggle { width: 100%; justify-content: center; padding: .55rem .75rem; }
 }
+
+.pricing-actions { margin-top: .75rem; }
