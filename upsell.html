@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap">
 <style>
   :root {
+    color-scheme: light;
     --night: #050706;
     --oasis: #20E070;
     --sand: #F5F8F6;
@@ -37,7 +38,7 @@
     line-height: 1.65;
     font-weight: 500;
   }
-  a { color: var(--night); }
+  a { color: var(--night); -webkit-tap-highlight-color: transparent; }
   .wrap { max-width: 720px; margin: 0 auto; padding: 0 1.25rem; }
 
   header {
@@ -183,14 +184,39 @@
   }
   .btn-outline:hover { border-color: var(--oasis); box-shadow: none; }
   .btn-soft {
-    background: #e8f0eb;
-    color: var(--night);
+    background: transparent;
+    color: var(--muted);
     border: 1.5px solid var(--line);
+    font-weight: 600;
   }
   .btn-soft:hover {
     border-color: var(--oasis);
+    color: var(--night);
     box-shadow: none;
-    transform: translateY(-1px);
+    transform: none;
+  }
+  .primary-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.55rem;
+  }
+  .quiet-row {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .quiet-row a.plain {
+    margin-top: 0;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .quiet-row .sep {
+    margin: 0 0.35rem;
+    opacity: 0.55;
   }
 
   .reassure {
@@ -235,8 +261,12 @@
   }
   .sticky-skip .btn {
     flex-shrink: 0;
+    min-height: 2.75rem;
     padding: 0.7rem 1.1rem;
     font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   @media (max-width: 720px) {
     .sticky-skip { display: block; }
@@ -278,12 +308,12 @@
     <p class="intro">Stay with Rattib — that’s enough. Peek at a sister pack only if mid-project changes or fuzzy kickoffs keep costing you time. Nothing below is required.</p>
 
     <div class="reassure" style="margin-bottom:1.35rem" role="region" aria-label="Primary next action">
-      <p style="font-size:0.78rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--muted);margin-bottom:0.55rem">Primary action</p>
+      <p class="primary-label">One clear next step</p>
       <strong>Already have Rattib? You’re set.</strong><br>
-      Skip these unless you want a sharper layer later.
+      Skip these optional packs — Rattib alone covers pricing, proposals, CRM, and the weekly board.
       <br>
-      <a class="btn" href="index.html" style="margin-top:0.95rem">Skip — stay with Rattib</a>
-      <p style="margin-top:0.75rem;font-size:0.85rem">Don’t have it yet? <a class="plain" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer" style="margin-top:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px">Get Rattib on Whop — $12</a></p>
+      <a class="btn" href="index.html" style="margin-top:0.95rem;min-height:2.75rem;display:inline-flex;align-items:center;justify-content:center">Skip — stay with Rattib</a>
+      <p class="quiet-row">Don’t have it yet? <a class="plain" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib on Whop — $12</a><span class="sep">·</span><a class="plain" href="app/">Free preview</a></p>
     </div>
 
     <div class="tool">
@@ -299,7 +329,7 @@
         <li>Change-request log (hours, price delta, approval)</li>
         <li>Notion templates + short English guide</li>
       </ul>
-      <a class="btn btn-soft" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/quoteforge-proposal-change-request-pack-for-freelancers/" target="_blank" rel="noopener noreferrer">View QuoteForge on Whop</a>
+      <a class="btn btn-soft" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/quoteforge-proposal-change-request-pack-for-freelancers/" target="_blank" rel="noopener noreferrer">Optional — View QuoteForge</a>
     </div>
 
     <div class="tool">
@@ -315,7 +345,7 @@
         <li>Kickoff agenda</li>
         <li>Risk log for freelancers &amp; developers</li>
       </ul>
-      <a class="btn btn-soft" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/scopelock-kickoff-scope-control-pack-for-freelancers-devs/" target="_blank" rel="noopener noreferrer">View ScopeLock on Whop</a>
+      <a class="btn btn-soft" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/scopelock-kickoff-scope-control-pack-for-freelancers-devs/" target="_blank" rel="noopener noreferrer">Optional — View ScopeLock</a>
     </div>
 
     <div class="reassure">
@@ -323,13 +353,15 @@
       Pricing, proposals, light CRM, and a weekly board are already in the pack. Come back only if mid-project changes or fuzzy kickoffs keep costing you time — no income promises.
       <br>
       <a class="plain" href="index.html">← Back to Rattib landing</a>
+      <span class="sep" style="margin:0 0.35rem;opacity:0.55">·</span>
+      <a class="plain" href="app/" style="margin-top:0.85rem;display:inline-block">Free preview</a>
     </div>
   </div>
 </section>
 
 <div class="sticky-skip" role="region" aria-label="Skip optional tools">
   <div class="inner">
-    <span class="hint">One clear next step · Rattib works alone</span>
+    <span class="hint">One clear next step · Rattib works alone<br><a class="plain" href="app/" style="color:rgba(245,248,246,0.7);font-size:0.75rem;text-decoration:underline;text-underline-offset:2px;margin-top:0.2rem">Free preview</a></span>
     <a class="btn" href="index.html">Skip — stay with Rattib</a>
   </div>
 </div>
