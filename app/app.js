@@ -318,7 +318,7 @@ function renderPricing() {
       <td class="row-actions" data-label="إجراءات">
         <button type="button" class="ghost tiny" data-use="${i}" title="ضع السعر والمشروع في عرض السعر">انقل للعرض</button>
         <button type="button" class="ghost tiny" data-copy-row="${i}" title="نسخ صف التسعير كنص عربي">نسخ نص</button>
-        <button type="button" class="ghost tiny" data-dup="${i}" title="نسخ الصف تحتها">نسخ</button>
+        <button type="button" class="ghost tiny" data-dup="${i}" title="كرّر الصف تحتها">كرّر</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
     tbody.appendChild(tr);
@@ -1124,7 +1124,7 @@ function renderCrm() {
         ${whatsappPhone(c.contact) ? `<button type="button" class="ghost tiny" data-wa="${i}" title="فتح واتساب">واتساب</button>` : ""}
         ${c.status !== "won" ? `<button type="button" class="ghost tiny" data-touch="${i}">تواصلت</button>` : ""}
         <button type="button" class="ghost tiny" data-copy-card="${i}" title="نسخ بطاقة العميل كنص عربي">نسخ نص</button>
-        <button type="button" class="ghost tiny" data-dup="${i}" title="نسخ العميل تحتها">نسخ</button>
+        <button type="button" class="ghost tiny" data-dup="${i}" title="كرّر العميل تحتها">كرّر</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
     tbody.appendChild(tr);
