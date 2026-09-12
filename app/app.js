@@ -7,17 +7,30 @@ const STATUS = [
 ];
 const DAYS = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
 
+const APP_TZ = "Africa/Cairo";
+
+/** Calendar date in Africa/Cairo (YYYY-MM-DD), not the browser/machine local TZ. */
 function localISODate(d = new Date()) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: APP_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
 }
+
+/** 0=Sunday … 6=Saturday in Africa/Cairo. */
+function cairoDayOfWeek(d = new Date()) {
+  const wd = new Intl.DateTimeFormat("en-US", { timeZone: APP_TZ, weekday: "short" }).format(d);
+  return { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[wd] ?? d.getDay();
+}
+
 function isoDay(offset = 0) {
-  const d = new Date();
-  d.setHours(12, 0, 0, 0);
-  d.setDate(d.getDate() + offset);
-  return localISODate(d);
+  // Noon UTC then shift by calendar days in Cairo via ISO string math
+  const base = localISODate();
+  const [y, m, day] = base.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, day + offset, 12, 0, 0));
+  return localISODate(dt);
 }
 
 const seed = () => ({
@@ -1079,7 +1092,7 @@ function toggleWeekDone(i) {
 function renderWeek() {
   const tbody = document.querySelector("#week-table tbody");
   tbody.innerHTML = "";
-  const todayName = DAYS[new Date().getDay()];
+  const todayName = DAYS[cairoDayOfWeek()];
   // Start display at today so mobile users see «اليوم» first (data order stays Sun→Sat).
   let start = state.week.findIndex((w) => w.day === todayName);
   if (start < 0) start = 0;
