@@ -639,6 +639,12 @@ function renderCrm() {
     const overdue = clientIsOverdue(c);
     if (overdue) tr.classList.add("overdue");
     const hint = nextDateHint(c.next);
+    const showSnooze = ["lead", "proposal"].includes(c.status);
+    const snoozeHtml = showSnooze ? `
+        <div class="snooze-row" role="group" aria-label="تأجيل المتابعة">
+          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="3" title="تأجيل 3 أيام">+3</button>
+          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="7" title="تأجيل أسبوع">+7</button>
+        </div>` : "";
     tr.innerHTML = `
       <td data-label="الاسم"><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
       <td data-label="التواصل"><input data-i="${i}" data-k="contact" value="${esc(c.contact)}"></td>
@@ -652,10 +658,7 @@ function renderCrm() {
         <input data-i="${i}" data-k="next" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(c.next)}">
         ${c.next && formatArDate(c.next) ? `<div class="date-hint">${formatArDate(c.next)}</div>` : ""}
         ${hint ? `<div class="date-hint${overdue ? " late" : ""}">${hint}</div>` : ""}
-        <div class="snooze-row" role="group" aria-label="تأجيل المتابعة">
-          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="3" title="تأجيل 3 أيام">+3</button>
-          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="7" title="تأجيل أسبوع">+7</button>
-        </div>
+        ${snoozeHtml}
       </td>
       <td class="num" data-label="القيمة"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
       <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>
