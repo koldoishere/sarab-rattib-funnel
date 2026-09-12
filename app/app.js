@@ -804,6 +804,14 @@ function addProposalToCrm() {
   );
   if (idx >= 0) {
     const c = state.clients[idx];
+    const prev = {
+      contact: c.contact,
+      value: c.value,
+      notes: c.notes,
+      status: c.status,
+      last: c.last,
+      next: c.next,
+    };
     if (contact) c.contact = contact;
     if (value) c.value = value;
     if (notes) c.notes = notes;
@@ -813,10 +821,25 @@ function addProposalToCrm() {
     save();
     revealClientInCrm(idx);
     renderCrm();
-    showToast("اتحدّث العميل في المتابعة");
+    showToast("اتحدّث العميل في المتابعة", {
+      actionLabel: "تراجع",
+      ms: 6000,
+      onAction: () => {
+        if (state.clients[idx] !== c) return;
+        c.contact = prev.contact;
+        c.value = prev.value;
+        c.notes = prev.notes;
+        c.status = prev.status;
+        c.last = prev.last;
+        c.next = prev.next;
+        save();
+        renderCrm();
+        showToast("اتلغى تحديث العميل من العرض");
+      },
+    });
     return;
   }
-  state.clients.push({
+  const copy = {
     name,
     contact,
     source: "عرض سعر",
@@ -825,11 +848,23 @@ function addProposalToCrm() {
     next: addDaysISO(localISODate(), 3),
     value,
     notes,
-  });
+  };
+  state.clients.push(copy);
   save();
   revealClientInCrm(state.clients.length - 1);
   renderCrm();
-  showToast("اتضاف للعملاء — متابعة بعد 3 أيام");
+  showToast("اتضاف للعملاء — متابعة بعد 3 أيام", {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      const at = state.clients.indexOf(copy);
+      if (at < 0) return;
+      state.clients.splice(at, 1);
+      save();
+      renderCrm();
+      showToast("اتشال العميل من المتابعة");
+    },
+  });
 }
 
 
@@ -1408,8 +1443,22 @@ function wire() {
   const toProposalBtn = document.getElementById("btn-to-proposal");
   if (toProposalBtn) toProposalBtn.onclick = () => { fillProposalFromPricing(); };
   document.getElementById("add-client").onclick = () => {
-    state.clients.push({ name: "", contact: "", source: "", status: "lead", last: "", next: "", value: 0, notes: "" });
-    save(); renderCrm();
+    const copy = { name: "", contact: "", source: "", status: "lead", last: "", next: "", value: 0, notes: "" };
+    state.clients.push(copy);
+    save();
+    renderCrm();
+    showToast("اتضاف عميل فاضي", {
+      actionLabel: "تراجع",
+      ms: 6000,
+      onAction: () => {
+        const at = state.clients.indexOf(copy);
+        if (at < 0) return;
+        state.clients.splice(at, 1);
+        save();
+        renderCrm();
+        showToast("اتشال العميل الفاضي");
+      },
+    });
   };
   const filters = document.getElementById("crm-filters");
   if (filters) {
