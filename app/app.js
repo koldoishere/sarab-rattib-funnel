@@ -216,13 +216,7 @@ function renderPricing() {
       document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === "proposal"));
       document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "panel-proposal"));
       renderProposal();
-      const toast = document.getElementById("toast");
-      if (toast) {
-        toast.textContent = "اتنقل لعرض السعر بالسعر المحسوب";
-        toast.hidden = false;
-        clearTimeout(toast._t);
-        toast._t = setTimeout(() => { toast.hidden = true; }, 2200);
-      }
+      showToast("اتنقل لعرض السعر بالسعر المحسوب");
     };
   });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
@@ -260,13 +254,50 @@ function proposalPlainText() {
   ].join("\n");
 }
 
-function showToast(msg) {
+function showToast(msg, opts = {}) {
   const toast = document.getElementById("toast");
   if (!toast) return;
-  toast.textContent = msg;
+  toast.replaceChildren();
+  const text = document.createElement("span");
+  text.textContent = msg;
+  toast.appendChild(text);
+  if (opts.actionLabel && typeof opts.onAction === "function") {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "toast-action";
+    btn.textContent = opts.actionLabel;
+    btn.onclick = () => {
+      clearTimeout(toast._t);
+      toast.hidden = true;
+      opts.onAction();
+    };
+    toast.appendChild(btn);
+  }
   toast.hidden = false;
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => { toast.hidden = true; }, 2200);
+  const ms = opts.ms != null ? opts.ms : (opts.onAction ? 6000 : 2200);
+  toast._t = setTimeout(() => { toast.hidden = true; }, ms);
+}
+
+function deleteClient(i) {
+  if (!confirm("حذف العميل ده من المتابعة؟")) return;
+  if (i < 0 || i >= state.clients.length) return;
+  const removed = state.clients.splice(i, 1)[0];
+  const at = i;
+  save();
+  renderCrm();
+  const label = (removed && removed.name) ? `اتمسح «${removed.name}»` : "اتمسح العميل";
+  showToast(label, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      const insertAt = Math.min(at, state.clients.length);
+      state.clients.splice(insertAt, 0, removed);
+      save();
+      renderCrm();
+      showToast("رجع العميل للمتابعة");
+    },
+  });
 }
 
 async function copyProposalWhatsApp() {
@@ -631,7 +662,7 @@ function renderCrm() {
     });
   });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
-    btn.onclick = () => { if (!confirm("حذف العميل ده من المتابعة؟")) return; state.clients.splice(+btn.dataset.del, 1); save(); renderCrm(); };
+    btn.onclick = () => deleteClient(+btn.dataset.del);
   });
   tbody.querySelectorAll("[data-touch]").forEach((btn) => {
     btn.onclick = () => markContacted(+btn.dataset.touch);

@@ -208,10 +208,19 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
 .proposal-actions .primary { margin-top: 0; }
 .toast {
   position: fixed; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
-  background: #146b3a; color: #f5f8f6; padding: .65rem 1.1rem; border-radius: 999px;
+  background: #146b3a; color: #f5f8f6; padding: .55rem .65rem .55rem 1.1rem; border-radius: 999px;
   border: 1px solid var(--green); box-shadow: 0 8px 24px rgba(0,0,0,.35);
   z-index: 50; font-size: .9rem; font-weight: 600;
+  display: flex; align-items: center; gap: .55rem; max-width: min(92vw, 28rem);
 }
+.toast-action {
+  flex: 0 0 auto;
+  background: #f5f8f6; color: #146b3a; border: 0;
+  border-radius: 999px; padding: .35rem .75rem;
+  font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer;
+}
+.toast-action:hover { filter: brightness(1.05); }
+.toast-action:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
 .today-pill {
