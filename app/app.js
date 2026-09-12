@@ -49,10 +49,10 @@ const seed = () => ({
     next: "رد بالموافقة + طريقة دفع المقدم، أو طلب تعديل النطاق",
   },
   clients: [
-    { name: "أحمد منصور", contact: "واتساب", source: "إحالة", status: "proposal", last: isoDay(-11), next: isoDay(-4), value: 15000, notes: "بستنى موافقة شريكه" },
+    { name: "أحمد منصور", contact: "واتساب 01012345678", source: "إحالة", status: "proposal", last: isoDay(-11), next: isoDay(-4), value: 15000, notes: "بستنى موافقة شريكه" },
     { name: "سارة حسين", contact: "sara@mail.com", source: "لينكدإن", status: "lead", last: isoDay(-7), next: isoDay(-2), value: 40000, notes: "متجر بسيط" },
     { name: "TechNest", contact: "Slack", source: "Upwork", status: "won", last: isoDay(-23), next: "", value: 22000, notes: "مرحلة 2 محتملة" },
-    { name: "خالد عمر", contact: "واتساب", source: "تويتر", status: "lost", last: isoDay(-28), next: "", value: 5000, notes: "الميزانية أقل من النطاق" },
+    { name: "خالد عمر", contact: "واتساب 01098765432", source: "تويتر", status: "lost", last: isoDay(-28), next: "", value: 5000, notes: "الميزانية أقل من النطاق" },
   ],
   week: [
     { day: "الأحد", tasks: "بناء الصفحة الرئيسية + هيكل المشروع", hours: 4, deliverables: "—", done: "☐" },
@@ -762,7 +762,10 @@ function renderCrm() {
         </div>` : "";
     tr.innerHTML = `
       <td data-label="الاسم"><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
-      <td data-label="التواصل"><input data-i="${i}" data-k="contact" value="${esc(c.contact)}"></td>
+      <td data-label="التواصل">
+        <input data-i="${i}" data-k="contact" value="${esc(c.contact)}" placeholder="واتساب 01xxxxxxxxx">
+        ${(!whatsappPhone(c.contact) && /واتساب|whatsapp/i.test(c.contact || "")) ? `<div class="date-hint">حط رقم عشان يظهر زر واتساب</div>` : ""}
+      </td>
       <td data-label="المصدر"><input data-i="${i}" data-k="source" value="${esc(c.source)}"></td>
       <td data-label="الحالة"><select data-i="${i}" data-k="status">${STATUS.map(s => `<option value="${s.value}" ${c.status===s.value?"selected":""}>${s.label}</option>`).join("")}</select></td>
       <td data-label="آخر تواصل">
