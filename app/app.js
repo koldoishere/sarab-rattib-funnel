@@ -654,6 +654,23 @@ function paintCrmPipeline(visible) {
   el.hidden = false;
 }
 
+
+function onClientStatusChange(i, prev, nextStatus) {
+  const c = state.clients[i];
+  if (!c || prev === nextStatus) return;
+  let toast = "";
+  if (nextStatus === "won" || nextStatus === "lost") {
+    c.next = "";
+    toast = nextStatus === "won" ? "تم الاتفاق — اتشالت المتابعة" : "اتسجّلت كخسارة — اتشالت المتابعة";
+  } else if ((nextStatus === "lead" || nextStatus === "proposal") && !String(c.next || "").trim()) {
+    c.next = addDaysISO(localISODate(), 3);
+    toast = "رجعت للمتابعة — بعد 3 أيام";
+  }
+  save();
+  renderCrm();
+  if (toast) showToast(toast);
+}
+
 function renderCrm() {
   const tbody = document.querySelector("#crm-table tbody");
   tbody.innerHTML = "";
@@ -718,9 +735,14 @@ function renderCrm() {
   tbody.querySelectorAll("input,select").forEach((el) => {
     el.addEventListener("change", () => {
       const i = +el.dataset.i; const k = el.dataset.k;
+      const prevStatus = k === "status" ? state.clients[i].status : null;
       state.clients[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
-      if (k === "status" || k === "next" || k === "last" || k === "contact") renderCrm();
+      if (k === "status") {
+        onClientStatusChange(i, prevStatus, state.clients[i].status);
+        return;
+      }
+      if (k === "next" || k === "last" || k === "contact") renderCrm();
     });
     el.addEventListener("input", () => {
       if (el.tagName === "SELECT") return;
