@@ -179,6 +179,27 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
     justify-content: flex-start;
     flex-wrap: wrap;
     gap: .5rem;
+    white-space: normal;
+  }
+  /* Primary action full-width; نسخ + ✕ on the next row (Roli mobile crowding after #28) */
+  #panel-pricing .row-actions {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: .4rem .5rem;
+    width: 100%;
+  }
+  #panel-pricing .row-actions [data-use] {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: center;
+  }
+  #panel-pricing .row-actions [data-dup],
+  #panel-pricing .row-actions .icon-btn {
+    justify-self: start;
+  }
+  #panel-pricing .row-actions .icon-btn {
+    justify-self: end;
   }
   #panel-crm tr.overdue {
     box-shadow: inset 3px 0 0 var(--danger);
