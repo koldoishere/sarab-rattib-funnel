@@ -870,12 +870,25 @@ function openClientWhatsApp(i) {
 function markContacted(i) {
   const c = state.clients[i];
   if (!c) return;
+  const prev = { last: c.last, next: c.next, status: c.status };
   c.last = localISODate();
   c.next = addDaysISO(c.last, 3);
   if (c.status === "lost") c.status = "lead";
   save();
   renderCrm();
-  showToast("اتسجّل تواصل — المتابعة بعد 3 أيام");
+  showToast("اتسجّل تواصل — المتابعة بعد 3 أيام", {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      if (state.clients[i] !== c) return;
+      c.last = prev.last;
+      c.next = prev.next;
+      c.status = prev.status;
+      save();
+      renderCrm();
+      showToast("اتلغى تسجيل التواصل");
+    },
+  });
 }
 
 function snoozeClient(i, days) {
@@ -885,20 +898,43 @@ function snoozeClient(i, days) {
   const today = localISODate();
   // From today if overdue/empty; otherwise push from the scheduled next date
   const base = c.next && c.next >= today ? c.next : today;
+  const prevNext = c.next;
   c.next = addDaysISO(base, d);
   save();
   renderCrm();
-  showToast(d === 7 ? "اتأجلت المتابعة أسبوع" : `اتأجلت المتابعة ${d} أيام`);
+  const label = d === 7 ? "اتأجلت المتابعة أسبوع" : `اتأجلت المتابعة ${d} أيام`;
+  showToast(label, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      if (state.clients[i] !== c) return;
+      c.next = prevNext;
+      save();
+      renderCrm();
+      showToast("اتلغى التأجيل");
+    },
+  });
 }
 
 function setClientNextToday(i) {
   const c = state.clients[i];
   if (!c) return;
   if (!["lead", "proposal"].includes(c.status)) return;
+  const prevNext = c.next;
   c.next = localISODate();
   save();
   renderCrm();
-  showToast("المتابعة بقت النهاردة");
+  showToast("المتابعة بقت النهاردة", {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      if (state.clients[i] !== c) return;
+      c.next = prevNext;
+      save();
+      renderCrm();
+      showToast("اتلغى تعيين النهاردة");
+    },
+  });
 }
 
 function paintCrmPipeline(visible) {
