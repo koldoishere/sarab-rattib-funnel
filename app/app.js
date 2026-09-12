@@ -883,6 +883,13 @@ function resetWeek() {
   if (!confirm("أسبوع جديد؟ هنتصفّر الساعات والتسليمات وعلامات «تم» (والمهام إلا لو اخترت ترحيل الناقص).")) return;
   const carryable = weekHasCarryTasks();
   const carry = carryable && confirm("في مهام ناقصة لسه مش «تم». ترحيل المهام الناقصة للأسبوع الجديد؟\n\nموافق = تفضل المهام زي ما هي على الأيام الناقصة.\nإلغاء = أسبوع فاضي بالكامل.");
+  const previous = state.week.map((w) => ({
+    day: w.day,
+    tasks: w.tasks,
+    hours: w.hours,
+    deliverables: w.deliverables,
+    done: w.done,
+  }));
   state.week = state.week.map((w) => {
     const keepTasks = carry && w.done !== "☑" && String(w.tasks || "").trim();
     return {
@@ -895,7 +902,16 @@ function resetWeek() {
   });
   save();
   renderWeek();
-  showToast(carry ? "اترحّلت المهام الناقصة" : "أسبوع جديد جاهز");
+  showToast(carry ? "اترحّلت المهام الناقصة" : "أسبوع جديد جاهز", {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      state.week = previous.map((w) => ({ ...w }));
+      save();
+      renderWeek();
+      showToast("رجع أسبوع الشغل");
+    },
+  });
 }
 
 function toggleWeekDone(i) {
