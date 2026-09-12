@@ -423,3 +423,16 @@ tr.week-done td[data-label="التسليمات"] input {
 }
 
 .pricing-actions { margin-top: .75rem; }
+
+/* Desktop: CRM status labels must not clip (عرض سعر / عميل محتمل / تم الاتفاق) */
+@media (min-width: 701px) {
+  #crm-table th:nth-child(4),
+  #crm-table td:nth-child(4) {
+    min-width: 8.75rem;
+    width: 8.75rem;
+  }
+  #crm-table select[data-k="status"] {
+    min-width: 8.5rem;
+    width: 100%;
+  }
+}
