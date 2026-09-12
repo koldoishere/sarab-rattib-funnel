@@ -1119,6 +1119,7 @@ function renderCrm() {
       <td class="row-actions" data-label="إجراءات">
         ${whatsappPhone(c.contact) ? `<button type="button" class="ghost tiny" data-wa="${i}" title="فتح واتساب">واتساب</button>` : ""}
         ${c.status !== "won" ? `<button type="button" class="ghost tiny" data-touch="${i}">تواصلت</button>` : ""}
+        <button type="button" class="ghost tiny" data-copy-card="${i}" title="نسخ بطاقة العميل كنص عربي">نسخ نص</button>
         <button type="button" class="ghost tiny" data-dup="${i}" title="نسخ العميل تحتها">نسخ</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
@@ -1151,6 +1152,9 @@ function renderCrm() {
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
     btn.onclick = () => deleteClient(+btn.dataset.del);
   });
+  tbody.querySelectorAll("[data-copy-card]").forEach((btn) => {
+    btn.onclick = () => copyClientCard(+btn.dataset.copyCard);
+  });
   tbody.querySelectorAll("[data-dup]").forEach((btn) => {
     btn.onclick = () => duplicateClient(+btn.dataset.dup);
   });
@@ -1176,6 +1180,42 @@ function statusLabel(value) {
 
 function visibleCrmClients() {
   return sortedClientIndexes().filter(({ c }) => clientMatchesFilter(c));
+}
+
+
+function clientCardPlainText(c) {
+  const name = String(c.name || "").trim() || "بدون اسم";
+  const lines = [
+    "متابعة عميل — رتّب",
+    "",
+  ];
+  let head = `• ${name} (${statusLabel(c.status)})`;
+  const hint = nextDateHint(c.next);
+  const nextAr = formatArDate(c.next);
+  if (hint) head += ` — ${hint}`;
+  else if (nextAr) head += ` — ${nextAr}`;
+  lines.push(head);
+  const contact = String(c.contact || "").trim();
+  if (contact) lines.push(`  التواصل: ${contact}`);
+  const source = String(c.source || "").trim();
+  if (source) lines.push(`  المصدر: ${source}`);
+  const lastAr = formatArDate(c.last);
+  if (lastAr) lines.push(`  آخر تواصل: ${lastAr}`);
+  else if (String(c.last || "").trim()) lines.push(`  آخر تواصل: ${c.last}`);
+  if (nextAr && !["won", "lost"].includes(c.status)) lines.push(`  متابعة تالية: ${nextAr}`);
+  else if (String(c.next || "").trim() && !["won", "lost"].includes(c.status)) lines.push(`  متابعة تالية: ${c.next}`);
+  if (n(c.value)) lines.push(`  القيمة: ${money(c.value)} ج.م`);
+  const notes = String(c.notes || "").trim();
+  if (notes) lines.push(`  ملاحظات: ${notes}`);
+  return lines.join("\n");
+}
+
+async function copyClientCard(i) {
+  const c = state.clients[i];
+  if (!c) return;
+  await copyTextToClipboard(clientCardPlainText(c));
+  const name = String(c.name || "").trim();
+  showToast(name ? `اتنسخ «${name}»` : "اتنسخ العميل");
 }
 
 function crmFollowUpPlainText() {
