@@ -88,15 +88,55 @@ function suggested(row) {
   return n(row.hours) * n(row.rate) * (1 + n(row.margin) / 100) + n(row.costs);
 }
 
+const UI_KEY = "rattib-ui-v1";
+const TAB_IDS = ["pricing", "proposal", "crm", "week"];
+const CRM_FILTER_IDS = ["all", "today", "overdue", "lead", "proposal", "won", "lost"];
+
+function loadUi() {
+  try {
+    const raw = localStorage.getItem(UI_KEY);
+    if (!raw) return {};
+    const u = JSON.parse(raw);
+    return u && typeof u === "object" && !Array.isArray(u) ? u : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveUi(patch) {
+  try {
+    localStorage.setItem(UI_KEY, JSON.stringify({ ...loadUi(), ...patch }));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+function activateTab(name) {
+  if (!TAB_IDS.includes(name)) return;
+  document.querySelectorAll(".tab").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+  const panel = document.getElementById(`panel-${name}`);
+  if (panel) panel.classList.add("active");
+}
+
+function paintCrmFilterChips() {
+  const filters = document.getElementById("crm-filters");
+  if (!filters) return;
+  filters.querySelectorAll("[data-filter]").forEach((b) => {
+    b.classList.toggle("active", b.dataset.filter === crmFilter);
+  });
+}
+
 function bindTabs() {
   document.querySelectorAll(".tab").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
-      document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
-      btn.classList.add("active");
-      document.getElementById(`panel-${btn.dataset.tab}`).classList.add("active");
+      const tab = btn.dataset.tab;
+      activateTab(tab);
+      saveUi({ tab });
     });
   });
+  const saved = loadUi().tab;
+  if (TAB_IDS.includes(saved)) activateTab(saved);
 }
 
 function depositPct() {
@@ -1133,7 +1173,8 @@ function wire() {
     filters.querySelectorAll("[data-filter]").forEach((btn) => {
       btn.onclick = () => {
         crmFilter = btn.dataset.filter || "all";
-        filters.querySelectorAll("[data-filter]").forEach((b) => b.classList.toggle("active", b === btn));
+        saveUi({ crmFilter });
+        paintCrmFilterChips();
         renderCrm();
       };
     });
@@ -1208,8 +1249,10 @@ function wire() {
   renderAll();
 }
 let state = load();
-let crmFilter = "all";
+const _ui = loadUi();
+let crmFilter = CRM_FILTER_IDS.includes(_ui.crmFilter) ? _ui.crmFilter : "all";
 let crmQuery = "";
 
 function renderAll() { renderPricing(); renderProposal(); renderCrm(); renderWeek(); }
+paintCrmFilterChips();
 wire();
