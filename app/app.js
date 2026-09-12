@@ -1153,6 +1153,66 @@ function renderCrm() {
   });
 }
 
+
+function statusLabel(value) {
+  const hit = STATUS.find((s) => s.value === value);
+  return hit ? hit.label : String(value || "");
+}
+
+function visibleCrmClients() {
+  return sortedClientIndexes().filter(({ c }) => clientMatchesFilter(c));
+}
+
+function crmFollowUpPlainText() {
+  const visible = visibleCrmClients();
+  const filterLabel = CRM_FILTER_LABELS[crmFilter] || crmFilter;
+  const q = (crmQuery || "").trim();
+  const lines = [
+    "متابعات العملاء — رتّب",
+    `التصفية: ${filterLabel} · ${visible.length} عميل` + (q ? ` · بحث: «${q}»` : ""),
+    "",
+  ];
+  visible.forEach(({ c }) => {
+    const name = String(c.name || "").trim() || "بدون اسم";
+    let head = `• ${name} (${statusLabel(c.status)})`;
+    const hint = nextDateHint(c.next);
+    const nextAr = formatArDate(c.next);
+    if (hint) head += ` — ${hint}`;
+    else if (nextAr) head += ` — ${nextAr}`;
+    lines.push(head);
+    const contact = String(c.contact || "").trim();
+    if (contact) lines.push(`  التواصل: ${contact}`);
+    if (n(c.value)) lines.push(`  القيمة: ${money(c.value)} ج.م`);
+    const notes = String(c.notes || "").trim();
+    if (notes) lines.push(`  ملاحظات: ${notes}`);
+  });
+  return lines.join("\n");
+}
+
+async function copyTextToClipboard(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+}
+
+async function copyCrmFollowUps() {
+  const visible = visibleCrmClients();
+  if (!visible.length) {
+    showToast("مفيش عملاء في التصفية دي للنسخ");
+    return;
+  }
+  await copyTextToClipboard(crmFollowUpPlainText());
+  const filterLabel = CRM_FILTER_LABELS[crmFilter] || crmFilter;
+  showToast(`اتنسخ ${visible.length} متابعة (${filterLabel})`);
+}
+
 function weekTotal() {
   return state.week.reduce((sum, w) => sum + n(w.hours), 0);
 }
@@ -1186,17 +1246,7 @@ function weekPlainText() {
 }
 
 async function copyWeekSummary() {
-  const text = weekPlainText();
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand("copy");
-    ta.remove();
-  }
+  await copyTextToClipboard(weekPlainText());
   showToast("اتنسخ ملخص الأسبوع");
 }
 
@@ -1447,6 +1497,8 @@ function wire() {
   if (newWeekBtn) newWeekBtn.onclick = () => { resetWeek(); };
   const copyWeekBtn = document.getElementById("btn-copy-week");
   if (copyWeekBtn) copyWeekBtn.onclick = () => { copyWeekSummary(); };
+  const copyCrmBtn = document.getElementById("btn-copy-crm");
+  if (copyCrmBtn) copyCrmBtn.onclick = () => { copyCrmFollowUps(); };
   document.getElementById("add-pricing").onclick = () => {
     const copy = { type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" };
     state.pricing.push(copy);
