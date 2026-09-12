@@ -1382,15 +1382,25 @@ function todayWeekRow() {
   return { w: state.week[i], i, day: todayName };
 }
 
-function todayWeekPlainText() {
-  const row = todayWeekRow();
-  if (!row) return "";
-  const { w, day } = row;
+function weekDayHasContent(i) {
+  const w = state.week[i];
+  if (!w) return false;
+  if (String(w.tasks || "").trim()) return true;
+  if (n(w.hours)) return true;
+  const del = String(w.deliverables || "").trim();
+  return !!(del && del !== "—");
+}
+
+function weekDayPlainText(i) {
+  const w = state.week[i];
+  if (!w) return "";
+  const todayName = DAYS[cairoDayOfWeek()];
+  const isToday = w.day === todayName;
   const mark = w.done === "☑" ? "☑" : "☐";
-  const lines = [
-    `يوم الشغل — رتّب · ${day} (اليوم)`,
-    `${mark} ${day}`,
-  ];
+  const title = isToday
+    ? `يوم الشغل — رتّب · ${w.day} (اليوم)`
+    : `يوم الشغل — رتّب · ${w.day}`;
+  const lines = [title, `${mark} ${w.day}`];
   if (String(w.tasks || "").trim()) lines.push(`  المهام: ${w.tasks}`);
   if (n(w.hours)) lines.push(`  الساعات: ${w.hours}`);
   const del = String(w.deliverables || "").trim();
@@ -1398,24 +1408,33 @@ function todayWeekPlainText() {
   return lines.join("\n");
 }
 
-function todayWeekHasContent() {
+function todayWeekPlainText() {
   const row = todayWeekRow();
-  if (!row) return false;
-  const { w } = row;
-  if (String(w.tasks || "").trim()) return true;
-  if (n(w.hours)) return true;
-  const del = String(w.deliverables || "").trim();
-  return !!(del && del !== "—");
+  return row ? weekDayPlainText(row.i) : "";
 }
 
-async function copyTodayWeek() {
-  if (!todayWeekHasContent()) {
+function todayWeekHasContent() {
+  const row = todayWeekRow();
+  return row ? weekDayHasContent(row.i) : false;
+}
+
+async function copyWeekDay(i) {
+  if (!weekDayHasContent(i)) {
     showToast("مفيش محتوى لليوم ده للنسخ — حط مهام أو ساعات أولاً");
     return;
   }
-  await copyTextToClipboard(todayWeekPlainText());
+  await copyTextToClipboard(weekDayPlainText(i));
+  const w = state.week[i];
+  showToast(`اتنسخ يوم «${w ? w.day : "اليوم"}»`);
+}
+
+async function copyTodayWeek() {
   const row = todayWeekRow();
-  showToast(`اتنسخ يوم «${row ? row.day : "اليوم"}»`);
+  if (!row) {
+    showToast("مفيش محتوى لليوم ده للنسخ — حط مهام أو ساعات أولاً");
+    return;
+  }
+  await copyWeekDay(row.i);
 }
 
 
@@ -1503,6 +1522,9 @@ function renderWeek() {
           <span aria-hidden="true">${doneOn ? "☑" : "☐"}</span>
           <span class="done-toggle-label">${doneOn ? "تم" : "مش بعد"}</span>
         </button>
+      </td>
+      <td class="row-actions week-row-actions" data-label="إجراءات">
+        <button type="button" class="ghost tiny" data-copy-day="${i}" title="نسخ بطاقة اليوم كنص عربي">نسخ نص</button>
       </td>`;
     tbody.appendChild(tr);
   });
@@ -1519,6 +1541,9 @@ function renderWeek() {
   });
   tbody.querySelectorAll("[data-done-toggle]").forEach((btn) => {
     btn.onclick = () => toggleWeekDone(+btn.dataset.doneToggle);
+  });
+  tbody.querySelectorAll("[data-copy-day]").forEach((btn) => {
+    btn.onclick = () => copyWeekDay(+btn.dataset.copyDay);
   });
   const todayRow = tbody.querySelector("tr.today");
   if (todayRow) {
