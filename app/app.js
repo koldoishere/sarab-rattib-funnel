@@ -189,6 +189,7 @@ function renderPricing() {
       <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(row.notes)}"></td>
       <td class="row-actions" data-label="إجراءات">
         <button type="button" class="ghost tiny" data-use="${i}" title="ضع السعر والمشروع في عرض السعر">انقل للعرض</button>
+        <button type="button" class="ghost tiny" data-dup="${i}" title="نسخ الصف تحتها">نسخ</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
     tbody.appendChild(tr);
@@ -218,6 +219,9 @@ function renderPricing() {
       renderProposal();
       showToast("اتنقل لعرض السعر بالسعر المحسوب");
     };
+  });
+  tbody.querySelectorAll("[data-dup]").forEach((btn) => {
+    btn.onclick = () => duplicatePricingRow(+btn.dataset.dup);
   });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
     btn.onclick = () => deletePricingRow(+btn.dataset.del);
@@ -299,6 +303,26 @@ function showToast(msg, opts = {}) {
   clearTimeout(toast._t);
   const ms = opts.ms != null ? opts.ms : (opts.onAction ? 6000 : 2200);
   toast._t = setTimeout(() => { toast.hidden = true; }, ms);
+}
+
+function duplicatePricingRow(i) {
+  if (i < 0 || i >= state.pricing.length) return;
+  const src = state.pricing[i];
+  const copy = {
+    type: src.type ?? "",
+    hours: src.hours ?? "",
+    rate: src.rate ?? "",
+    costs: src.costs ?? "",
+    margin: src.margin ?? 25,
+    notes: src.notes ?? "",
+  };
+  state.pricing.splice(i + 1, 0, copy);
+  save();
+  renderPricing();
+  const label = (copy.type && String(copy.type).trim())
+    ? `اتنسخ صف «${copy.type}»`
+    : "اتنسخ صف التسعير";
+  showToast(label);
 }
 
 function deletePricingRow(i) {
