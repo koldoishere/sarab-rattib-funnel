@@ -184,6 +184,38 @@
   }
   .cta-row { display: flex; flex-wrap: wrap; gap: 0.65rem; justify-content: center; align-items: center; }
   .cta-row .btn-ghost { margin-left: 0; }
+  header .hero-cta {
+    margin: 0 auto 0.35rem;
+    max-width: 28rem;
+  }
+  header .hero-cta .primary-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.78;
+    margin: 0 0 0.65rem;
+  }
+  header .hero-preview-quiet {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.85rem;
+    min-height: 2.5rem;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: #c5d2cb;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 600;
+    border-radius: 8px;
+  }
+  header .hero-preview-quiet:hover { color: var(--oasis); }
+  header .hero-preview-quiet:focus-visible {
+    outline: 2px solid var(--oasis);
+    outline-offset: 3px;
+  }
   a:focus-visible {
     outline: 2px solid var(--oasis);
     outline-offset: 2px;
@@ -505,11 +537,14 @@
       <span>One-time</span>
       <strong>$12</strong>
     </div>
-    <div class="cta-row">
-      <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib on Whop — $12</a>
+    <div class="hero-cta" role="region" aria-label="Primary next action">
+      <p class="primary-label">One clear next step</p>
+      <div class="cta-row">
+        <a class="btn" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib on Whop — $12</a>
+      </div>
+      <a class="hero-preview-quiet" href="app/">Free preview</a>
     </div>
-    <p class="cta-sub" style="margin-top:0.85rem;font-size:0.9rem;opacity:0.8"><span style="opacity:0.85">Or explore:</span> <a href="#inside" style="color:inherit;text-decoration:underline">What’s inside</a><span aria-hidden="true"> · </span><a href="app/" style="color:inherit;text-decoration:underline">Free web preview</a></p>
-    <p style="margin-top:0.85rem;font-size:0.88rem;opacity:0.78;max-width:34em;margin-left:auto;margin-right:auto">Instant download after checkout · one-time $12 · Excel / CSV / Notion · no income claims</p>
+    <p style="margin-top:0.95rem;font-size:0.88rem;opacity:0.78;max-width:34em;margin-left:auto;margin-right:auto">Instant download · one-time $12 · Excel / CSV / Notion · no income claims · <a href="#inside" style="color:inherit;text-decoration:underline;text-underline-offset:2px">What’s inside</a></p>
   </div>
 </header>
 
