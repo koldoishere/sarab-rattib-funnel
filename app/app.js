@@ -785,7 +785,12 @@ function renderWeek() {
   const tbody = document.querySelector("#week-table tbody");
   tbody.innerHTML = "";
   const todayName = DAYS[new Date().getDay()];
-  state.week.forEach((w, i) => {
+  // Start display at today so mobile users see «اليوم» first (data order stays Sun→Sat).
+  let start = state.week.findIndex((w) => w.day === todayName);
+  if (start < 0) start = 0;
+  const order = state.week.map((w, i) => i).slice(start).concat(state.week.map((w, i) => i).slice(0, start));
+  order.forEach((i) => {
+    const w = state.week[i];
     const tr = document.createElement("tr");
     if (w.day === todayName) tr.classList.add("today");
     if (w.done === "☑") tr.classList.add("week-done");
@@ -818,6 +823,12 @@ function renderWeek() {
   tbody.querySelectorAll("[data-done-toggle]").forEach((btn) => {
     btn.onclick = () => toggleWeekDone(+btn.dataset.doneToggle);
   });
+  const todayRow = tbody.querySelector("tr.today");
+  if (todayRow) {
+    requestAnimationFrame(() => {
+      todayRow.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
+  }
 }
 
 
