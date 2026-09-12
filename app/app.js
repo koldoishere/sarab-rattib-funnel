@@ -220,7 +220,7 @@ function renderPricing() {
     };
   });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
-    btn.onclick = () => { state.pricing.splice(+btn.dataset.del, 1); save(); renderPricing(); };
+    btn.onclick = () => deletePricingRow(+btn.dataset.del);
   });
   paintPricingTotals();
 }
@@ -299,6 +299,28 @@ function showToast(msg, opts = {}) {
   clearTimeout(toast._t);
   const ms = opts.ms != null ? opts.ms : (opts.onAction ? 6000 : 2200);
   toast._t = setTimeout(() => { toast.hidden = true; }, ms);
+}
+
+function deletePricingRow(i) {
+  if (i < 0 || i >= state.pricing.length) return;
+  const removed = state.pricing.splice(i, 1)[0];
+  const at = i;
+  save();
+  renderPricing();
+  const label = (removed && String(removed.type || "").trim())
+    ? `اتمسح صف «${removed.type}»`
+    : "اتمسح صف التسعير";
+  showToast(label, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      const insertAt = Math.min(at, state.pricing.length);
+      state.pricing.splice(insertAt, 0, removed);
+      save();
+      renderPricing();
+      showToast("رجع صف التسعير");
+    },
+  });
 }
 
 function deleteClient(i) {
