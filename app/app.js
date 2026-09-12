@@ -1213,6 +1213,44 @@ async function copyCrmFollowUps() {
   showToast(`اتنسخ ${visible.length} متابعة (${filterLabel})`);
 }
 
+
+function pricingPlainText() {
+  const lines = [
+    "ملخص التسعير — رتّب",
+    `سعر الصرف: ${state.fx} ج.م لكل $1 · مقدم ${depositPct()}%`,
+  ];
+  const t = pricingTotals();
+  if (t.n) {
+    lines.push(`إجمالي (${t.n}): ${money(t.price)} ج.م · ${money(t.usd)} USD · مقدم ${money(t.dep)} · متبقي ${money(t.bal)}`);
+  } else {
+    lines.push("مفيش صفوف محسوبة بعد");
+  }
+  lines.push("");
+  state.pricing.forEach((row, i) => {
+    const c = pricingCalcs(row);
+    const type = String(row.type || "").trim() || `صف ${i + 1}`;
+    if (c.empty) {
+      lines.push(`☐ ${type} — ناقص ساعات/سعر ساعة`);
+    } else {
+      lines.push(`• ${type}: ${row.hours}س × ${money(row.rate)} + تكاليف ${money(row.costs)} (هامش ${row.margin}%) → ${money(c.price)} ج.م / ${money(c.usd)} USD`);
+      lines.push(`  مقدم ${money(c.dep)} · متبقي ${money(c.bal)}`);
+    }
+    const notes = String(row.notes || "").trim();
+    if (notes) lines.push(`  ملاحظات: ${notes}`);
+  });
+  return lines.join("\n");
+}
+
+async function copyPricingSummary() {
+  if (!state.pricing.length) {
+    showToast("مفيش صفوف تسعير للنسخ");
+    return;
+  }
+  await copyTextToClipboard(pricingPlainText());
+  const t = pricingTotals();
+  showToast(t.n ? `اتنسخ ${state.pricing.length} صف تسعير (${t.n} محسوب)` : `اتنسخ ${state.pricing.length} صف تسعير`);
+}
+
 function weekTotal() {
   return state.week.reduce((sum, w) => sum + n(w.hours), 0);
 }
@@ -1499,6 +1537,8 @@ function wire() {
   if (copyWeekBtn) copyWeekBtn.onclick = () => { copyWeekSummary(); };
   const copyCrmBtn = document.getElementById("btn-copy-crm");
   if (copyCrmBtn) copyCrmBtn.onclick = () => { copyCrmFollowUps(); };
+  const copyPricingBtn = document.getElementById("btn-copy-pricing");
+  if (copyPricingBtn) copyPricingBtn.onclick = () => { copyPricingSummary(); };
   document.getElementById("add-pricing").onclick = () => {
     const copy = { type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" };
     state.pricing.push(copy);
