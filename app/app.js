@@ -981,6 +981,7 @@ function paintCrmPipeline(visible) {
 function onClientStatusChange(i, prev, nextStatus) {
   const c = state.clients[i];
   if (!c || prev === nextStatus) return;
+  const prevNext = c.next;
   let toast = "";
   if (nextStatus === "won" || nextStatus === "lost") {
     c.next = "";
@@ -991,7 +992,19 @@ function onClientStatusChange(i, prev, nextStatus) {
   }
   save();
   renderCrm();
-  if (toast) showToast(toast);
+  if (!toast) return;
+  showToast(toast, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      if (state.clients[i] !== c) return;
+      c.status = prev;
+      c.next = prevNext;
+      save();
+      renderCrm();
+      showToast("اتلغى تغيير الحالة");
+    },
+  });
 }
 
 function renderCrm() {
@@ -1055,7 +1068,7 @@ function renderCrm() {
       <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>
       <td class="row-actions" data-label="إجراءات">
         ${whatsappPhone(c.contact) ? `<button type="button" class="ghost tiny" data-wa="${i}" title="فتح واتساب">واتساب</button>` : ""}
-        <button type="button" class="ghost tiny" data-touch="${i}">تواصلت</button>
+        ${c.status !== "won" ? `<button type="button" class="ghost tiny" data-touch="${i}">تواصلت</button>` : ""}
         <button type="button" class="ghost tiny" data-dup="${i}" title="نسخ العميل تحتها">نسخ</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
