@@ -405,9 +405,18 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   width: 1%;
   min-width: 7.5rem;
 }
-#week-table th:last-child {
+#week-table th:nth-last-child(2),
+#week-table td.week-done-cell {
   min-width: 7.5rem;
   white-space: nowrap;
+}
+.week-row-actions {
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.week-row-actions .tiny {
+  min-height: 2rem;
 }
 .done-toggle {
   display: inline-flex; align-items: center; gap: .35rem;
@@ -429,8 +438,15 @@ tr.week-done td[data-label="التسليمات"] input {
   text-decoration: line-through; opacity: .78;
 }
 @media (max-width: 700px) {
-  .week-done-cell, #week-table th:last-child { min-width: 0; width: auto; }
+  .week-done-cell, #week-table th:nth-last-child(2) { min-width: 0; width: auto; }
   .done-toggle { width: 100%; min-width: 0; justify-content: center; padding: .55rem .75rem; }
+  #panel-week .week-row-actions {
+    width: 100%;
+  }
+  #panel-week .week-row-actions .tiny {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .pricing-actions { margin-top: .75rem; }
