@@ -1437,8 +1437,22 @@ function wire() {
   const copyWeekBtn = document.getElementById("btn-copy-week");
   if (copyWeekBtn) copyWeekBtn.onclick = () => { copyWeekSummary(); };
   document.getElementById("add-pricing").onclick = () => {
-    state.pricing.push({ type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" });
-    save(); renderPricing();
+    const copy = { type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" };
+    state.pricing.push(copy);
+    save();
+    renderPricing();
+    showToast("اتضاف صف تسعير فاضي", {
+      actionLabel: "تراجع",
+      ms: 6000,
+      onAction: () => {
+        const at = state.pricing.indexOf(copy);
+        if (at < 0) return;
+        state.pricing.splice(at, 1);
+        save();
+        renderPricing();
+        showToast("اتشال صف التسعير الفاضي");
+      },
+    });
   };
   const toProposalBtn = document.getElementById("btn-to-proposal");
   if (toProposalBtn) toProposalBtn.onclick = () => { fillProposalFromPricing(); };
