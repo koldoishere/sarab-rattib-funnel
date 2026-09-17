@@ -117,6 +117,49 @@ function paintDemoChip() {
   const el = document.getElementById("demo-seed-chip");
   if (!el) return;
   el.hidden = !showingDemoSeed;
+  paintBackupNudge();
+}
+
+/** Days between an ISO date and today (Cairo calendar), or Infinity if missing/invalid. */
+function daysSinceISO(iso) {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(String(iso))) return Infinity;
+  const today = localISODate();
+  const [y0, m0, d0] = String(iso).split("-").map(Number);
+  const [y1, m1, d1] = today.split("-").map(Number);
+  const t0 = Date.UTC(y0, m0 - 1, d0, 12);
+  const t1 = Date.UTC(y1, m1 - 1, d1, 12);
+  return Math.round((t1 - t0) / 86400000);
+}
+
+/** Soft backup reminder: real (non-demo) data + never exported or ≥7 days since last export. */
+function paintBackupNudge() {
+  const el = document.getElementById("backup-nudge");
+  if (!el) return;
+  if (showingDemoSeed) {
+    el.hidden = true;
+    return;
+  }
+  const ui = loadUi();
+  const last = ui.lastExportAt;
+  const stale = !last || daysSinceISO(last) >= 7;
+  const dismissedUntil = ui.backupNudgeDismissedUntil;
+  const today = localISODate();
+  const dismissOk = !dismissedUntil || today >= String(dismissedUntil);
+  el.hidden = !(stale && dismissOk);
+}
+
+function doExport() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const stamp = localISODate();
+  const filename = `rattib-${stamp}.json`;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  saveUi({ lastExportAt: stamp });
+  paintBackupNudge();
+  showToast(`اتصدر ${filename}`);
 }
 function n(v) {
   const x = Number(v);
@@ -2217,17 +2260,16 @@ function wire() {
       clearCrmSearch();
     }
   });
-  document.getElementById("btn-export").onclick = () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    const stamp = localISODate();
-    const filename = `rattib-${stamp}.json`;
-    a.download = filename;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    showToast(`اتصدر ${filename}`);
-  };
+  document.getElementById("btn-export").onclick = () => doExport();
+  const btnBackupExport = document.getElementById("btn-backup-export");
+  if (btnBackupExport) btnBackupExport.onclick = () => doExport();
+  const btnBackupDismiss = document.getElementById("btn-backup-dismiss");
+  if (btnBackupDismiss) {
+    btnBackupDismiss.onclick = () => {
+      saveUi({ backupNudgeDismissedUntil: addDaysISO(localISODate(), 7) });
+      paintBackupNudge();
+    };
+  }
   document.getElementById("btn-import").onclick = () => document.getElementById("import-file").click();
   document.getElementById("import-file").onchange = async (e) => {
     const file = e.target.files?.[0]; if (!file) return;

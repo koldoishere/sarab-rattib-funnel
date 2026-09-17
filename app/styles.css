@@ -45,6 +45,40 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   vertical-align: middle;
 }
 .demo-seed-chip[hidden] { display: none !important; }
+
+.backup-nudge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem 1rem;
+  padding: .7rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: #070a08;
+}
+.backup-nudge[hidden] { display: none !important; }
+.backup-nudge-text {
+  margin: 0;
+  flex: 1 1 14rem;
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.45;
+}
+.backup-nudge-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+}
+.backup-nudge .primary {
+  margin-top: 0;
+  padding: .45rem .95rem;
+  font-size: .88rem;
+}
+.backup-nudge .ghost {
+  padding: .45rem .85rem;
+  font-size: .88rem;
+}
 .actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 .tabs {
   display: flex; gap: .35rem; padding: .75rem 1.25rem;
@@ -513,6 +547,15 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   #panel-pricing .pricing-actions .primary,
   #panel-proposal .proposal-actions .ghost,
   #panel-proposal .proposal-actions .primary {
+    min-height: 44px;
+    padding: .4rem .85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  /* Header action ghosts (تصدير / استيراد / مسح البيانات) — same 44px */
+  .top .actions .ghost {
     min-height: 44px;
     padding: .4rem .85rem;
     display: inline-flex;
