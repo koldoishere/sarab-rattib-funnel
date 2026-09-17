@@ -1932,9 +1932,22 @@ function weekPlainText() {
   return lines.join("\n");
 }
 
+/** After week summary copy: offer تم للكل when incomplete days have content (day copy → تم parity). */
+function offerWeekSummaryDoneAllToast(msg) {
+  if (!weekIncompleteWithContent().length) {
+    showToast(msg);
+    return;
+  }
+  showToast(msg, {
+    actionLabel: "تم للكل",
+    ms: 8000,
+    onAction: () => markWeekDoneAll(),
+  });
+}
+
 async function copyWeekSummary() {
   await copyTextToClipboard(weekPlainText());
-  showToast("اتنسخ ملخص الأسبوع");
+  offerWeekSummaryDoneAllToast("اتنسخ ملخص الأسبوع");
 }
 
 
