@@ -31,6 +31,11 @@
     --night-soft: #0c1510;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html {
+    scroll-behavior: smooth;
+    /* Keep focus / in-page anchors clear of mobile sticky Skip (WCAG 2.4.11) */
+    scroll-padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
+  }
   body {
     font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
     background: var(--sand);
@@ -234,6 +239,41 @@
     color: var(--muted);
     font-size: 0.9rem;
   }
+  .reassure .footer-links {
+    margin-top: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    align-items: center;
+  }
+  .reassure .footer-links a.plain { margin-top: 0; }
+  .btn-primary-skip {
+    margin-top: 0.95rem;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Ep4: one PRIMARY Skip; no-Rattib paths stay quiet (Whop label locked) */
+  .quiet-row {
+    margin-top: 0.85rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+  .quiet-row .sep { margin: 0 0.35rem; opacity: 0.55; }
+  .quiet-row a.plain {
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+  }
+  .quiet-row a.plain:hover { color: var(--oasis); }
+  .quiet-row a.plain:focus-visible {
+    outline: 2px solid var(--oasis);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 
   /* Sticky primary action on mobile — Ep4: one clear next action */
   .sticky-skip {
@@ -298,6 +338,9 @@
     .sticky-skip { display: block; }
     body { padding-bottom: calc(7.25rem + env(safe-area-inset-bottom, 0px)); }
   }
+  @media (min-width: 721px) {
+    html { scroll-padding-bottom: 0; }
+  }
 
   footer {
     text-align: center;
@@ -324,13 +367,13 @@
     </div>
     <h1>Optional tools — skip anytime</h1>
     <p>Rattib already covers pricing, proposals, light CRM, and a weekly board — try free in the web app, or own the $12 pack on Whop. These sister packs are extras, not required.</p>
-    <div class="soft-badge">One clear next step · no pressure · no income promises</div>
+    <div class="soft-badge">One clear next step: skip anytime · no pressure · no income promises</div>
   </div>
 </header>
 
 <section>
   <div class="wrap">
-    <h2>One clear next step</h2>
+    <h2>Rattib first — then optional tools</h2>
     <p class="intro">Stay with Rattib — that’s enough. Peek at a sister pack only if mid-project changes or fuzzy kickoffs keep costing you time. Nothing below is required.</p>
 
     <div class="reassure" style="margin-bottom:1.35rem" role="region" aria-label="Primary next action">
@@ -338,8 +381,8 @@
       <strong>Already have Rattib? You’re set.</strong><br>
       Skip these optional packs — Rattib alone covers pricing, proposals, CRM, and the weekly board.
       <br>
-      <a class="btn" href="index.html" style="margin-top:0.95rem;min-height:2.75rem;display:inline-flex;align-items:center;justify-content:center">Skip — stay with Rattib</a>
-      <p class="quiet-row">Don’t have Rattib yet? <a class="plain" href="app/">Try the free web app</a><span class="sep">·</span><a class="plain" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib on Whop — $12</a></p>
+      <a class="btn btn-primary-skip" href="index.html">Skip — stay with Rattib</a>
+      <p class="quiet-row">Don’t have Rattib yet? <a class="plain" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib on Whop — $12</a><span class="sep">·</span><a class="plain" href="app/">Try the free web app</a></p>
     </div>
 
     <div class="tool">
@@ -377,10 +420,11 @@
     <div class="reassure">
       <strong>Rattib is enough on its own.</strong><br>
       Try free in the web app, or own the $12 pack — pricing, proposals, light CRM, and a weekly board. Come back only if mid-project changes or fuzzy kickoffs keep costing you time — no income promises.
-      <br>
-      <a class="plain" href="index.html">← Back to Rattib landing</a>
-      <span class="sep" style="margin:0 0.35rem;opacity:0.55">·</span>
-      <a class="plain" href="app/" style="margin-top:0.85rem;display:inline-block">Try the free web app</a>
+      <div class="footer-links">
+        <a class="plain" href="index.html">← Back to Rattib landing</a>
+        <a class="plain" href="app/">Try the free web app</a>
+        <a class="plain" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Get Rattib on Whop — $12</a>
+      </div>
     </div>
   </div>
 </section>
@@ -388,7 +432,7 @@
 <div class="sticky-skip" role="region" aria-label="Skip optional tools">
   <div class="inner">
     <div class="sticky-skip-copy">
-      <span class="hint">One clear next step · try free or own the pack</span>
+      <span class="hint">One clear next step · skip optional packs</span>
       <a class="link-quiet" href="app/">Free preview</a>
     </div>
     <a class="btn" href="index.html">Skip — stay with Rattib</a>
