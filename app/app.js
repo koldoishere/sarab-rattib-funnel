@@ -2063,12 +2063,12 @@ function wire() {
     e.target.value = "";
   };
   document.getElementById("btn-reset").onclick = () => {
-    if (!confirm("مسح كل البيانات والرجوع للأمثلة؟")) return;
+    if (!confirm("هترجع للبيانات التجريبية — مش هتفضل فاضي. كمّل؟")) return;
     const previous = JSON.parse(JSON.stringify(state));
     state = seed();
     save();
     renderAll();
-    showToast("اتمسحت البيانات — رجعت للأمثلة", {
+    showToast("رجعت للبيانات التجريبية", {
       actionLabel: "تراجع",
       ms: 6000,
       onAction: () => {
