@@ -641,6 +641,58 @@ function paintClearBlankPricingBtn() {
     : "مفيش صفوف فاضية";
 }
 
+function blankClientIndices() {
+  return state.clients
+    .map((c, i) => (isBlankClient(c) ? i : -1))
+    .filter((i) => i >= 0);
+}
+
+function clearBlankClients() {
+  const idxs = blankClientIndices();
+  if (!idxs.length) {
+    showToast("مفيش عملاء فاضي");
+    return;
+  }
+  // Snapshot full list so undo restores order + blanks exactly.
+  const previous = state.clients.map((c) => ({ ...c }));
+  const kept = state.clients.filter((c) => !isBlankClient(c));
+  // Keep at least one blank client so the list isn't empty after a clean sweep.
+  if (kept.length === 0) {
+    kept.push({ name: "", contact: "", source: "", status: "lead", last: "", next: "", value: 0, notes: "" });
+  }
+  state.clients = kept;
+  save();
+  renderCrm();
+  const n = previous.length - state.clients.length;
+  if (n <= 0) {
+    showToast("مفيش عملاء فاضي");
+    return;
+  }
+  showToast(`اتمسح ${n} عميل فاضي`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      state.clients = previous.map((c) => ({ ...c }));
+      save();
+      renderCrm();
+      showToast("رجعت العملاء");
+    },
+  });
+}
+
+function paintClearBlankClientsBtn() {
+  const btn = document.getElementById("btn-clear-blank-clients");
+  if (!btn) return;
+  const n = blankClientIndices().length;
+  // Hide when nothing blank, or when every client is blank and we'd only leave one blank.
+  const allBlank = n > 0 && n === state.clients.length;
+  const removable = allBlank ? Math.max(0, n - 1) : n;
+  btn.hidden = removable === 0;
+  btn.title = removable
+    ? `احذف ${removable} عميل فاضي`
+    : "مفيش عملاء فاضي";
+}
+
 function duplicateClient(i) {
   if (i < 0 || i >= state.clients.length) return;
   const src = state.clients[i];
@@ -1406,6 +1458,7 @@ function renderCrm() {
   paintCrmFilterChips();
   paintCrmSearchClear();
   paintSnoozeVisibleBtn();
+  paintClearBlankClientsBtn();
   // badge counts all overdue, not just filtered
   state.clients.forEach((c) => { if (clientIsOverdue(c)) overdueCount += 1; });
   visible.forEach(({ c, i }) => {
@@ -2046,6 +2099,22 @@ function isBlankPricingRow(row) {
   return noType && noHours && noRate && noNotes && noCosts;
 }
 
+/** Blank CRM client: no name/contact/source/notes/dates/value; status missing or default lead. */
+function isBlankClient(c) {
+  if (!c || typeof c !== "object") return true;
+  const noName = !String(c.name ?? "").trim();
+  const noContact = !String(c.contact ?? "").trim();
+  const noSource = !String(c.source ?? "").trim();
+  const noNotes = !String(c.notes ?? "").trim();
+  const noLast = !String(c.last ?? "").trim();
+  const noNext = !String(c.next ?? "").trim();
+  const rawVal = c.value;
+  const noValue = rawVal === "" || rawVal == null || Number(rawVal) === 0;
+  const status = c.status == null || c.status === "" ? "lead" : String(c.status);
+  const defaultStatus = status === "lead";
+  return noName && noContact && noSource && noNotes && noLast && noNext && noValue && defaultStatus;
+}
+
 /** Validate + normalize a Rattib export. Throws Error with Arabic message on bad shape. */
 function normalizeImportedState(data) {
   if (!isPlainObject(data)) throw new Error("الملف مش JSON كائن صالح");
@@ -2171,6 +2240,8 @@ function wire() {
   if (copyPricingBtn) copyPricingBtn.onclick = () => { copyPricingSummary(); };
   const clearBlankPricingBtn = document.getElementById("btn-clear-blank-pricing");
   if (clearBlankPricingBtn) clearBlankPricingBtn.onclick = () => { clearBlankPricingRows(); };
+  const clearBlankClientsBtn = document.getElementById("btn-clear-blank-clients");
+  if (clearBlankClientsBtn) clearBlankClientsBtn.onclick = () => { clearBlankClients(); };
   document.getElementById("add-pricing").onclick = () => {
     const copy = { type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" };
     state.pricing.push(copy);
