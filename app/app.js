@@ -855,7 +855,21 @@ function deleteClient(i) {
   });
 }
 
-async function copyProposalWhatsApp() {
+/** After proposal WhatsApp copy/open: offer أضف للعملاء when client name is set (CRM WA → تواصلت parity). */
+function offerProposalAddToCrmToast(msg) {
+  const name = String(state.proposal?.client || "").trim();
+  if (!name) {
+    showToast(msg);
+    return;
+  }
+  showToast(msg, {
+    actionLabel: "أضف للعملاء",
+    ms: 8000,
+    onAction: () => addProposalToCrm(),
+  });
+}
+
+async function copyProposalWhatsApp(opts = {}) {
   const text = proposalPlainText();
   try {
     await navigator.clipboard.writeText(text);
@@ -867,7 +881,8 @@ async function copyProposalWhatsApp() {
     document.execCommand("copy");
     ta.remove();
   }
-  showToast("تم نسخ العرض — الصقه في واتساب");
+  if (opts.silent) return;
+  offerProposalAddToCrmToast("تم نسخ العرض — الصقه في واتساب");
 }
 
 function openProposalWhatsApp() {
@@ -879,15 +894,15 @@ function openProposalWhatsApp() {
   const url = base + "?text=" + encoded;
   // wa.me links break when the URL gets too long; fall back to copy + (phone) chat
   if (url.length > 1800) {
-    copyProposalWhatsApp();
+    copyProposalWhatsApp({ silent: true });
     window.open(base, "_blank", "noopener,noreferrer");
-    showToast(phone
+    offerProposalAddToCrmToast(phone
       ? "العرض طويل — اتنسخ، الصقه في واتساب للعميل"
       : "العرض طويل — اتنسخ، الصقه في واتساب");
     return;
   }
   window.open(url, "_blank", "noopener,noreferrer");
-  showToast(phone
+  offerProposalAddToCrmToast(phone
     ? "اتفتح واتساب للعميل بالنص — راجع قبل الإرسال"
     : "اتفتح واتساب بالنص — راجع قبل الإرسال");
 }
