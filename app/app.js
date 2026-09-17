@@ -1026,6 +1026,32 @@ function setClientNextToday(i) {
   });
 }
 
+function setVisibleClientsNextToday() {
+  const targets = visibleCrmClients().filter(({ c }) => ["lead", "proposal"].includes(c.status));
+  if (!targets.length) return;
+  const snapshots = targets.map(({ c, i }) => ({ c, i, prevNext: c.next }));
+  const today = localISODate();
+  snapshots.forEach(({ c }) => {
+    c.next = today;
+  });
+  save();
+  renderCrm();
+  const n = snapshots.length;
+  showToast(`المتابعة بقت النهاردة لـ ${n} عميل`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      snapshots.forEach(({ c, i, prevNext }) => {
+        if (state.clients[i] !== c) return;
+        c.next = prevNext;
+      });
+      save();
+      renderCrm();
+      showToast("اتلغى تعيين النهاردة الجماعي");
+    },
+  });
+}
+
 function appendPipelineJump(el, filterId, count, label, title, toastMsg) {
   if (!count || crmFilter === filterId) return;
   el.append(document.createTextNode(" · "));
@@ -1105,13 +1131,22 @@ function onClientStatusChange(i, prev, nextStatus) {
 
 
 function paintSnoozeVisibleBtn() {
-  const btn = document.getElementById("btn-snooze-visible");
-  if (!btn) return;
+  const snoozeBtn = document.getElementById("btn-snooze-visible");
+  const todayBtn = document.getElementById("btn-today-visible");
   const n = visibleCrmClients().filter(({ c }) => ["lead", "proposal"].includes(c.status)).length;
-  btn.hidden = n === 0;
-  btn.title = n
-    ? `تأجيل المتابعة 3 أيام لـ ${n} عميل ظاهر (عميل محتمل / عرض سعر)`
-    : "تأجيل المتابعة 3 أيام لكل العملاء الظاهرين (عميل محتمل / عرض سعر)";
+  const hide = n === 0;
+  if (snoozeBtn) {
+    snoozeBtn.hidden = hide;
+    snoozeBtn.title = n
+      ? `تأجيل المتابعة 3 أيام لـ ${n} عميل ظاهر (عميل محتمل / عرض سعر)`
+      : "تأجيل المتابعة 3 أيام لكل العملاء الظاهرين (عميل محتمل / عرض سعر)";
+  }
+  if (todayBtn) {
+    todayBtn.hidden = hide;
+    todayBtn.title = n
+      ? `تعيين المتابعة لليوم لـ ${n} عميل ظاهر (عميل محتمل / عرض سعر)`
+      : "تعيين المتابعة لليوم لكل العملاء الظاهرين (عميل محتمل / عرض سعر)";
+  }
 }
 
 function renderCrm() {
@@ -1829,6 +1864,8 @@ function wire() {
   if (copyCrmBtn) copyCrmBtn.onclick = () => { copyCrmFollowUps(); };
   const snoozeVisibleBtn = document.getElementById("btn-snooze-visible");
   if (snoozeVisibleBtn) snoozeVisibleBtn.onclick = () => { snoozeVisibleClients(3); };
+  const todayVisibleBtn = document.getElementById("btn-today-visible");
+  if (todayVisibleBtn) todayVisibleBtn.onclick = () => { setVisibleClientsNextToday(); };
   const copyPricingBtn = document.getElementById("btn-copy-pricing");
   if (copyPricingBtn) copyPricingBtn.onclick = () => { copyPricingSummary(); };
   document.getElementById("add-pricing").onclick = () => {
