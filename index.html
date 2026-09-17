@@ -93,7 +93,35 @@
     border-radius: 4px;
   }
 
-
+  /* Keyboard: skip sticky CTA / jump to main (WCAG 2.4.1) */
+  .skip-link {
+    position: absolute;
+    left: 0.75rem;
+    top: 0.75rem;
+    z-index: 100;
+    padding: 0.55rem 0.9rem;
+    border-radius: 8px;
+    background: var(--oasis);
+    color: var(--night);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transform: translateY(-160%);
+    transition: transform 0.15s ease;
+  }
+  .skip-link:focus {
+    transform: translateY(0);
+    outline: 2px solid var(--sand);
+    outline-offset: 2px;
+  }
+  .skip-link:focus-visible {
+    transform: translateY(0);
+    outline: 2px solid var(--sand);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skip-link { transition: none; }
+  }
 
   @media (min-width: 768px) {
     .sticky-cta { display: none; }
@@ -517,6 +545,8 @@
 </head>
 <body data-brand="sarab" data-product="rattib">
 
+<a class="skip-link" href="#main">Skip to content</a>
+
 <!-- Primary sticky CTA (mobile) — one clear next action -->
 <div class="sticky-cta" role="region" aria-label="Get Rattib on Whop">
   <div style="display:flex;flex-direction:column;align-items:flex-start;gap:0.1rem;line-height:1.2">
@@ -529,7 +559,7 @@
   </div>
 </div>
 
-<header>
+<header id="main" tabindex="-1">
   <div class="wrap">
     <div class="brand-row">
       <img src="logo-mark.png" width="52" height="52" alt="Sarab" decoding="async">
