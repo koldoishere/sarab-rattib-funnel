@@ -76,12 +76,19 @@ const seed = () => ({
   ],
 });
 
+/** True while showing first-visit / reset demo seed (no user-owned save yet). */
+let showingDemoSeed = false;
+
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return seed();
+    if (!raw) {
+      showingDemoSeed = true;
+      return seed();
+    }
     return normalizeImportedState(JSON.parse(raw));
   } catch {
+    showingDemoSeed = true;
     return seed();
   }
 }
@@ -89,6 +96,16 @@ let persistPauseDepth = 0;
 function save() {
   if (persistPauseDepth > 0) return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (showingDemoSeed) {
+    showingDemoSeed = false;
+    paintDemoChip();
+  }
+}
+
+function paintDemoChip() {
+  const el = document.getElementById("demo-seed-chip");
+  if (!el) return;
+  el.hidden = !showingDemoSeed;
 }
 function n(v) {
   const x = Number(v);
@@ -2216,7 +2233,9 @@ function wire() {
       }
       const previous = JSON.parse(JSON.stringify(state));
       state = next;
+      showingDemoSeed = false;
       save();
+      paintDemoChip();
       renderAll();
       showToast("تم استيراد البيانات بأمان", {
         actionLabel: "تراجع",
@@ -2229,7 +2248,8 @@ function wire() {
         },
       });
     } catch (err) {
-      alert(err?.message || "ملف غير صالح");
+      const msg = err?.message || "ملف غير صالح — لازم يكون تصدير رتّب JSON";
+      showToast(msg, { ms: 7000 });
     }
     e.target.value = "";
   };
@@ -2240,19 +2260,24 @@ function wire() {
     // cannot re-write old rows into localStorage after seed().
     persistPauseDepth += 1;
     state = seed();
+    showingDemoSeed = true;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       renderAll();
+      paintDemoChip();
     } finally {
       persistPauseDepth = Math.max(0, persistPauseDepth - 1);
     }
-    save();
+    // Keep demo chip visible after reset: write storage without clearing the flag.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     showToast("رجعت للبيانات التجريبية", {
       actionLabel: "تراجع",
       ms: 6000,
       onAction: () => {
         state = previous;
+        showingDemoSeed = false;
         save();
+        paintDemoChip();
         renderAll();
         showToast("رجعت بياناتك");
       },
@@ -2278,3 +2303,4 @@ function renderAll() {
 }
 paintCrmFilterChips();
 wire();
+paintDemoChip();
