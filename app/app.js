@@ -1456,6 +1456,32 @@ function clearVisibleClientsNext() {
 }
 
 
+function clearClientNext(i) {
+  const c = state.clients[i];
+  if (!c) return;
+  if (!["lead", "proposal"].includes(c.status)) return;
+  if (!String(c.next || "").trim()) {
+    showToast("مفيش موعد يتشال");
+    return;
+  }
+  const prevNext = c.next;
+  c.next = "";
+  save();
+  renderCrm();
+  showToast("اتشال موعد المتابعة", {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      if (state.clients[i] !== c) return;
+      c.next = prevNext;
+      save();
+      renderCrm();
+      showToast("اترجع موعد المتابعة");
+    },
+  });
+}
+
+
 function markVisibleContacted() {
   const targets = visibleCrmClients().filter(({ c }) =>
     ["lead", "proposal"].includes(c.status) && (clientIsOverdue(c) || clientIsDueToday(c))
@@ -1691,11 +1717,16 @@ function renderCrm() {
     else if (dueToday) tr.classList.add("due-today");
     const hint = nextDateHint(c.next);
     const showSnooze = ["lead", "proposal"].includes(c.status);
+    const hasNext = String(c.next || "").trim();
+    const clearNextBtn = hasNext
+      ? `<button type="button" class="ghost tiny" data-clear-next="${i}" title="مسح موعد المتابعة">بدون موعد</button>`
+      : "";
     const snoozeHtml = showSnooze ? `
         <div class="snooze-row" role="group" aria-label="متابعة سريعة">
           <button type="button" class="ghost tiny" data-today="${i}" title="خلي المتابعة النهاردة">اليوم</button>
           <button type="button" class="ghost tiny" data-snooze="${i}" data-days="3" title="تأجيل 3 أيام">+3</button>
           <button type="button" class="ghost tiny" data-snooze="${i}" data-days="7" title="تأجيل أسبوع">+7</button>
+          ${clearNextBtn}
         </div>` : "";
     tr.innerHTML = `
       <td data-label="الاسم"><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
@@ -1778,6 +1809,9 @@ function renderCrm() {
   });
   tbody.querySelectorAll("[data-today]").forEach((btn) => {
     btn.onclick = () => setClientNextToday(+btn.dataset.today);
+  });
+  tbody.querySelectorAll("[data-clear-next]").forEach((btn) => {
+    btn.onclick = () => clearClientNext(+btn.dataset.clearNext);
   });
 }
 
