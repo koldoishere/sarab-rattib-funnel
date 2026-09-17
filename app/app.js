@@ -1107,6 +1107,27 @@ function revealClientInCrm(i) {
   goTab("crm");
 }
 
+/** After proposal → CRM save: offer واتساب when phone present + تراجع (parity with markContacted #110). */
+function offerProposalCrmSavedToast(msg, clientIndex, onUndo) {
+  const c = state.clients[clientIndex];
+  const hasWa = !!(c && whatsappPhone(c.contact));
+  const actions = [];
+  if (hasWa) {
+    actions.push({
+      label: "واتساب",
+      onAction: () => openClientWhatsApp(clientIndex),
+    });
+  }
+  actions.push({
+    label: "تراجع",
+    onAction: onUndo,
+  });
+  showToast(msg, {
+    actions,
+    ms: hasWa ? 8000 : 6000,
+  });
+}
+
 function addProposalToCrm() {
   const p = state.proposal || {};
   const name = String(p.client || "").trim();
@@ -1142,21 +1163,17 @@ function addProposalToCrm() {
     save();
     revealClientInCrm(idx);
     renderCrm();
-    showToast("اتحدّث العميل في المتابعة", {
-      actionLabel: "تراجع",
-      ms: 6000,
-      onAction: () => {
-        if (state.clients[idx] !== c) return;
-        c.contact = prev.contact;
-        c.value = prev.value;
-        c.notes = prev.notes;
-        c.status = prev.status;
-        c.last = prev.last;
-        c.next = prev.next;
-        save();
-        renderCrm();
-        showToast("اتلغى تحديث العميل من العرض");
-      },
+    offerProposalCrmSavedToast("اتحدّث العميل في المتابعة", idx, () => {
+      if (state.clients[idx] !== c) return;
+      c.contact = prev.contact;
+      c.value = prev.value;
+      c.notes = prev.notes;
+      c.status = prev.status;
+      c.last = prev.last;
+      c.next = prev.next;
+      save();
+      renderCrm();
+      showToast("اتلغى تحديث العميل من العرض");
     });
     return;
   }
@@ -1172,19 +1189,16 @@ function addProposalToCrm() {
   };
   state.clients.push(copy);
   save();
-  revealClientInCrm(state.clients.length - 1);
+  const newIdx = state.clients.length - 1;
+  revealClientInCrm(newIdx);
   renderCrm();
-  showToast("اتضاف للعملاء — متابعة بعد 3 أيام", {
-    actionLabel: "تراجع",
-    ms: 6000,
-    onAction: () => {
-      const at = state.clients.indexOf(copy);
-      if (at < 0) return;
-      state.clients.splice(at, 1);
-      save();
-      renderCrm();
-      showToast("اتشال العميل من المتابعة");
-    },
+  offerProposalCrmSavedToast("اتضاف للعملاء — متابعة بعد 3 أيام", newIdx, () => {
+    const at = state.clients.indexOf(copy);
+    if (at < 0) return;
+    state.clients.splice(at, 1);
+    save();
+    renderCrm();
+    showToast("اتشال العميل من المتابعة");
   });
 }
 
