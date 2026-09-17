@@ -1861,6 +1861,20 @@ async function copyPricingRow(i) {
   showToast(type ? `اتنسخ «${type}»` : "اتنسخ صف التسعير");
 }
 
+/** After pricing summary copy: offer انقل لعرض السعر when any row is computed (proposal WA → أضف للعملاء parity). */
+function offerPricingToProposalToast(msg) {
+  const t = pricingTotals();
+  if (!t.n) {
+    showToast(msg);
+    return;
+  }
+  showToast(msg, {
+    actionLabel: "انقل لعرض السعر",
+    ms: 8000,
+    onAction: () => fillProposalFromPricing(),
+  });
+}
+
 async function copyPricingSummary() {
   if (!state.pricing.length) {
     showToast("مفيش صفوف تسعير للنسخ");
@@ -1868,7 +1882,10 @@ async function copyPricingSummary() {
   }
   await copyTextToClipboard(pricingPlainText());
   const t = pricingTotals();
-  showToast(t.n ? `اتنسخ ${state.pricing.length} صف تسعير (${t.n} محسوب)` : `اتنسخ ${state.pricing.length} صف تسعير`);
+  const msg = t.n
+    ? `اتنسخ ${state.pricing.length} صف تسعير (${t.n} محسوب)`
+    : `اتنسخ ${state.pricing.length} صف تسعير`;
+  offerPricingToProposalToast(msg);
 }
 
 function weekTotal() {
