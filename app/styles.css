@@ -282,6 +282,11 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
 .chip.chip-today.active {
   color: #04110a; background: #7dffb0; border-color: #7dffb0;
 }
+.chip.chip-none.active {
+  border-color: #c9a227;
+  background: #f7f0d8;
+  color: #6b5510;
+}
 .crm-pipeline {
   margin-top: .35rem;
   font-size: .88rem;

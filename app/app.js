@@ -103,7 +103,7 @@ function suggested(row) {
 
 const UI_KEY = "rattib-ui-v1";
 const TAB_IDS = ["pricing", "proposal", "crm", "week"];
-const CRM_FILTER_IDS = ["all", "today", "overdue", "lead", "proposal", "won", "lost"];
+const CRM_FILTER_IDS = ["all", "today", "overdue", "none", "lead", "proposal", "won", "lost"];
 
 function loadUi() {
   try {
@@ -174,6 +174,7 @@ const CRM_FILTER_LABELS = {
   all: "الكل",
   today: "النهاردة",
   overdue: "متأخر",
+  none: "بدون موعد",
   lead: "عميل محتمل",
   proposal: "عرض سعر",
   won: "تم الاتفاق",
@@ -181,12 +182,17 @@ const CRM_FILTER_LABELS = {
 };
 
 /** Count clients for a chip given current search (ignore selected filter). */
+function clientNeedsNext(c) {
+  return !!(["lead", "proposal"].includes(c.status) && !String(c.next || "").trim());
+}
+
 function crmFilterCount(filterId) {
   return state.clients.filter((c) => {
     if (!clientMatchesQuery(c)) return false;
     if (filterId === "all") return true;
     if (filterId === "today") return clientIsDueToday(c);
     if (filterId === "overdue") return clientIsOverdue(c);
+    if (filterId === "none") return clientNeedsNext(c);
     return c.status === filterId;
   }).length;
 }
@@ -749,15 +755,17 @@ function clientMatchesFilter(c) {
   if (crmFilter === "all") return true;
   if (crmFilter === "today") return clientIsDueToday(c);
   if (crmFilter === "overdue") return clientIsOverdue(c);
+  if (crmFilter === "none") return clientNeedsNext(c);
   return c.status === crmFilter;
 }
 
 function crmSortKey(c) {
   const overdue = clientIsOverdue(c);
   const dueToday = clientIsDueToday(c);
+  const needsNext = clientNeedsNext(c);
   const next = c.next || "9999-99-99";
-  // overdue first, then due today, then everyone else by next date
-  const tier = overdue ? 0 : (dueToday ? 1 : 2);
+  // overdue → today → missing next (active) → everyone else by next date
+  const tier = overdue ? 0 : (dueToday ? 1 : (needsNext ? 2 : 3));
   return [tier, next, (c.name || "").toLowerCase()];
 }
 
@@ -1007,9 +1015,10 @@ function paintCrmPipeline(visible) {
   if (!el) return;
   const overdueN = crmFilterCount("overdue");
   const todayN = crmFilterCount("today");
+  const noneN = crmFilterCount("none");
   // Keep jumps reachable even when the current filter/search is empty.
   if (!visible.length) {
-    if (!overdueN && !todayN) {
+    if (!overdueN && !todayN && !noneN) {
       el.hidden = true;
       el.replaceChildren();
       return;
@@ -1018,6 +1027,7 @@ function paintCrmPipeline(visible) {
     el.append(document.createTextNode("مفيش ظاهر في التصفية دي"));
     appendPipelineJump(el, "overdue", overdueN, `${overdueN} متأخر`, "عرض المتابعات المتأخرة", "تصفية المتابعات المتأخرة");
     appendPipelineJump(el, "today", todayN, `${todayN} متابعة النهاردة`, "عرض متابعات النهاردة", "تصفية متابعات النهاردة");
+    appendPipelineJump(el, "none", noneN, `${noneN} بدون موعد`, "عرض العملاء من غير متابعة تالية", "تصفية بدون موعد");
     el.hidden = false;
     return;
   }
@@ -1025,9 +1035,10 @@ function paintCrmPipeline(visible) {
   // Respect current search, same as chip counts.
   el.replaceChildren();
   el.append(document.createTextNode(`الظاهر: ${visible.length} · قيمة ${money(sum)} ج.م`));
-  // Overdue first (more urgent), then today — parity jumps.
+  // Overdue first, then today, then missing next — parity jumps.
   appendPipelineJump(el, "overdue", overdueN, `${overdueN} متأخر`, "عرض المتابعات المتأخرة", "تصفية المتابعات المتأخرة");
   appendPipelineJump(el, "today", todayN, `${todayN} متابعة النهاردة`, "عرض متابعات النهاردة", "تصفية متابعات النهاردة");
+  appendPipelineJump(el, "none", noneN, `${noneN} بدون موعد`, "عرض العملاء من غير متابعة تالية", "تصفية بدون موعد");
   el.hidden = false;
 }
 
@@ -1076,7 +1087,9 @@ function renderCrm() {
         ? "مفيش نتائج للبحث ده — جرّب كلمة تانية أو امسح البحث."
         : crmFilter === "today"
           ? "مفيش متابعات النهاردة — لو في متأخرين جرّب «متأخر»."
-          : "مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.";
+          : crmFilter === "none"
+            ? "كل العملاء النشطين عندهم موعد متابعة — تمام."
+            : "مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.";
   }
   if (wrap) wrap.hidden = visible.length === 0;
   paintCrmPipeline(visible);
