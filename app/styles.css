@@ -636,7 +636,16 @@ tr.week-done td[data-label="التسليمات"] input {
 }
 @media (max-width: 700px) {
   .week-done-cell, #week-table th:nth-last-child(2) { min-width: 0; width: auto; }
-  .done-toggle { width: 100%; min-width: 0; justify-content: center; padding: .55rem .75rem; }
+  .done-toggle {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: .55rem .75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
   #panel-week .week-row-actions {
     width: 100%;
     display: flex;
