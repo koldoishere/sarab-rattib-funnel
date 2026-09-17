@@ -845,7 +845,7 @@ function duplicateClient(i) {
 }
 
 function deleteClient(i) {
-  if (!confirm("حذف العميل ده من المتابعة؟")) return;
+  // No confirm — same as deletePricingRow; toast «تراجع» restores the client.
   if (i < 0 || i >= state.clients.length) return;
   const removed = state.clients.splice(i, 1)[0];
   const at = i;
