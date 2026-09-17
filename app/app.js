@@ -1471,18 +1471,35 @@ function clearVisibleClientsNext() {
   save();
   renderCrm();
   const n = snapshots.length;
-  showToast(`اتشال موعد المتابعة لـ ${n} عميل`, {
+  const label = `اتشال موعد المتابعة لـ ${n} عميل`;
+  const undo = () => {
+    snapshots.forEach(({ c, i, prevNext }) => {
+      if (state.clients[i] !== c) return;
+      c.next = prevNext;
+    });
+    save();
+    renderCrm();
+    showToast("اترجع مواعيد المتابعة");
+  };
+  // Parity with snoozeVisibleClients (#118) / markVisibleContacted: offer واتساب for first target with phone.
+  const waTarget = snapshots.find(({ c }) => !!whatsappPhone(c.contact));
+  if (waTarget) {
+    showToast(label, {
+      ms: 8000,
+      actions: [
+        {
+          label: "واتساب",
+          onAction: () => openClientWhatsApp(waTarget.i, { skipContactedOffer: true }),
+        },
+        { label: "تراجع", onAction: undo },
+      ],
+    });
+    return;
+  }
+  showToast(label, {
     actionLabel: "تراجع",
     ms: 6000,
-    onAction: () => {
-      snapshots.forEach(({ c, i, prevNext }) => {
-        if (state.clients[i] !== c) return;
-        c.next = prevNext;
-      });
-      save();
-      renderCrm();
-      showToast("اترجع مواعيد المتابعة");
-    },
+    onAction: undo,
   });
 }
 
@@ -1499,16 +1516,31 @@ function clearClientNext(i) {
   c.next = "";
   save();
   renderCrm();
+  const undo = () => {
+    if (state.clients[i] !== c) return;
+    c.next = prevNext;
+    save();
+    renderCrm();
+    showToast("اترجع موعد المتابعة");
+  };
+  // Parity with snoozeClient (#118) / setClientNextToday: offer واتساب when phone present.
+  if (whatsappPhone(c.contact)) {
+    showToast("اتشال موعد المتابعة", {
+      ms: 8000,
+      actions: [
+        {
+          label: "واتساب",
+          onAction: () => openClientWhatsApp(i, { skipContactedOffer: true }),
+        },
+        { label: "تراجع", onAction: undo },
+      ],
+    });
+    return;
+  }
   showToast("اتشال موعد المتابعة", {
     actionLabel: "تراجع",
     ms: 6000,
-    onAction: () => {
-      if (state.clients[i] !== c) return;
-      c.next = prevNext;
-      save();
-      renderCrm();
-      showToast("اترجع موعد المتابعة");
-    },
+    onAction: undo,
   });
 }
 
