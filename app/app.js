@@ -1085,6 +1085,47 @@ function clearVisibleClientsNext() {
   });
 }
 
+
+function markVisibleContacted() {
+  const targets = visibleCrmClients().filter(({ c }) =>
+    ["lead", "proposal"].includes(c.status) && (clientIsOverdue(c) || clientIsDueToday(c))
+  );
+  if (!targets.length) {
+    showToast("مفيش ظاهرين متأخرين أو النهاردة يتسجّل لهم تواصل");
+    return;
+  }
+  const snapshots = targets.map(({ c, i }) => ({
+    c,
+    i,
+    prevLast: c.last,
+    prevNext: c.next,
+    prevStatus: c.status,
+  }));
+  const today = localISODate();
+  snapshots.forEach(({ c }) => {
+    c.last = today;
+    c.next = addDaysISO(today, 3);
+  });
+  save();
+  renderCrm();
+  const n = snapshots.length;
+  showToast(`اتسجّل تواصل لـ ${n} عميل — المتابعة بعد 3 أيام`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      snapshots.forEach(({ c, i, prevLast, prevNext, prevStatus }) => {
+        if (state.clients[i] !== c) return;
+        c.last = prevLast;
+        c.next = prevNext;
+        c.status = prevStatus;
+      });
+      save();
+      renderCrm();
+      showToast("اتلغى تسجيل التواصل الجماعي");
+    },
+  });
+}
+
 function appendPipelineJump(el, filterId, count, label, title, toastMsg) {
   if (!count || crmFilter === filterId) return;
   el.append(document.createTextNode(" · "));
@@ -1168,9 +1209,11 @@ function paintSnoozeVisibleBtn() {
   const snooze7Btn = document.getElementById("btn-snooze7-visible");
   const todayBtn = document.getElementById("btn-today-visible");
   const clearNextBtn = document.getElementById("btn-clear-next-visible");
+  const markContactedBtn = document.getElementById("btn-mark-contacted-visible");
   const active = visibleCrmClients().filter(({ c }) => ["lead", "proposal"].includes(c.status));
   const n = active.length;
   const nDated = active.filter(({ c }) => String(c.next || "").trim()).length;
+  const nDue = active.filter(({ c }) => clientIsOverdue(c) || clientIsDueToday(c)).length;
   const hide = n === 0;
   if (snoozeBtn) {
     snoozeBtn.hidden = hide;
@@ -1195,6 +1238,12 @@ function paintSnoozeVisibleBtn() {
     clearNextBtn.title = nDated
       ? `مسح موعد المتابعة لـ ${nDated} عميل ظاهر (عميل محتمل / عرض سعر)`
       : "مسح موعد المتابعة لكل العملاء الظاهرين (عميل محتمل / عرض سعر)";
+  }
+  if (markContactedBtn) {
+    markContactedBtn.hidden = nDue === 0;
+    markContactedBtn.title = nDue
+      ? `تسجيل تواصل لليوم + متابعة بعد 3 أيام لـ ${nDue} عميل ظاهر (متأخر / النهاردة)`
+      : "تسجيل تواصل لليوم + متابعة بعد 3 أيام للظاهرين المستحقين (متأخر / النهاردة)";
   }
 }
 
@@ -1935,6 +1984,8 @@ function wire() {
   if (todayVisibleBtn) todayVisibleBtn.onclick = () => { setVisibleClientsNextToday(); };
   const clearNextVisibleBtn = document.getElementById("btn-clear-next-visible");
   if (clearNextVisibleBtn) clearNextVisibleBtn.onclick = () => { clearVisibleClientsNext(); };
+  const markContactedVisibleBtn = document.getElementById("btn-mark-contacted-visible");
+  if (markContactedVisibleBtn) markContactedVisibleBtn.onclick = () => { markVisibleContacted(); };
   const copyPricingBtn = document.getElementById("btn-copy-pricing");
   if (copyPricingBtn) copyPricingBtn.onclick = () => { copyPricingSummary(); };
   document.getElementById("add-pricing").onclick = () => {
