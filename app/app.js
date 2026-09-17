@@ -80,6 +80,99 @@ const seed = () => ({
 /** True while showing first-visit / reset demo seed (no user-owned save yet). */
 let showingDemoSeed = false;
 
+/** True if iso looks like YYYY-MM-DD. */
+function isISODate(iso) {
+  return !!iso && /^\d{4}-\d{2}-\d{2}$/.test(String(iso));
+}
+
+/** Calendar-day difference a − b (Cairo ISO dates), or null if either invalid. */
+function demoIsoDayDiff(a, b) {
+  if (!isISODate(a) || !isISODate(b)) return null;
+  const [y0, m0, d0] = String(a).split("-").map(Number);
+  const [y1, m1, d1] = String(b).split("-").map(Number);
+  const t0 = Date.UTC(y0, m0 - 1, d0, 12);
+  const t1 = Date.UTC(y1, m1 - 1, d1, 12);
+  return Math.round((t0 - t1) / 86400000);
+}
+
+/**
+ * Canonical fingerprint of demo-stable (non-date) fields.
+ * Omits proposal/client calendar dates so a pristine seed saved on an earlier
+ * day still matches today's seed(); content edits do not.
+ */
+function demoSeedFingerprint(s) {
+  const p = s.proposal || {};
+  return JSON.stringify({
+    fx: s.fx,
+    pricing: s.pricing,
+    proposal: {
+      client: p.client,
+      contact: p.contact,
+      project: p.project,
+      summary: p.summary,
+      inScope: p.inScope,
+      outScope: p.outScope,
+      duration: p.duration,
+      price: p.price,
+      depositPct: p.depositPct,
+      revisions: p.revisions,
+      payments: p.payments,
+      terms: p.terms,
+      next: p.next,
+    },
+    clients: (s.clients || []).map((c) => ({
+      name: c.name,
+      contact: c.contact,
+      source: c.source,
+      status: c.status,
+      value: c.value,
+      notes: c.notes,
+    })),
+    week: s.week,
+  });
+}
+
+/**
+ * Date fields must be empty in the same places as seed(), and every present
+ * ISO date must share one uniform day-shift vs today's seed (0 = same day,
+ * -1 = seeded yesterday, …). A single edited next/last/date breaks the shift.
+ */
+function demoDatesAligned(data, seeded) {
+  const pairs = [
+    [data.proposal?.date, seeded.proposal?.date],
+    [data.proposal?.validUntil, seeded.proposal?.validUntil],
+  ];
+  const n = Math.max((data.clients || []).length, (seeded.clients || []).length);
+  for (let i = 0; i < n; i++) {
+    pairs.push([data.clients?.[i]?.last, seeded.clients?.[i]?.last]);
+    pairs.push([data.clients?.[i]?.next, seeded.clients?.[i]?.next]);
+  }
+  let shift = null;
+  for (const [a, b] of pairs) {
+    const aOk = isISODate(a);
+    const bOk = isISODate(b);
+    if (!aOk && !bOk) continue;
+    if (aOk !== bOk) return false;
+    const d = demoIsoDayDiff(a, b);
+    if (d == null) return false;
+    if (shift === null) shift = d;
+    else if (d !== shift) return false;
+  }
+  return true;
+}
+
+function matchesCurrentDemoSeed(data) {
+  try {
+    const seeded = seed();
+    return (
+      demoSeedFingerprint(data) === demoSeedFingerprint(seeded) &&
+      demoDatesAligned(data, seeded)
+    );
+  } catch {
+    return false;
+  }
+}
+
 function load() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -87,8 +180,18 @@ function load() {
       showingDemoSeed = true;
       return seed();
     }
-    showingDemoSeed = localStorage.getItem(DEMO_FLAG_KEY) === "1";
-    return normalizeImportedState(JSON.parse(raw));
+    const data = normalizeImportedState(JSON.parse(raw));
+    const flagOn = localStorage.getItem(DEMO_FLAG_KEY) === "1";
+    if (flagOn) {
+      showingDemoSeed = true;
+    } else if (matchesCurrentDemoSeed(data)) {
+      // pre-#84 seed (or flag lost) still matches current seed → restore chip
+      showingDemoSeed = true;
+      try { localStorage.setItem(DEMO_FLAG_KEY, "1"); } catch { /* private mode */ }
+    } else {
+      showingDemoSeed = false;
+    }
+    return data;
   } catch {
     showingDemoSeed = true;
     return seed();
@@ -2424,7 +2527,14 @@ function renderAll() {
     persistPauseDepth = Math.max(0, persistPauseDepth - 1);
   }
 }
-paintCrmFilterChips();
-wire();
+// Pause persist across first paint so detached input/change handlers cannot
+// call save() and clear a just-migrated DEMO flag before persistDemoSeed().
+persistPauseDepth += 1;
+try {
+  paintCrmFilterChips();
+  wire();
+} finally {
+  persistPauseDepth = Math.max(0, persistPauseDepth - 1);
+}
 if (showingDemoSeed) persistDemoSeed();
 else paintDemoChip();
