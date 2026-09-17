@@ -974,6 +974,37 @@ function snoozeClient(i, days) {
   });
 }
 
+function snoozeVisibleClients(days) {
+  const d = Math.max(1, Math.min(30, Number(days) || 3));
+  const today = localISODate();
+  const targets = visibleCrmClients().filter(({ c }) => ["lead", "proposal"].includes(c.status));
+  if (!targets.length) return;
+  const snapshots = targets.map(({ c, i }) => ({ c, i, prevNext: c.next }));
+  snapshots.forEach(({ c }) => {
+    const base = c.next && c.next >= today ? c.next : today;
+    c.next = addDaysISO(base, d);
+  });
+  save();
+  renderCrm();
+  const n = snapshots.length;
+  const label = d === 7
+    ? `اتأجلت المتابعة أسبوع لـ ${n} عميل`
+    : `اتأجلت المتابعة ${d} أيام لـ ${n} عميل`;
+  showToast(label, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      snapshots.forEach(({ c, i, prevNext }) => {
+        if (state.clients[i] !== c) return;
+        c.next = prevNext;
+      });
+      save();
+      renderCrm();
+      showToast("اتلغى التأجيل الجماعي");
+    },
+  });
+}
+
 function setClientNextToday(i) {
   const c = state.clients[i];
   if (!c) return;
@@ -1072,6 +1103,17 @@ function onClientStatusChange(i, prev, nextStatus) {
   });
 }
 
+
+function paintSnoozeVisibleBtn() {
+  const btn = document.getElementById("btn-snooze-visible");
+  if (!btn) return;
+  const n = visibleCrmClients().filter(({ c }) => ["lead", "proposal"].includes(c.status)).length;
+  btn.hidden = n === 0;
+  btn.title = n
+    ? `تأجيل المتابعة 3 أيام لـ ${n} عميل ظاهر (عميل محتمل / عرض سعر)`
+    : "تأجيل المتابعة 3 أيام لكل العملاء الظاهرين (عميل محتمل / عرض سعر)";
+}
+
 function renderCrm() {
   const tbody = document.querySelector("#crm-table tbody");
   tbody.innerHTML = "";
@@ -1095,6 +1137,7 @@ function renderCrm() {
   paintCrmPipeline(visible);
   paintCrmFilterChips();
   paintCrmSearchClear();
+  paintSnoozeVisibleBtn();
   // badge counts all overdue, not just filtered
   state.clients.forEach((c) => { if (clientIsOverdue(c)) overdueCount += 1; });
   visible.forEach(({ c, i }) => {
@@ -1749,6 +1792,8 @@ function wire() {
   if (copyWeekBtn) copyWeekBtn.onclick = () => { copyWeekSummary(); };
   const copyCrmBtn = document.getElementById("btn-copy-crm");
   if (copyCrmBtn) copyCrmBtn.onclick = () => { copyCrmFollowUps(); };
+  const snoozeVisibleBtn = document.getElementById("btn-snooze-visible");
+  if (snoozeVisibleBtn) snoozeVisibleBtn.onclick = () => { snoozeVisibleClients(3); };
   const copyPricingBtn = document.getElementById("btn-copy-pricing");
   if (copyPricingBtn) copyPricingBtn.onclick = () => { copyPricingSummary(); };
   document.getElementById("add-pricing").onclick = () => {
