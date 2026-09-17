@@ -1438,20 +1438,37 @@ function markVisibleContacted() {
   save();
   renderCrm();
   const n = snapshots.length;
-  showToast(`اتسجّل تواصل لـ ${n} عميل — المتابعة بعد 3 أيام`, {
+  // Parity with markContacted (#110): offer واتساب for first contacted client with a phone.
+  const waTarget = snapshots.find(({ c }) => !!whatsappPhone(c.contact));
+  const undo = () => {
+    snapshots.forEach(({ c, i, prevLast, prevNext, prevStatus }) => {
+      if (state.clients[i] !== c) return;
+      c.last = prevLast;
+      c.next = prevNext;
+      c.status = prevStatus;
+    });
+    save();
+    renderCrm();
+    showToast("اتلغى تسجيل التواصل الجماعي");
+  };
+  const msg = `اتسجّل تواصل لـ ${n} عميل — المتابعة بعد 3 أيام`;
+  if (waTarget) {
+    showToast(msg, {
+      actions: [
+        {
+          label: "واتساب",
+          onAction: () => openClientWhatsApp(waTarget.i, { skipContactedOffer: true }),
+        },
+        { label: "تراجع", onAction: undo },
+      ],
+      ms: 8000,
+    });
+    return;
+  }
+  showToast(msg, {
     actionLabel: "تراجع",
     ms: 6000,
-    onAction: () => {
-      snapshots.forEach(({ c, i, prevLast, prevNext, prevStatus }) => {
-        if (state.clients[i] !== c) return;
-        c.last = prevLast;
-        c.next = prevNext;
-        c.status = prevStatus;
-      });
-      save();
-      renderCrm();
-      showToast("اتلغى تسجيل التواصل الجماعي");
-    },
+    onAction: undo,
   });
 }
 
