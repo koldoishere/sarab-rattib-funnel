@@ -610,6 +610,15 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     justify-content: center;
     box-sizing: border-box;
   }
+  /* Brand pack CTA («Own the $12 pack · الرزمة») — same 44px; was min-height 2.5rem (~40px) outside this query */
+  .brand-pack {
+    min-height: 44px;
+    padding: .4rem .85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
 }
 
 .week-done-cell {
