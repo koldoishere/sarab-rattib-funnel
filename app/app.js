@@ -1132,6 +1132,7 @@ function onClientStatusChange(i, prev, nextStatus) {
 
 function paintSnoozeVisibleBtn() {
   const snoozeBtn = document.getElementById("btn-snooze-visible");
+  const snooze7Btn = document.getElementById("btn-snooze7-visible");
   const todayBtn = document.getElementById("btn-today-visible");
   const n = visibleCrmClients().filter(({ c }) => ["lead", "proposal"].includes(c.status)).length;
   const hide = n === 0;
@@ -1140,6 +1141,12 @@ function paintSnoozeVisibleBtn() {
     snoozeBtn.title = n
       ? `تأجيل المتابعة 3 أيام لـ ${n} عميل ظاهر (عميل محتمل / عرض سعر)`
       : "تأجيل المتابعة 3 أيام لكل العملاء الظاهرين (عميل محتمل / عرض سعر)";
+  }
+  if (snooze7Btn) {
+    snooze7Btn.hidden = hide;
+    snooze7Btn.title = n
+      ? `تأجيل المتابعة أسبوع لـ ${n} عميل ظاهر (عميل محتمل / عرض سعر)`
+      : "تأجيل المتابعة أسبوع لكل العملاء الظاهرين (عميل محتمل / عرض سعر)";
   }
   if (todayBtn) {
     todayBtn.hidden = hide;
@@ -1864,6 +1871,8 @@ function wire() {
   if (copyCrmBtn) copyCrmBtn.onclick = () => { copyCrmFollowUps(); };
   const snoozeVisibleBtn = document.getElementById("btn-snooze-visible");
   if (snoozeVisibleBtn) snoozeVisibleBtn.onclick = () => { snoozeVisibleClients(3); };
+  const snooze7VisibleBtn = document.getElementById("btn-snooze7-visible");
+  if (snooze7VisibleBtn) snooze7VisibleBtn.onclick = () => { snoozeVisibleClients(7); };
   const todayVisibleBtn = document.getElementById("btn-today-visible");
   if (todayVisibleBtn) todayVisibleBtn.onclick = () => { setVisibleClientsNextToday(); };
   const copyPricingBtn = document.getElementById("btn-copy-pricing");
