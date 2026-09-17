@@ -2058,9 +2058,7 @@ function weekHasCarryTasks() {
 }
 
 function resetWeek() {
-  if (!confirm("أسبوع جديد؟ هنتصفّر الساعات والتسليمات وعلامات «تم» (والمهام إلا لو اخترت ترحيل الناقص).")) return;
-  const carryable = weekHasCarryTasks();
-  const carry = carryable && confirm("في مهام ناقصة لسه مش «تم». ترحيل المهام الناقصة للأسبوع الجديد؟\n\nموافق = تفضل المهام زي ما هي على الأيام الناقصة.\nإلغاء = أسبوع فاضي بالكامل.");
+  if (!confirm("أسبوع جديد؟ هنتصفّر الساعات والتسليمات وعلامات «تم». المهام الناقصة هتترحّل، وتقدر تفضّي الأسبوع من التوست.")) return;
   const previous = state.week.map((w) => ({
     day: w.day,
     tasks: w.tasks,
@@ -2068,27 +2066,63 @@ function resetWeek() {
     deliverables: w.deliverables,
     done: w.done,
   }));
-  state.week = state.week.map((w) => {
-    const keepTasks = carry && w.done !== "☑" && String(w.tasks || "").trim();
-    return {
-      day: w.day,
-      tasks: keepTasks ? w.tasks : "",
-      hours: 0,
-      deliverables: "",
-      done: "☐",
-    };
-  });
-  save();
-  renderWeek();
-  showToast(carry ? "اترحّلت المهام الناقصة" : "أسبوع جديد جاهز", {
-    actionLabel: "تراجع",
-    ms: 6000,
-    onAction: () => {
-      state.week = previous.map((w) => ({ ...w }));
-      save();
-      renderWeek();
-      showToast("رجع أسبوع الشغل");
-    },
+  const applyReset = (carry) => {
+    state.week = previous.map((w) => {
+      const keepTasks = carry && w.done !== "☑" && String(w.tasks || "").trim();
+      return {
+        day: w.day,
+        tasks: keepTasks ? w.tasks : "",
+        hours: 0,
+        deliverables: "",
+        done: "☐",
+      };
+    });
+    save();
+    renderWeek();
+  };
+  const restorePrevious = () => {
+    state.week = previous.map((w) => ({ ...w }));
+    save();
+    renderWeek();
+    showToast("رجع أسبوع الشغل");
+  };
+  if (!weekHasCarryTasks()) {
+    applyReset(false);
+    showToast("أسبوع جديد جاهز", {
+      actionLabel: "تراجع",
+      ms: 6000,
+      onAction: restorePrevious,
+    });
+    return;
+  }
+  applyReset(true);
+  showToast("اترحّلت المهام الناقصة", {
+    ms: 8000,
+    actions: [
+      {
+        label: "فاضي بالكامل",
+        onAction: () => {
+          state.week = previous.map((w) => ({
+            day: w.day,
+            tasks: "",
+            hours: 0,
+            deliverables: "",
+            done: "☐",
+          }));
+          save();
+          renderWeek();
+          showToast("أسبوع فاضي", {
+            actionLabel: "تراجع",
+            ms: 6000,
+            onAction: restorePrevious,
+          });
+        },
+      },
+      {
+        label: "تراجع",
+        onAction: restorePrevious,
+      },
+    ],
   });
 }
 
