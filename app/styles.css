@@ -28,6 +28,14 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 }
 .brand strong { display: block; }
 .brand small { color: var(--muted); }
+.brand-pack {
+  display: inline-flex; align-items: center; margin-top: .35rem;
+  min-height: 2.5rem; padding: .2rem 0;
+  font-size: .82rem; font-weight: 600; color: var(--green);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.brand-pack:hover { color: #7dffb0; }
+.brand-pack:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 4px; }
 .actions { display: flex; gap: .5rem; flex-wrap: wrap; }
 .tabs {
   display: flex; gap: .35rem; padding: .75rem 1.25rem;
