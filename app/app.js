@@ -1991,16 +1991,29 @@ function visibleContactedTargets() {
   );
 }
 
-/** After CRM follow-ups copy: offer تواصلت للكل when any visible lead/proposal is overdue or due today. */
+/** After CRM follow-ups copy: offer واتساب (first due w/ phone) + تواصلت للكل — parity with copyClientCard #114 / markVisibleContacted #112. */
 function offerCrmFollowUpsContactedToast(msg) {
-  if (!visibleContactedTargets().length) {
+  const targets = visibleContactedTargets();
+  if (!targets.length) {
     showToast(msg);
     return;
   }
-  showToast(msg, {
-    actionLabel: "تواصلت للكل",
-    ms: 8000,
+  const waTarget = targets.find(({ c }) => !!whatsappPhone(c.contact));
+  const actions = [];
+  if (waTarget) {
+    actions.push({
+      label: "واتساب",
+      // Keep تواصلت offer after WA — copy is not itself a contact (same as copyClientCard).
+      onAction: () => openClientWhatsApp(waTarget.i),
+    });
+  }
+  actions.push({
+    label: "تواصلت للكل",
     onAction: () => markVisibleContacted(),
+  });
+  showToast(msg, {
+    actions,
+    ms: 8000,
   });
 }
 
