@@ -1358,9 +1358,16 @@ function setClientNextToday(i) {
   c.next = localISODate();
   save();
   renderCrm();
-  showToast("المتابعة بقت النهاردة", {
-    actionLabel: "تراجع",
-    ms: 6000,
+  const hasWa = !!whatsappPhone(c.contact);
+  const actions = [];
+  if (hasWa) {
+    actions.push({
+      label: "واتساب",
+      onAction: () => openClientWhatsApp(i, { skipContactedOffer: true }),
+    });
+  }
+  actions.push({
+    label: "تراجع",
     onAction: () => {
       if (state.clients[i] !== c) return;
       c.next = prevNext;
@@ -1368,6 +1375,10 @@ function setClientNextToday(i) {
       renderCrm();
       showToast("اتلغى تعيين النهاردة");
     },
+  });
+  showToast("المتابعة بقت النهاردة", {
+    actions,
+    ms: hasWa ? 8000 : 6000,
   });
 }
 
@@ -1382,18 +1393,34 @@ function setVisibleClientsNextToday() {
   save();
   renderCrm();
   const n = snapshots.length;
-  showToast(`المتابعة بقت النهاردة لـ ${n} عميل`, {
+  const msg = `المتابعة بقت النهاردة لـ ${n} عميل`;
+  const undo = () => {
+    snapshots.forEach(({ c, i, prevNext }) => {
+      if (state.clients[i] !== c) return;
+      c.next = prevNext;
+    });
+    save();
+    renderCrm();
+    showToast("اتلغى تعيين النهاردة الجماعي");
+  };
+  const waTarget = snapshots.find(({ c }) => !!whatsappPhone(c.contact));
+  if (waTarget) {
+    showToast(msg, {
+      ms: 8000,
+      actions: [
+        {
+          label: "واتساب",
+          onAction: () => openClientWhatsApp(waTarget.i, { skipContactedOffer: true }),
+        },
+        { label: "تراجع", onAction: undo },
+      ],
+    });
+    return;
+  }
+  showToast(msg, {
     actionLabel: "تراجع",
     ms: 6000,
-    onAction: () => {
-      snapshots.forEach(({ c, i, prevNext }) => {
-        if (state.clients[i] !== c) return;
-        c.next = prevNext;
-      });
-      save();
-      renderCrm();
-      showToast("اتلغى تعيين النهاردة الجماعي");
-    },
+    onAction: undo,
   });
 }
 
