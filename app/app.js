@@ -1,4 +1,5 @@
 const STORAGE_KEY = "rattib-app-v1";
+const DEMO_FLAG_KEY = "rattib-demo-seed-v1";
 const STATUS = [
   { value: "lead", label: "عميل محتمل" },
   { value: "proposal", label: "عرض سعر" },
@@ -86,6 +87,7 @@ function load() {
       showingDemoSeed = true;
       return seed();
     }
+    showingDemoSeed = localStorage.getItem(DEMO_FLAG_KEY) === "1";
     return normalizeImportedState(JSON.parse(raw));
   } catch {
     showingDemoSeed = true;
@@ -98,8 +100,17 @@ function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   if (showingDemoSeed) {
     showingDemoSeed = false;
+    localStorage.removeItem(DEMO_FLAG_KEY);
     paintDemoChip();
   }
+}
+
+/** Persist demo seed + flag so reload keeps «بيانات تجريبية» until a real user edit/import. */
+function persistDemoSeed() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(DEMO_FLAG_KEY, "1");
+  showingDemoSeed = true;
+  paintDemoChip();
 }
 
 function paintDemoChip() {
@@ -2234,6 +2245,7 @@ function wire() {
       const previous = JSON.parse(JSON.stringify(state));
       state = next;
       showingDemoSeed = false;
+      localStorage.removeItem(DEMO_FLAG_KEY);
       save();
       paintDemoChip();
       renderAll();
@@ -2262,20 +2274,18 @@ function wire() {
     state = seed();
     showingDemoSeed = true;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       renderAll();
-      paintDemoChip();
     } finally {
       persistPauseDepth = Math.max(0, persistPauseDepth - 1);
     }
-    // Keep demo chip visible after reset: write storage without clearing the flag.
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    persistDemoSeed();
     showToast("رجعت للبيانات التجريبية", {
       actionLabel: "تراجع",
       ms: 6000,
       onAction: () => {
         state = previous;
         showingDemoSeed = false;
+        localStorage.removeItem(DEMO_FLAG_KEY);
         save();
         paintDemoChip();
         renderAll();
@@ -2303,4 +2313,5 @@ function renderAll() {
 }
 paintCrmFilterChips();
 wire();
-paintDemoChip();
+if (showingDemoSeed) persistDemoSeed();
+else paintDemoChip();
