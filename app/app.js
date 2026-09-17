@@ -924,7 +924,17 @@ function openClientWhatsApp(i) {
   let url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(text);
   if (url.length > 1800) url = "https://wa.me/" + phone;
   window.open(url, "_blank", "noopener,noreferrer");
-  showToast("اتفتح واتساب بمسودة متابعة — راجع قبل الإرسال");
+  // Offer تواصلت so the freelancer can close the loop without hunting the row button.
+  // Match the row UI: no mark-contacted affordance once already won.
+  if (c.status === "won") {
+    showToast("اتفتح واتساب بمسودة متابعة — راجع قبل الإرسال");
+    return;
+  }
+  showToast("اتفتح واتساب بمسودة متابعة — راجع قبل الإرسال", {
+    actionLabel: "تواصلت",
+    ms: 8000,
+    onAction: () => markContacted(i),
+  });
 }
 
 function markContacted(i) {
