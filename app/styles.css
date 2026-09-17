@@ -658,6 +658,19 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     justify-content: center;
     box-sizing: border-box;
   }
+  /* Pricing / CRM / week table inputs & selects — same 44px; was padding .4rem .5rem (~32–36px) outside this query.
+     Priority: CRM select[data-k=status] + input[data-k=next]. Scoped to tables so .crm-search keeps its clear-✕ padding.
+     min-height + box-sizing only (no flex) so type=date native chrome stays usable. */
+  #panel-pricing table input,
+  #panel-pricing table select,
+  #panel-crm table input,
+  #panel-crm table select,
+  #panel-week table input,
+  #panel-week table select {
+    min-height: 44px;
+    padding: .55rem .65rem;
+    box-sizing: border-box;
+  }
 }
 
 .week-done-cell {
