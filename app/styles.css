@@ -649,6 +649,13 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     justify-content: center;
     box-sizing: border-box;
   }
+  /* CRM search input (#crm-search) — same 44px; was padding-block .55rem (~37px) outside this query.
+     Clear ✕ already 44px; match field height. min-height + box-sizing; keep pill padding-inline for ✕. */
+  .crm-search input,
+  #crm-search {
+    min-height: 44px;
+    box-sizing: border-box;
+  }
   /* CRM pipeline jump links (X متأخر / متابعة النهاردة / بدون موعد) — same 44px; was padding:0 ~.88rem outside this query */
   .pipeline-jump {
     min-height: 44px;
