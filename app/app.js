@@ -1588,6 +1588,7 @@ function paintWeekProgress() {
   const totEl = document.getElementById("week-total");
   if (doneEl) doneEl.textContent = String(weekDoneCount());
   if (totEl) totEl.textContent = String(weekTotal());
+  paintWeekDoneAllBtn();
 }
 
 function weekPlainText() {
@@ -1772,6 +1773,48 @@ function toggleWeekDone(i) {
   });
 }
 
+function weekIncompleteWithContent() {
+  return state.week
+    .map((w, i) => ({ w, i }))
+    .filter(({ w, i }) => w.done !== "☑" && weekDayHasContent(i));
+}
+
+function markWeekDoneAll() {
+  const targets = weekIncompleteWithContent();
+  if (!targets.length) {
+    showToast("مفيش أيام ناقصة بمحتوى تتعلّم تم");
+    return;
+  }
+  const snapshots = targets.map(({ w, i }) => ({ w, i, prevDone: w.done }));
+  snapshots.forEach(({ w }) => { w.done = "☑"; });
+  save();
+  renderWeek();
+  const n = snapshots.length;
+  showToast(`اتعلّم تم لـ ${n} يوم`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      snapshots.forEach(({ w, i, prevDone }) => {
+        if (state.week[i] !== w) return;
+        w.done = prevDone;
+      });
+      save();
+      renderWeek();
+      showToast("اتلغى تم الجماعي");
+    },
+  });
+}
+
+function paintWeekDoneAllBtn() {
+  const btn = document.getElementById("btn-week-done-all");
+  if (!btn) return;
+  const n = weekIncompleteWithContent().length;
+  btn.hidden = n === 0;
+  btn.title = n
+    ? `علم ${n} يوم ناقص بمحتوى كمكتمل`
+    : "مفيش أيام ناقصة بمحتوى";
+}
+
 function renderWeek() {
   const tbody = document.querySelector("#week-table tbody");
   tbody.innerHTML = "";
@@ -1811,6 +1854,7 @@ function renderWeek() {
       state.week[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
       if (k === "hours") paintWeekProgress();
+      else paintWeekDoneAllBtn();
     };
     el.addEventListener("change", handler);
     el.addEventListener("input", handler);
@@ -1984,6 +2028,8 @@ function wire() {
   if (copyTodayBtn) copyTodayBtn.onclick = () => { copyTodayWeek(); };
   const copyWeekBtn = document.getElementById("btn-copy-week");
   if (copyWeekBtn) copyWeekBtn.onclick = () => { copyWeekSummary(); };
+  const weekDoneAllBtn = document.getElementById("btn-week-done-all");
+  if (weekDoneAllBtn) weekDoneAllBtn.onclick = () => { markWeekDoneAll(); };
   const copyCrmBtn = document.getElementById("btn-copy-crm");
   if (copyCrmBtn) copyCrmBtn.onclick = () => { copyCrmFollowUps(); };
   const snoozeVisibleBtn = document.getElementById("btn-snooze-visible");
