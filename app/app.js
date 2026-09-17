@@ -41,8 +41,6 @@ const seed = () => ({
     { type: "تكامل API", hours: 16, rate: 300, costs: 200, margin: 25, notes: "ربط بوابة دفع أو خدمة خارجية" },
     { type: "إصلاح باج / ساعة طوارئ", hours: 4, rate: 350, costs: 0, margin: 20, notes: "حد أدنى ساعة واحدة" },
     { type: "موقع تعريفي 5 صفحات", hours: 35, rate: 260, costs: 800, margin: 25, notes: "محتوى من العميل + SEO أساسي" },
-    { type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" },
-    { type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" },
   ],
   proposal: {
     date: isoDay(0),
@@ -1760,6 +1758,18 @@ function cleanDone(v) {
   return v === "☑" ? "☑" : "☐";
 }
 
+
+/** Blank formula row: no type/hours/rate/notes and no costs (margin alone doesn't count). */
+function isBlankPricingRow(row) {
+  if (!row || typeof row !== "object") return true;
+  const noType = !String(row.type ?? "").trim();
+  const noHours = row.hours === "" || row.hours == null;
+  const noRate = row.rate === "" || row.rate == null;
+  const noNotes = !String(row.notes ?? "").trim();
+  const noCosts = row.costs === "" || row.costs == null || Number(row.costs) === 0;
+  return noType && noHours && noRate && noNotes && noCosts;
+}
+
 /** Validate + normalize a Rattib export. Throws Error with Arabic message on bad shape. */
 function normalizeImportedState(data) {
   if (!isPlainObject(data)) throw new Error("الملف مش JSON كائن صالح");
@@ -1793,7 +1803,7 @@ function normalizeImportedState(data) {
         margin: row.margin === "" || row.margin == null ? 25 : cleanNum(row.margin, 25),
         notes: cleanStr(row.notes, 500),
       };
-    });
+    }).filter((row) => !isBlankPricingRow(row));
   }
 
   if ("proposal" in data) {
