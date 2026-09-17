@@ -619,6 +619,16 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     justify-content: center;
     box-sizing: border-box;
   }
+  /* CRM search clear ✕ — same 44px square; was width/height 1.7rem (~27px) outside this query */
+  .crm-search-clear {
+    min-height: 44px;
+    min-width: 44px;
+    padding: .4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
 }
 
 .week-done-cell {
