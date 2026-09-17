@@ -1761,7 +1761,17 @@ async function copyClientCard(i) {
   if (!c) return;
   await copyTextToClipboard(clientCardPlainText(c));
   const name = String(c.name || "").trim();
-  showToast(name ? `اتنسخ «${name}»` : "اتنسخ العميل");
+  const msg = name ? `اتنسخ «${name}»` : "اتنسخ العميل";
+  // Offer تواصلت after نسخ نص (parity with واتساب open + row button; skip won).
+  if (c.status === "won") {
+    showToast(msg);
+    return;
+  }
+  showToast(msg, {
+    actionLabel: "تواصلت",
+    ms: 8000,
+    onAction: () => markContacted(i),
+  });
 }
 
 function crmFollowUpPlainText() {
