@@ -529,16 +529,7 @@ function renderPricing() {
       save();
       goTab("proposal");
       renderProposal();
-      showToast("اتنقل لعرض السعر بالسعر المحسوب", {
-        actionLabel: "تراجع",
-        ms: 6000,
-        onAction: () => {
-          state.proposal = previous;
-          save();
-          renderProposal();
-          showToast("رجع عرض السعر زي ما كان");
-        },
-      });
+      offerProposalAfterPricingToast("اتنقل لعرض السعر بالسعر المحسوب", previous);
     };
   });
   tbody.querySelectorAll("[data-copy-row]").forEach((btn) => {
@@ -573,16 +564,7 @@ function fillProposalFromPricing() {
   save();
   goTab("proposal");
   renderProposal();
-  showToast(`اتنقل إجمالي التسعير: ${money(price)} ج.م`, {
-    actionLabel: "تراجع",
-    ms: 6000,
-    onAction: () => {
-      state.proposal = previous;
-      save();
-      renderProposal();
-      showToast("رجع عرض السعر زي ما كان");
-    },
-  });
+  offerProposalAfterPricingToast(`اتنقل إجمالي التسعير: ${money(price)} ج.م`, previous);
 }
 
 function proposalPlainText() {
@@ -621,22 +603,50 @@ function showToast(msg, opts = {}) {
   const text = document.createElement("span");
   text.textContent = msg;
   toast.appendChild(text);
-  if (opts.actionLabel && typeof opts.onAction === "function") {
+  const actions = Array.isArray(opts.actions) && opts.actions.length
+    ? opts.actions
+    : (opts.actionLabel && typeof opts.onAction === "function"
+      ? [{ label: opts.actionLabel, onAction: opts.onAction }]
+      : []);
+  for (const a of actions) {
+    if (!a || !a.label || typeof a.onAction !== "function") continue;
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "toast-action";
-    btn.textContent = opts.actionLabel;
+    btn.textContent = a.label;
     btn.onclick = () => {
       clearTimeout(toast._t);
       toast.hidden = true;
-      opts.onAction();
+      a.onAction();
     };
     toast.appendChild(btn);
   }
   toast.hidden = false;
   clearTimeout(toast._t);
-  const ms = opts.ms != null ? opts.ms : (opts.onAction ? 6000 : 2200);
+  const ms = opts.ms != null ? opts.ms : (actions.length ? 6000 : 2200);
   toast._t = setTimeout(() => { toast.hidden = true; }, ms);
+}
+
+/** After pricing → proposal: offer نسخ للواتساب + تراجع (closes pricing→proposal→WA loop). */
+function offerProposalAfterPricingToast(msg, previous) {
+  showToast(msg, {
+    ms: 8000,
+    actions: [
+      {
+        label: "نسخ للواتساب",
+        onAction: () => { copyProposalWhatsApp(); },
+      },
+      {
+        label: "تراجع",
+        onAction: () => {
+          state.proposal = previous;
+          save();
+          renderProposal();
+          showToast("رجع عرض السعر زي ما كان");
+        },
+      },
+    ],
+  });
 }
 
 function duplicatePricingRow(i) {
@@ -1971,6 +1981,45 @@ function todayWeekHasContent() {
   return row ? weekDayHasContent(row.i) : false;
 }
 
+/** Mark one week day done (no-op if already ☑); toast + تراجع. Used by copy-day toast action. */
+function markWeekDayDone(i) {
+  const w = state.week[i];
+  if (!w) return;
+  if (w.done === "☑") {
+    showToast(`«${w.day}» مكتملة أصلاً`);
+    return;
+  }
+  const prevDone = w.done;
+  w.done = "☑";
+  save();
+  renderWeek();
+  showToast(`«${w.day}» بقت مكتملة`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      if (state.week.indexOf(w) < 0) return;
+      w.done = prevDone;
+      save();
+      renderWeek();
+      showToast(`اتلغى تم «${w.day}»`);
+    },
+  });
+}
+
+/** After week day copy: offer تم when the day has content and is not done yet (pricing copy → انقل parity). */
+function offerWeekDayDoneToast(msg, i) {
+  const w = state.week[i];
+  if (!w || w.done === "☑" || !weekDayHasContent(i)) {
+    showToast(msg);
+    return;
+  }
+  showToast(msg, {
+    actionLabel: "تم",
+    ms: 8000,
+    onAction: () => markWeekDayDone(i),
+  });
+}
+
 async function copyWeekDay(i) {
   if (!weekDayHasContent(i)) {
     showToast("مفيش محتوى لليوم ده للنسخ — حط مهام أو ساعات أولاً");
@@ -1978,7 +2027,7 @@ async function copyWeekDay(i) {
   }
   await copyTextToClipboard(weekDayPlainText(i));
   const w = state.week[i];
-  showToast(`اتنسخ يوم «${w ? w.day : "اليوم"}»`);
+  offerWeekDayDoneToast(`اتنسخ يوم «${w ? w.day : "اليوم"}»`, i);
 }
 
 async function copyTodayWeek() {

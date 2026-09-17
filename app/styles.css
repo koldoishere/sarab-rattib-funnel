@@ -591,6 +591,15 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     justify-content: center;
     box-sizing: border-box;
   }
+  /* Toast undo / action (تراجع / انقل لعرض السعر / أضف للعملاء / …) — critical ~6s window */
+  .toast-action {
+    min-height: 44px;
+    padding: .4rem .85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
 }
 
 .week-done-cell {
