@@ -671,6 +671,17 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     padding: .55rem .65rem;
     box-sizing: border-box;
   }
+  /* Pricing FX (#fx-rate) + proposal form fields — same 44px; left out of table-scoped #106.
+     FX lives in .panel-head label.fx; proposal uses #proposal-form (not a table).
+     min-height + box-sizing only (no flex) so type=date native chrome stays usable. */
+  #panel-pricing #fx-rate,
+  #panel-proposal #proposal-form input,
+  #panel-proposal #proposal-form select,
+  #panel-proposal #proposal-form textarea {
+    min-height: 44px;
+    padding: .55rem .65rem;
+    box-sizing: border-box;
+  }
 }
 
 .week-done-cell {
