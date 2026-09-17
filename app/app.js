@@ -1895,21 +1895,26 @@ function pricingRowPlainText(row, i = 0) {
 }
 
 async function copyPricingRow(i) {
-  if (i < 0 || i >= state.pricing.length) return;
-  const row = state.pricing[i];
-  await copyTextToClipboard(pricingRowPlainText(row, i));
+  const idx = Number(i);
+  if (!Number.isInteger(idx) || idx < 0 || idx >= state.pricing.length) return;
+  const row = state.pricing[idx];
+  await copyTextToClipboard(pricingRowPlainText(row, idx));
   const type = String(row.type || "").trim();
   const msg = type ? `اتنسخ «${type}»` : "اتنسخ صف التسعير";
   // Offer انقل للعرض after نسخ نص when row has a computed price (parity with row button).
-  const c = pricingCalcs(row);
-  if (c.empty) {
+  // Use actions[] (multi-action toast shape) + suggested()>0 belt-and-suspenders so a
+  // non-empty computed row never falls back to a plain «اتنسخ …» toast.
+  const actionable = !pricingCalcs(row).empty || suggested(row) > 0;
+  if (!actionable) {
     showToast(msg);
     return;
   }
   showToast(msg, {
-    actionLabel: "انقل للعرض",
     ms: 8000,
-    onAction: () => usePricingRowForProposal(i),
+    actions: [{
+      label: "انقل للعرض",
+      onAction: () => usePricingRowForProposal(idx),
+    }],
   });
 }
 
