@@ -449,10 +449,11 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
 }
 
 @media (max-width: 700px) {
-  /* Mobile: ≥44px tap targets for snooze + CRM/pricing row tinies (نسخ نص / كرّر / واتساب / تواصلت / انقل للعرض) */
+  /* Mobile: ≥44px tap targets for snooze + CRM/pricing/week row tinies (نسخ نص / مسح / كرّر / واتساب / تواصلت / انقل للعرض) */
   .snooze-row .tiny,
   #panel-crm .row-actions .tiny,
-  #panel-pricing .row-actions .tiny {
+  #panel-pricing .row-actions .tiny,
+  #panel-week .week-row-actions .tiny {
     min-height: 44px;
     padding: .4rem .65rem;
     display: inline-flex;
