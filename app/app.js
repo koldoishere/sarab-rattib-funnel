@@ -340,6 +340,7 @@ function renderPricing() {
         const tr = tbody.querySelector(`tr[data-row="${i}"]`);
         if (tr) paintPricingCalcs(tr, row);
       }
+      paintClearBlankPricingBtn();
     });
   });
   tbody.querySelectorAll("[data-use]").forEach((btn) => {
@@ -376,6 +377,7 @@ function renderPricing() {
     btn.onclick = () => deletePricingRow(+btn.dataset.del);
   });
   paintPricingTotals();
+  paintClearBlankPricingBtn();
 }
 
 
@@ -514,6 +516,58 @@ function deletePricingRow(i) {
       showToast("رجع صف التسعير");
     },
   });
+}
+
+function blankPricingIndices() {
+  return state.pricing
+    .map((row, i) => (isBlankPricingRow(row) ? i : -1))
+    .filter((i) => i >= 0);
+}
+
+function clearBlankPricingRows() {
+  const idxs = blankPricingIndices();
+  if (!idxs.length) {
+    showToast("مفيش صفوف فاضية تتشال");
+    return;
+  }
+  // Snapshot full list so undo restores order + blanks exactly.
+  const previous = state.pricing.map((row) => ({ ...row }));
+  const kept = state.pricing.filter((row) => !isBlankPricingRow(row));
+  // Keep at least one blank row so the table isn't empty after a clean sweep.
+  if (kept.length === 0) {
+    kept.push({ type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" });
+  }
+  state.pricing = kept;
+  save();
+  renderPricing();
+  const n = previous.length - state.pricing.length;
+  if (n <= 0) {
+    showToast("مفيش صفوف فاضية تتشال");
+    return;
+  }
+  showToast(`اتمسح ${n} صف فاضي`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      state.pricing = previous.map((row) => ({ ...row }));
+      save();
+      renderPricing();
+      showToast("رجعت صفوف التسعير");
+    },
+  });
+}
+
+function paintClearBlankPricingBtn() {
+  const btn = document.getElementById("btn-clear-blank-pricing");
+  if (!btn) return;
+  const n = blankPricingIndices().length;
+  // Hide when nothing blank, or when every row is blank and we'd only leave one blank.
+  const allBlank = n > 0 && n === state.pricing.length;
+  const removable = allBlank ? Math.max(0, n - 1) : n;
+  btn.hidden = removable === 0;
+  btn.title = removable
+    ? `احذف ${removable} صف تسعير فاضي`
+    : "مفيش صفوف فاضية";
 }
 
 function duplicateClient(i) {
@@ -2044,6 +2098,8 @@ function wire() {
   if (markContactedVisibleBtn) markContactedVisibleBtn.onclick = () => { markVisibleContacted(); };
   const copyPricingBtn = document.getElementById("btn-copy-pricing");
   if (copyPricingBtn) copyPricingBtn.onclick = () => { copyPricingSummary(); };
+  const clearBlankPricingBtn = document.getElementById("btn-clear-blank-pricing");
+  if (clearBlankPricingBtn) clearBlankPricingBtn.onclick = () => { clearBlankPricingRows(); };
   document.getElementById("add-pricing").onclick = () => {
     const copy = { type: "", hours: "", rate: "", costs: "", margin: 25, notes: "" };
     state.pricing.push(copy);
