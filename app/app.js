@@ -1870,6 +1870,7 @@ function paintWeekProgress() {
   if (doneEl) doneEl.textContent = String(weekDoneCount());
   if (totEl) totEl.textContent = String(weekTotal());
   paintWeekDoneAllBtn();
+  paintWeekClearAllBtn();
 }
 
 function weekPlainText() {
@@ -2096,6 +2097,65 @@ function paintWeekDoneAllBtn() {
     : "مفيش أيام ناقصة بمحتوى";
 }
 
+function weekClearableDays() {
+  return state.week
+    .map((w, i) => ({ w, i }))
+    .filter(({ w, i }) => weekDayHasContent(i) || w.done === "☑");
+}
+
+function clearWeekDaysAll() {
+  const targets = weekClearableDays();
+  if (!targets.length) {
+    showToast("مفيش أيام تتتمسح");
+    return;
+  }
+  const snapshots = targets.map(({ w, i }) => ({
+    w,
+    i,
+    prev: {
+      tasks: w.tasks,
+      hours: w.hours,
+      deliverables: w.deliverables,
+      done: w.done,
+    },
+  }));
+  snapshots.forEach(({ w }) => {
+    w.tasks = "";
+    w.hours = 0;
+    w.deliverables = "";
+    w.done = "☐";
+  });
+  save();
+  renderWeek();
+  const n = snapshots.length;
+  showToast(`اتمسح ${n} يوم`, {
+    actionLabel: "تراجع",
+    ms: 6000,
+    onAction: () => {
+      snapshots.forEach(({ w, i, prev }) => {
+        if (state.week[i] !== w) return;
+        w.tasks = prev.tasks;
+        w.hours = prev.hours;
+        w.deliverables = prev.deliverables;
+        w.done = prev.done;
+      });
+      save();
+      renderWeek();
+      showToast("اتلغى مسح الجماعي");
+    },
+  });
+}
+
+function paintWeekClearAllBtn() {
+  const btn = document.getElementById("btn-week-clear-all");
+  if (!btn) return;
+  const n = weekClearableDays().length;
+  btn.hidden = n === 0;
+  btn.title = n
+    ? `امسح ${n} يوم فيه محتوى أو تم`
+    : "مفيش أيام فيها محتوى أو تم";
+}
+
 function renderWeek() {
   const tbody = document.querySelector("#week-table tbody");
   tbody.innerHTML = "";
@@ -2135,7 +2195,10 @@ function renderWeek() {
       state.week[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
       if (k === "hours") paintWeekProgress();
-      else paintWeekDoneAllBtn();
+      else {
+        paintWeekDoneAllBtn();
+        paintWeekClearAllBtn();
+      }
     };
     el.addEventListener("change", handler);
     el.addEventListener("input", handler);
@@ -2327,6 +2390,8 @@ function wire() {
   if (copyWeekBtn) copyWeekBtn.onclick = () => { copyWeekSummary(); };
   const weekDoneAllBtn = document.getElementById("btn-week-done-all");
   if (weekDoneAllBtn) weekDoneAllBtn.onclick = () => { markWeekDoneAll(); };
+  const weekClearAllBtn = document.getElementById("btn-week-clear-all");
+  if (weekClearAllBtn) weekClearAllBtn.onclick = () => { clearWeekDaysAll(); };
   const copyCrmBtn = document.getElementById("btn-copy-crm");
   if (copyCrmBtn) copyCrmBtn.onclick = () => { copyCrmFollowUps(); };
   const snoozeVisibleBtn = document.getElementById("btn-snooze-visible");
