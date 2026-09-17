@@ -275,6 +275,33 @@
     border-radius: 4px;
   }
 
+
+  /* Keyboard: skip sticky / jump to main (WCAG 2.4.1) */
+  .skip-link {
+    position: absolute;
+    left: 0.75rem;
+    top: max(0.75rem, env(safe-area-inset-top, 0px));
+    z-index: 100;
+    padding: 0.55rem 0.9rem;
+    border-radius: 8px;
+    background: var(--oasis);
+    color: var(--night);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transform: translateY(-160%);
+    transition: transform 0.15s ease;
+  }
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    transform: translateY(0);
+    outline: 2px solid var(--sand);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skip-link { transition: none; }
+  }
+
   /* Sticky primary action on mobile — Ep4: one clear next action */
   .sticky-skip {
     display: none;
@@ -359,7 +386,9 @@
 </head>
 <body data-brand="sarab" data-page="upsell">
 
-<header>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header id="main" tabindex="-1">
   <div class="wrap">
     <div class="brand-row">
       <img src="logo-mark.png" width="44" height="44" alt="Sarab" decoding="async">
