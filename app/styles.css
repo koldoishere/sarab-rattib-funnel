@@ -100,7 +100,15 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
     flex-wrap: nowrap;
     overflow-x: auto;
   }
-  .tab { padding: .42rem .72rem; font-size: .88rem; }
+  .tabs .tab {
+    min-height: 44px;
+    padding: .4rem .72rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    font-size: .88rem;
+  }
   .badge { font-size: .68rem; padding: .08rem .35rem; margin-inline-start: .2rem; }
 }
 .tab.active { color: var(--bg); background: var(--green); border-color: var(--green); font-weight: 600; }
@@ -569,6 +577,15 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   .top .actions .ghost {
     min-height: 44px;
     padding: .4rem .85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  /* Main nav tabs (التسعير / عرض السعر / العملاء / أسبوع الشغل) — same 44px; keep .tabs overflow-x */
+  .tabs .tab {
+    min-height: 44px;
+    padding: .4rem .72rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
