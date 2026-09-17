@@ -600,6 +600,16 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     justify-content: center;
     box-sizing: border-box;
   }
+  /* Backup nudge (تصدير الآن / إخفاء) — same 44px; was .45rem padding (~32px) outside this query */
+  .backup-nudge .primary,
+  .backup-nudge .ghost {
+    min-height: 44px;
+    padding: .4rem .85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
 }
 
 .week-done-cell {
