@@ -1807,15 +1807,26 @@ async function copyClientCard(i) {
   await copyTextToClipboard(clientCardPlainText(c));
   const name = String(c.name || "").trim();
   const msg = name ? `اتنسخ «${name}»` : "اتنسخ العميل";
-  // Offer تواصلت after نسخ نص (parity with واتساب open + row button; skip won).
+  // After نسخ نص: offer واتساب (when phone) + تواصلت — parity with markContacted #110 / row WA; skip won.
   if (c.status === "won") {
     showToast(msg);
     return;
   }
-  showToast(msg, {
-    actionLabel: "تواصلت",
-    ms: 8000,
+  const hasWa = !!whatsappPhone(c.contact);
+  const actions = [];
+  if (hasWa) {
+    actions.push({
+      label: "واتساب",
+      onAction: () => openClientWhatsApp(i),
+    });
+  }
+  actions.push({
+    label: "تواصلت",
     onAction: () => markContacted(i),
+  });
+  showToast(msg, {
+    actions,
+    ms: 8000,
   });
 }
 
