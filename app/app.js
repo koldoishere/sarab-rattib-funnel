@@ -518,19 +518,7 @@ function renderPricing() {
     });
   });
   tbody.querySelectorAll("[data-use]").forEach((btn) => {
-    btn.onclick = () => {
-      const row = state.pricing[+btn.dataset.use];
-      const c = pricingCalcs(row);
-      if (c.empty) { alert("املأ الساعات وسعر الساعة أولاً"); return; }
-      const previous = JSON.parse(JSON.stringify(state.proposal));
-      state.proposal.project = row.type || state.proposal.project;
-      state.proposal.price = Math.round(c.price);
-      if (row.notes) state.proposal.summary = row.notes;
-      save();
-      goTab("proposal");
-      renderProposal();
-      offerProposalAfterPricingToast("اتنقل لعرض السعر بالسعر المحسوب", previous);
-    };
+    btn.onclick = () => { usePricingRowForProposal(+btn.dataset.use); };
   });
   tbody.querySelectorAll("[data-copy-row]").forEach((btn) => {
     btn.onclick = () => { copyPricingRow(+btn.dataset.copyRow); };
@@ -545,6 +533,20 @@ function renderPricing() {
   paintClearBlankPricingBtn();
 }
 
+function usePricingRowForProposal(i) {
+  const row = state.pricing[i];
+  if (!row) return;
+  const c = pricingCalcs(row);
+  if (c.empty) { alert("املأ الساعات وسعر الساعة أولاً"); return; }
+  const previous = JSON.parse(JSON.stringify(state.proposal));
+  state.proposal.project = row.type || state.proposal.project;
+  state.proposal.price = Math.round(c.price);
+  if (row.notes) state.proposal.summary = row.notes;
+  save();
+  goTab("proposal");
+  renderProposal();
+  offerProposalAfterPricingToast("اتنقل لعرض السعر بالسعر المحسوب", previous);
+}
 
 function fillProposalFromPricing() {
   const t = pricingTotals();
@@ -1897,7 +1899,18 @@ async function copyPricingRow(i) {
   const row = state.pricing[i];
   await copyTextToClipboard(pricingRowPlainText(row, i));
   const type = String(row.type || "").trim();
-  showToast(type ? `اتنسخ «${type}»` : "اتنسخ صف التسعير");
+  const msg = type ? `اتنسخ «${type}»` : "اتنسخ صف التسعير";
+  // Offer انقل للعرض after نسخ نص when row has a computed price (parity with row button).
+  const c = pricingCalcs(row);
+  if (c.empty) {
+    showToast(msg);
+    return;
+  }
+  showToast(msg, {
+    actionLabel: "انقل للعرض",
+    ms: 8000,
+    onAction: () => usePricingRowForProposal(i),
+  });
 }
 
 /** After pricing summary copy: offer انقل لعرض السعر when any row is computed (proposal WA → أضف للعملاء parity). */
