@@ -21,8 +21,10 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
 }
 .brand { display: flex; gap: .75rem; align-items: center; }
 .brand .mark {
-  width: 40px; height: 40px; border-radius: 10px; background: var(--green-dim);
-  color: var(--green); display: grid; place-items: center; font-weight: 700; border: 1px solid var(--green);
+  width: 40px; height: 40px; border-radius: 10px;
+  object-fit: cover; display: block; flex-shrink: 0;
+  background: #0a100c;
+  border: 1px solid rgba(32, 224, 112, 0.35);
 }
 .brand strong { display: block; }
 .brand small { color: var(--muted); }
