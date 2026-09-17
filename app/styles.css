@@ -398,10 +398,23 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   flex-wrap: wrap;
 }
 .snooze-row .tiny {
-  padding: .12rem .42rem;
+  padding: .25rem .55rem;
   font-size: .72rem;
   line-height: 1.2;
-  min-height: 0;
+  min-height: 2rem; /* mirror .week-row-actions .tiny */
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 700px) {
+  /* CRM mobile: ≥44px tap targets for snooze + row tinies (نسخ نص / كرّر / واتساب / تواصلت) */
+  .snooze-row .tiny,
+  #panel-crm .row-actions .tiny {
+    min-height: 44px;
+    padding: .4rem .65rem;
+  }
 }
 
 .week-done-cell {
