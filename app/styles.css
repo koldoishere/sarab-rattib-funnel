@@ -480,6 +480,18 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     justify-content: center;
     box-sizing: border-box;
   }
+  /* Pricing footer + proposal actions (نسخ التسعير / انقل لعرض السعر / فتح واتساب / أضف للعملاء / …) — same 44px */
+  #panel-pricing .pricing-actions .ghost,
+  #panel-pricing .pricing-actions .primary,
+  #panel-proposal .proposal-actions .ghost,
+  #panel-proposal .proposal-actions .primary {
+    min-height: 44px;
+    padding: .4rem .85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
 }
 
 .week-done-cell {
