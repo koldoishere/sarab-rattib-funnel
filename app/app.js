@@ -1805,6 +1805,25 @@ async function copyTextToClipboard(text) {
   }
 }
 
+function visibleContactedTargets() {
+  return visibleCrmClients().filter(({ c }) =>
+    ["lead", "proposal"].includes(c.status) && (clientIsOverdue(c) || clientIsDueToday(c))
+  );
+}
+
+/** After CRM follow-ups copy: offer تواصلت للكل when any visible lead/proposal is overdue or due today. */
+function offerCrmFollowUpsContactedToast(msg) {
+  if (!visibleContactedTargets().length) {
+    showToast(msg);
+    return;
+  }
+  showToast(msg, {
+    actionLabel: "تواصلت للكل",
+    ms: 8000,
+    onAction: () => markVisibleContacted(),
+  });
+}
+
 async function copyCrmFollowUps() {
   const visible = visibleCrmClients();
   if (!visible.length) {
@@ -1813,7 +1832,7 @@ async function copyCrmFollowUps() {
   }
   await copyTextToClipboard(crmFollowUpPlainText());
   const filterLabel = CRM_FILTER_LABELS[crmFilter] || crmFilter;
-  showToast(`اتنسخ ${visible.length} متابعة (${filterLabel})`);
+  offerCrmFollowUpsContactedToast(`اتنسخ ${visible.length} متابعة (${filterLabel})`);
 }
 
 
