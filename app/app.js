@@ -1190,6 +1190,7 @@ function renderCrm() {
     badge.hidden = overdueCount === 0;
     badge.textContent = overdueCount ? `${overdueCount} متأخر` : "";
   }
+  paintCrmValueTotals();
   tbody.querySelectorAll("input,select").forEach((el) => {
     el.addEventListener("change", () => {
       const i = +el.dataset.i; const k = el.dataset.k;
@@ -1207,6 +1208,7 @@ function renderCrm() {
       const i = +el.dataset.i; const k = el.dataset.k;
       state.clients[i][k] = el.type === "number" ? n(el.value) : el.value;
       save();
+      if (k === "value") paintCrmValueTotals();
     });
   });
   tbody.querySelectorAll("[data-del]").forEach((btn) => {
@@ -1232,6 +1234,37 @@ function renderCrm() {
   });
 }
 
+
+
+function crmVisibleValueTotals() {
+  return visibleCrmClients().reduce((acc, { c }) => {
+    acc.n += 1;
+    const v = n(c.value);
+    if (v) acc.withValue += 1;
+    acc.sum += v;
+    return acc;
+  }, { n: 0, withValue: 0, sum: 0 });
+}
+
+function paintCrmValueTotals() {
+  const foot = document.getElementById("crm-tfoot");
+  if (!foot) return;
+  const t = crmVisibleValueTotals();
+  if (t.n === 0) {
+    foot.hidden = true;
+    return;
+  }
+  foot.hidden = false;
+  const count = document.getElementById("crm-value-count");
+  if (count) {
+    const filterLabel = CRM_FILTER_LABELS[crmFilter] || crmFilter;
+    count.textContent = t.withValue
+      ? `(${t.withValue} بقيمة · ${t.n} ظاهر · ${filterLabel})`
+      : `(${t.n} ظاهر · ${filterLabel})`;
+  }
+  const el = document.getElementById("crm-tot-value");
+  if (el) el.textContent = `${money(t.sum)} ج.م`;
+}
 
 function statusLabel(value) {
   const hit = STATUS.find((s) => s.value === value);
@@ -1282,9 +1315,11 @@ function crmFollowUpPlainText() {
   const visible = visibleCrmClients();
   const filterLabel = CRM_FILTER_LABELS[crmFilter] || crmFilter;
   const q = (crmQuery || "").trim();
+  const tot = crmVisibleValueTotals();
   const lines = [
     "متابعات العملاء — رتّب",
     `التصفية: ${filterLabel} · ${visible.length} عميل` + (q ? ` · بحث: «${q}»` : ""),
+    `إجمالي القيمة الظاهرة: ${money(tot.sum)} ج.م`,
     "",
   ];
   visible.forEach(({ c }) => {
