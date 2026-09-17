@@ -85,7 +85,9 @@ function load() {
     return seed();
   }
 }
+let persistPauseDepth = 0;
 function save() {
+  if (persistPauseDepth > 0) return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 function n(v) {
@@ -330,11 +332,13 @@ function renderPricing() {
   tbody.querySelectorAll("input").forEach((inp) => {
     inp.addEventListener("input", () => {
       const i = +inp.dataset.i; const k = inp.dataset.k;
-      state.pricing[i][k] = inp.type === "number" ? (inp.value === "" ? "" : n(inp.value)) : inp.value;
+      const row = state.pricing[i];
+      if (!row) return;
+      row[k] = inp.type === "number" ? (inp.value === "" ? "" : n(inp.value)) : inp.value;
       save();
       if (["hours","rate","costs","margin"].includes(k)) {
         const tr = tbody.querySelector(`tr[data-row="${i}"]`);
-        if (tr) paintPricingCalcs(tr, state.pricing[i]);
+        if (tr) paintPricingCalcs(tr, row);
       }
     });
   });
@@ -1274,11 +1278,13 @@ function renderCrm() {
   tbody.querySelectorAll("input,select").forEach((el) => {
     el.addEventListener("change", () => {
       const i = +el.dataset.i; const k = el.dataset.k;
-      const prevStatus = k === "status" ? state.clients[i].status : null;
-      state.clients[i][k] = el.type === "number" ? n(el.value) : el.value;
+      const client = state.clients[i];
+      if (!client) return;
+      const prevStatus = k === "status" ? client.status : null;
+      client[k] = el.type === "number" ? n(el.value) : el.value;
       save();
       if (k === "status") {
-        onClientStatusChange(i, prevStatus, state.clients[i].status);
+        onClientStatusChange(i, prevStatus, client.status);
         return;
       }
       if (k === "next" || k === "last" || k === "contact") renderCrm();
@@ -1286,7 +1292,9 @@ function renderCrm() {
     el.addEventListener("input", () => {
       if (el.tagName === "SELECT") return;
       const i = +el.dataset.i; const k = el.dataset.k;
-      state.clients[i][k] = el.type === "number" ? n(el.value) : el.value;
+      const client = state.clients[i];
+      if (!client) return;
+      client[k] = el.type === "number" ? n(el.value) : el.value;
       save();
       if (k === "value") paintCrmValueTotals();
     });
@@ -2065,9 +2073,17 @@ function wire() {
   document.getElementById("btn-reset").onclick = () => {
     if (!confirm("هترجع للبيانات التجريبية — مش هتفضل فاضي. كمّل؟")) return;
     const previous = JSON.parse(JSON.stringify(state));
+    // Pause persist across replace+render so detached input/change events
+    // cannot re-write old rows into localStorage after seed().
+    persistPauseDepth += 1;
     state = seed();
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderAll();
+    } finally {
+      persistPauseDepth = Math.max(0, persistPauseDepth - 1);
+    }
     save();
-    renderAll();
     showToast("رجعت للبيانات التجريبية", {
       actionLabel: "تراجع",
       ms: 6000,
@@ -2086,6 +2102,16 @@ const _ui = loadUi();
 let crmFilter = CRM_FILTER_IDS.includes(_ui.crmFilter) ? _ui.crmFilter : "all";
 let crmQuery = "";
 
-function renderAll() { renderPricing(); renderProposal(); renderCrm(); renderWeek(); }
+function renderAll() {
+  persistPauseDepth += 1;
+  try {
+    renderPricing();
+    renderProposal();
+    renderCrm();
+    renderWeek();
+  } finally {
+    persistPauseDepth = Math.max(0, persistPauseDepth - 1);
+  }
+}
 paintCrmFilterChips();
 wire();
