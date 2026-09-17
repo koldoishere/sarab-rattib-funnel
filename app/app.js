@@ -1218,7 +1218,7 @@ function clientFollowUpText(c) {
   return lines.join("\n");
 }
 
-function openClientWhatsApp(i) {
+function openClientWhatsApp(i, opts = {}) {
   const c = state.clients[i];
   if (!c) return;
   const phone = whatsappPhone(c.contact);
@@ -1233,7 +1233,8 @@ function openClientWhatsApp(i) {
   window.open(url, "_blank", "noopener,noreferrer");
   // Offer تواصلت so the freelancer can close the loop without hunting the row button.
   // Match the row UI: no mark-contacted affordance once already won.
-  if (c.status === "won") {
+  // skipContactedOffer: reverse loop after markContacted — plain toast only.
+  if (opts.skipContactedOffer || c.status === "won") {
     showToast("اتفتح واتساب بمسودة متابعة — راجع قبل الإرسال");
     return;
   }
@@ -1253,9 +1254,16 @@ function markContacted(i) {
   if (c.status === "lost") c.status = "lead";
   save();
   renderCrm();
-  showToast("اتسجّل تواصل — المتابعة بعد 3 أيام", {
-    actionLabel: "تراجع",
-    ms: 6000,
+  const hasWa = !!whatsappPhone(c.contact);
+  const actions = [];
+  if (hasWa) {
+    actions.push({
+      label: "واتساب",
+      onAction: () => openClientWhatsApp(i, { skipContactedOffer: true }),
+    });
+  }
+  actions.push({
+    label: "تراجع",
     onAction: () => {
       if (state.clients[i] !== c) return;
       c.last = prev.last;
@@ -1265,6 +1273,10 @@ function markContacted(i) {
       renderCrm();
       showToast("اتلغى تسجيل التواصل");
     },
+  });
+  showToast("اتسجّل تواصل — المتابعة بعد 3 أيام", {
+    actions,
+    ms: hasWa ? 8000 : 6000,
   });
 }
 
