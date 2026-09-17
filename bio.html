@@ -135,9 +135,33 @@
     color: var(--muted);
   }
 
+
+  /* Keyboard: skip chrome / jump to main (WCAG 2.4.1) — matches landing */
+  .skip-link {
+    position: absolute;
+    left: 0.75rem;
+    top: max(0.75rem, env(safe-area-inset-top, 0px));
+    z-index: 100;
+    padding: 0.55rem 0.9rem;
+    border-radius: 8px;
+    background: var(--oasis);
+    color: var(--night);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transform: translateY(-160%);
+    transition: transform 0.15s ease;
+  }
+  .skip-link:focus,
+  .skip-link:focus-visible {
+    transform: translateY(0);
+    outline: 2px solid var(--sand);
+    outline-offset: 2px;
+  }
   @media (prefers-reduced-motion: reduce) {
     .btn { transition: none; }
     .btn:hover { transform: none; box-shadow: none; }
+    .skip-link { transition: none; }
   }
   .price {
     margin-top: 0.85rem;
@@ -199,7 +223,9 @@
 </head>
 <body data-brand="sarab" data-page="bio">
 
-<div class="card">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="card" id="main" tabindex="-1">
   <img class="logo" src="logo-mark.png" width="88" height="88" alt="Sarab" decoding="async">
   <div class="wordmark">Sarab</div>
   <h1>Rattib</h1>
