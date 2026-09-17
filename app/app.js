@@ -1571,22 +1571,44 @@ function onClientStatusChange(i, prev, nextStatus) {
     toast = nextStatus === "won" ? "تم الاتفاق — اتشالت المتابعة" : "اتسجّلت كخسارة — اتشالت المتابعة";
   } else if ((nextStatus === "lead" || nextStatus === "proposal") && !String(c.next || "").trim()) {
     c.next = addDaysISO(localISODate(), 3);
-    toast = "رجعت للمتابعة — بعد 3 أيام";
+    toast = nextStatus === "proposal"
+      ? "اتسجّل كعرض سعر — المتابعة بعد 3 أيام"
+      : "رجعت للمتابعة — بعد 3 أيام";
+  } else if (nextStatus === "proposal" && prev !== "proposal") {
+    // lead→proposal with an existing next was silent — close the send-proposal loop.
+    toast = "اتسجّل كعرض سعر";
   }
   save();
   renderCrm();
   if (!toast) return;
+  const undo = () => {
+    if (state.clients[i] !== c) return;
+    c.status = prev;
+    c.next = prevNext;
+    save();
+    renderCrm();
+    showToast("اتلغى تغيير الحالة");
+  };
+  // Active pipeline: offer واتساب when phone present (parity with markContacted #110).
+  const offerWa = ["lead", "proposal"].includes(nextStatus) && !!whatsappPhone(c.contact);
+  if (offerWa) {
+    showToast(toast, {
+      ms: 8000,
+      actions: [
+        {
+          label: "واتساب",
+          // Keep تواصلت offer after WA — status change is not itself a contact.
+          onAction: () => openClientWhatsApp(i),
+        },
+        { label: "تراجع", onAction: undo },
+      ],
+    });
+    return;
+  }
   showToast(toast, {
     actionLabel: "تراجع",
     ms: 6000,
-    onAction: () => {
-      if (state.clients[i] !== c) return;
-      c.status = prev;
-      c.next = prevNext;
-      save();
-      renderCrm();
-      showToast("اتلغى تغيير الحالة");
-    },
+    onAction: undo,
   });
 }
 
