@@ -1306,16 +1306,31 @@ function snoozeClient(i, days) {
   save();
   renderCrm();
   const label = d === 7 ? "اتأجلت المتابعة أسبوع" : `اتأجلت المتابعة ${d} أيام`;
+  const undo = () => {
+    if (state.clients[i] !== c) return;
+    c.next = prevNext;
+    save();
+    renderCrm();
+    showToast("اتلغى التأجيل");
+  };
+  // Parity with markContacted (#110) / setClientNextToday: offer واتساب when phone present.
+  if (whatsappPhone(c.contact)) {
+    showToast(label, {
+      ms: 8000,
+      actions: [
+        {
+          label: "واتساب",
+          onAction: () => openClientWhatsApp(i, { skipContactedOffer: true }),
+        },
+        { label: "تراجع", onAction: undo },
+      ],
+    });
+    return;
+  }
   showToast(label, {
     actionLabel: "تراجع",
     ms: 6000,
-    onAction: () => {
-      if (state.clients[i] !== c) return;
-      c.next = prevNext;
-      save();
-      renderCrm();
-      showToast("اتلغى التأجيل");
-    },
+    onAction: undo,
   });
 }
 
@@ -1335,18 +1350,34 @@ function snoozeVisibleClients(days) {
   const label = d === 7
     ? `اتأجلت المتابعة أسبوع لـ ${n} عميل`
     : `اتأجلت المتابعة ${d} أيام لـ ${n} عميل`;
+  const undo = () => {
+    snapshots.forEach(({ c, i, prevNext }) => {
+      if (state.clients[i] !== c) return;
+      c.next = prevNext;
+    });
+    save();
+    renderCrm();
+    showToast("اتلغى التأجيل الجماعي");
+  };
+  // Parity with setVisibleClientsNextToday / markVisibleContacted: offer واتساب for first target with phone.
+  const waTarget = snapshots.find(({ c }) => !!whatsappPhone(c.contact));
+  if (waTarget) {
+    showToast(label, {
+      ms: 8000,
+      actions: [
+        {
+          label: "واتساب",
+          onAction: () => openClientWhatsApp(waTarget.i, { skipContactedOffer: true }),
+        },
+        { label: "تراجع", onAction: undo },
+      ],
+    });
+    return;
+  }
   showToast(label, {
     actionLabel: "تراجع",
     ms: 6000,
-    onAction: () => {
-      snapshots.forEach(({ c, i, prevNext }) => {
-        if (state.clients[i] !== c) return;
-        c.next = prevNext;
-      });
-      save();
-      renderCrm();
-      showToast("اتلغى التأجيل الجماعي");
-    },
+    onAction: undo,
   });
 }
 
