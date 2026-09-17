@@ -449,11 +449,16 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
 }
 
 @media (max-width: 700px) {
-  /* CRM mobile: ≥44px tap targets for snooze + row tinies (نسخ نص / كرّر / واتساب / تواصلت) */
+  /* Mobile: ≥44px tap targets for snooze + CRM/pricing row tinies (نسخ نص / كرّر / واتساب / تواصلت / انقل للعرض) */
   .snooze-row .tiny,
-  #panel-crm .row-actions .tiny {
+  #panel-crm .row-actions .tiny,
+  #panel-pricing .row-actions .tiny {
     min-height: 44px;
     padding: .4rem .65rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
   }
 }
 
