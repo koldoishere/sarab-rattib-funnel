@@ -216,6 +216,18 @@ function persistDemoSeed() {
   paintDemoChip();
 }
 
+/** Persist current `state` as demo seed (chip on) or user-owned data (chip off + backup nudge eligible). */
+function commitState({ asDemo }) {
+  if (asDemo) {
+    persistDemoSeed();
+    return;
+  }
+  showingDemoSeed = false;
+  try { localStorage.removeItem(DEMO_FLAG_KEY); } catch { /* private mode */ }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  paintDemoChip();
+}
+
 function paintDemoChip() {
   const el = document.getElementById("demo-seed-chip");
   if (!el) return;
@@ -260,7 +272,8 @@ function doExport() {
   a.download = filename;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  saveUi({ lastExportAt: stamp });
+  // Demo export is not a real backup of owned data — don't suppress the nudge after first edit.
+  if (!showingDemoSeed) saveUi({ lastExportAt: stamp });
   paintBackupNudge();
   showToast(`اتصدر ${filename}`);
 }
@@ -2912,18 +2925,17 @@ function wire() {
         return;
       }
       const previous = JSON.parse(JSON.stringify(state));
+      const previousWasDemo = showingDemoSeed;
       state = next;
-      showingDemoSeed = false;
-      localStorage.removeItem(DEMO_FLAG_KEY);
-      save();
-      paintDemoChip();
+      // Re-imported pristine seed → keep «بيانات تجريبية»; otherwise owned data.
+      commitState({ asDemo: matchesCurrentDemoSeed(state) });
       renderAll();
       showToast("تم استيراد البيانات بأمان", {
         actionLabel: "تراجع",
         ms: 6000,
         onAction: () => {
           state = previous;
-          save();
+          commitState({ asDemo: previousWasDemo });
           renderAll();
           showToast("رجعت البيانات قبل الاستيراد");
         },
@@ -2937,6 +2949,7 @@ function wire() {
   document.getElementById("btn-reset").onclick = () => {
     if (!confirm("هترجع للبيانات التجريبية — مش هتفضل فاضي. كمّل؟")) return;
     const previous = JSON.parse(JSON.stringify(state));
+    const previousWasDemo = showingDemoSeed;
     // Pause persist across replace+render so detached input/change events
     // cannot re-write old rows into localStorage after seed().
     persistPauseDepth += 1;
@@ -2953,10 +2966,7 @@ function wire() {
       ms: 6000,
       onAction: () => {
         state = previous;
-        showingDemoSeed = false;
-        localStorage.removeItem(DEMO_FLAG_KEY);
-        save();
-        paintDemoChip();
+        commitState({ asDemo: previousWasDemo });
         renderAll();
         showToast("رجعت بياناتك");
       },
