@@ -508,6 +508,7 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   align-items: center;
   justify-content: center;
 }
+
 /* Desktop week row tinies — keep before ≤700px 44px sweep so cascade cannot zero mobile height (#104 pattern). */
 .week-row-actions .tiny {
   min-height: 2rem;

@@ -2756,7 +2756,7 @@ function normalizeImportedState(data) {
         value: cleanNum(c.value, 0),
         notes: cleanStr(c.notes, 500),
       };
-    });
+    }).filter((c) => !isBlankClient(c));
   }
 
   if ("week" in data) {
@@ -2925,7 +2925,7 @@ function wire() {
         return;
       }
       const previous = JSON.parse(JSON.stringify(state));
-      const previousWasDemo = showingDemoSeed;
+      const previousWasDemo = showingDemoSeed || matchesCurrentDemoSeed(previous);
       state = next;
       // Re-imported pristine seed → keep «بيانات تجريبية»; otherwise owned data.
       commitState({ asDemo: matchesCurrentDemoSeed(state) });
@@ -2935,7 +2935,7 @@ function wire() {
         ms: 6000,
         onAction: () => {
           state = previous;
-          commitState({ asDemo: previousWasDemo });
+          commitState({ asDemo: previousWasDemo || matchesCurrentDemoSeed(previous) });
           renderAll();
           showToast("رجعت البيانات قبل الاستيراد");
         },
