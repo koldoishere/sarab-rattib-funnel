@@ -2743,7 +2743,7 @@ function normalizeImportedState(data) {
         value: cleanNum(c.value, 0),
         notes: cleanStr(c.notes, 500),
       };
-    });
+    }).filter((c) => !isBlankClient(c));
   }
 
   if ("week" in data) {
@@ -2912,6 +2912,7 @@ function wire() {
         return;
       }
       const previous = JSON.parse(JSON.stringify(state));
+      const wasDemo = showingDemoSeed || matchesCurrentDemoSeed(previous);
       state = next;
       showingDemoSeed = false;
       localStorage.removeItem(DEMO_FLAG_KEY);
@@ -2923,7 +2924,15 @@ function wire() {
         ms: 6000,
         onAction: () => {
           state = previous;
-          save();
+          if (wasDemo || matchesCurrentDemoSeed(previous)) {
+            // Restore «بيانات تجريبية» chip after undoing an import over seed.
+            persistDemoSeed();
+          } else {
+            showingDemoSeed = false;
+            localStorage.removeItem(DEMO_FLAG_KEY);
+            save();
+            paintDemoChip();
+          }
           renderAll();
           showToast("رجعت البيانات قبل الاستيراد");
         },
