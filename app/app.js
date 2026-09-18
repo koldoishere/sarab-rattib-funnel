@@ -665,6 +665,8 @@ function paintStaticI18n() {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (!key) return;
+    // CRM filter chips: paintCrmFilterChips owns label + count (do not wipe).
+    if (el.hasAttribute("data-filter")) return;
     el.textContent = t(key);
   });
   document.querySelectorAll("[data-i18n-title]").forEach((el) => {
@@ -682,6 +684,10 @@ function paintStaticI18n() {
   const chip = document.getElementById("demo-seed-chip");
   if (chip) chip.textContent = t("demo_chip");
   paintLangToggle();
+  // CRM filter chips are JS-painted (label + count); keep in sync with AR|EN.
+  if (typeof paintCrmFilterChips === "function") {
+    try { paintCrmFilterChips(); } catch { /* boot before state */ }
+  }
 }
 function setAppLang(next, { persist = true, repaint = true } = {}) {
   appLang = normalizeLang(next);
@@ -1031,6 +1037,7 @@ function dismissToast() {
   if (!toast || toast.hidden) return false;
   clearTimeout(toast._t);
   toast.hidden = true;
+  toast.replaceChildren();
   return true;
 }
 
@@ -1162,24 +1169,24 @@ function pricingTotals() {
 function paintPricingTotals() {
   const foot = document.getElementById("pricing-tfoot");
   if (!foot) return;
-  const t = pricingTotals();
+  const tot = pricingTotals();
   const set = (id, val) => {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
   };
-  if (t.n === 0) {
+  if (tot.n === 0) {
     foot.hidden = true;
     return;
   }
   foot.hidden = false;
   const count = document.getElementById("pricing-count");
-  if (count) count.textContent = `(${t.n})`;
+  if (count) count.textContent = `(${tot.n})`;
   const depCell = foot.querySelector('[data-label="المقدم"], [data-label^="مقدم"], [data-label^="Deposit"], [data-label^="Deposit "]');
   if (depCell) depCell.setAttribute("data-label", t("th_deposit", { pct: depositPct() }));
-  set("tot-price", money(t.price));
-  set("tot-usd", money(t.usd));
-  set("tot-dep", money(t.dep));
-  set("tot-bal", money(t.bal));
+  set("tot-price", money(tot.price));
+  set("tot-usd", money(tot.usd));
+  set("tot-dep", money(tot.dep));
+  set("tot-bal", money(tot.bal));
 }
 
 function renderPricing() {
@@ -1261,13 +1268,13 @@ function usePricingRowForProposal(i) {
 }
 
 function fillProposalFromPricing() {
-  const t = pricingTotals();
-  if (t.n === 0) {
+  const tot = pricingTotals();
+  if (tot.n === 0) {
     alert(t("toast_fill_one_row"));
     return;
   }
   const previous = JSON.parse(JSON.stringify(state.proposal));
-  const price = Math.round(t.price);
+  const price = Math.round(tot.price);
   state.proposal.price = price;
   const types = state.pricing
     .map((r) => String(r.type || "").trim())
@@ -1313,9 +1320,16 @@ function proposalPlainText() {
 function showToast(msg, opts = {}) {
   const toast = document.getElementById("toast");
   if (!toast) return;
+  const textMsg = msg == null ? "" : String(msg);
+  if (!textMsg.trim()) {
+    clearTimeout(toast._t);
+    toast.hidden = true;
+    toast.replaceChildren();
+    return;
+  }
   toast.replaceChildren();
   const text = document.createElement("span");
-  text.textContent = msg;
+  text.textContent = textMsg;
   toast.appendChild(text);
   const actions = Array.isArray(opts.actions) && opts.actions.length
     ? opts.actions
@@ -2540,8 +2554,15 @@ function renderCrm() {
   });
   const badge = document.getElementById("crm-overdue-badge");
   if (badge) {
-    badge.hidden = overdueCount === 0;
-    badge.textContent = overdueCount ? t("overdue_badge", { n: overdueCount }) : "";
+    if (overdueCount === 0) {
+      badge.hidden = true;
+      badge.setAttribute("hidden", "");
+      badge.textContent = "";
+    } else {
+      badge.hidden = false;
+      badge.removeAttribute("hidden");
+      badge.textContent = t("overdue_badge", { n: overdueCount });
+    }
   }
   paintCrmValueTotals();
   tbody.querySelectorAll("input,select").forEach((el) => {
@@ -2609,8 +2630,8 @@ function crmVisibleValueTotals() {
 function paintCrmValueTotals() {
   const foot = document.getElementById("crm-tfoot");
   if (!foot) return;
-  const t = crmVisibleValueTotals();
-  if (t.n === 0) {
+  const tot = crmVisibleValueTotals();
+  if (tot.n === 0) {
     foot.hidden = true;
     return;
   }
@@ -2618,12 +2639,12 @@ function paintCrmValueTotals() {
   const count = document.getElementById("crm-value-count");
   if (count) {
     const filterLabel = crmFilterLabel(crmFilter);
-    count.textContent = t.withValue
-      ? t("crm_count_valued", { v: t.withValue, n: t.n, filter: filterLabel })
-      : t("crm_count_plain", { n: t.n, filter: filterLabel });
+    count.textContent = tot.withValue
+      ? t("crm_count_valued", { v: tot.withValue, n: tot.n, filter: filterLabel })
+      : t("crm_count_plain", { n: tot.n, filter: filterLabel });
   }
   const el = document.getElementById("crm-tot-value");
-  if (el) el.textContent = `${money(t.sum)} ${t("egp")}`;
+  if (el) el.textContent = `${money(tot.sum)} ${t("egp")}`;
 }
 
 function statusLabel(value) {
@@ -2855,8 +2876,8 @@ async function copyPricingRow(i) {
 
 /** After pricing summary copy: offer انقل لعرض السعر when any row is computed (proposal WA → أضف للعملاء parity). */
 function offerPricingToProposalToast(msg) {
-  const t = pricingTotals();
-  if (!t.n) {
+  const tot = pricingTotals();
+  if (!tot.n) {
     showToast(msg);
     return;
   }
@@ -2873,9 +2894,9 @@ async function copyPricingSummary() {
     return;
   }
   await copyTextToClipboard(pricingPlainText());
-  const t = pricingTotals();
-  const msg = t.n
-    ? t("toast_copied_pricing_n", { n: state.pricing.length, calc: t.n })
+  const tot = pricingTotals();
+  const msg = tot.n
+    ? t("toast_copied_pricing_n", { n: state.pricing.length, calc: tot.n })
     : t("toast_copied_pricing_plain", { n: state.pricing.length });
   offerPricingToProposalToast(msg);
 }
