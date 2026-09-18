@@ -509,6 +509,11 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   justify-content: center;
 }
 
+/* Desktop week row tinies — keep before ≤700px 44px sweep so cascade cannot zero mobile height (#104 pattern). */
+.week-row-actions .tiny {
+  min-height: 2rem;
+}
+
 /* Clickable CRM pipeline jump (parity with overdue tab badge) */
 .pipeline-jump {
   appearance: none;
@@ -665,6 +670,17 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     justify-content: center;
     box-sizing: border-box;
   }
+  /* CRM overdue tab badge («N متأخر») — own click target (stopPropagation); was ~.72rem pad outside this query */
+  #crm-overdue-badge {
+    min-height: 44px;
+    min-width: 44px;
+    padding: .35rem .65rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    vertical-align: middle;
+  }
   /* Pricing / CRM / week table inputs & selects — same 44px; was padding .4rem .5rem (~32–36px) outside this query.
      Priority: CRM select[data-k=status] + input[data-k=next]. Scoped to tables so .crm-search keeps its clear-✕ padding.
      min-height + box-sizing only (no flex) so type=date native chrome stays usable. */
@@ -710,9 +726,6 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   gap: .35rem;
   align-items: center;
 }
-.week-row-actions .tiny {
-  min-height: 2rem;
-}
 .done-toggle {
   display: inline-flex; align-items: center; gap: .35rem;
   background: transparent; border: 1px solid var(--border); color: var(--muted);
@@ -752,7 +765,12 @@ tr.week-done td[data-label="التسليمات"] input {
   }
   #panel-week .week-row-actions .tiny {
     width: 100%;
+    min-height: 44px;
+    padding: .4rem .65rem;
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
+    box-sizing: border-box;
   }
 }
 
