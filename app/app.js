@@ -1,12 +1,712 @@
 const STORAGE_KEY = "rattib-app-v1";
 const DEMO_FLAG_KEY = "rattib-demo-seed-v1";
 const STATUS = [
-  { value: "lead", label: "عميل محتمل" },
-  { value: "proposal", label: "عرض سعر" },
-  { value: "won", label: "تم الاتفاق" },
-  { value: "lost", label: "خسارة" },
+  { value: "lead" },
+  { value: "proposal" },
+  { value: "won" },
+  { value: "lost" },
 ];
 const DAYS = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+
+/* ─── i18n (EN + AR) ─────────────────────────────────────────────────────
+ * Arabic remains default. Lang persists in rattib-ui-v1.lang (via saveUi).
+ * Chrome + CRM/pricing/week actions/toasts covered; demo seed content stays AR.
+ * ─────────────────────────────────────────────────────────────────────── */
+const I18N = {
+  "ar": {
+    "doc_title": "رتّب · Rattib — نظام الفريلانسر في مكان واحد",
+    "doc_desc": "تسعير + عرض سعر + CRM + أسبوع شغل في تطبيق واحد. منتج من Sarab.",
+    "brand_tag": "جرّب مجانًا هنا · Free try — مش نهاية الطريق",
+    "demo_chip": "بيانات تجريبية",
+    "btn_export": "تصدير",
+    "btn_export_title": "تصدير كل البيانات كملف JSON",
+    "btn_import": "استيراد",
+    "btn_import_title": "استيراد ملف JSON من تصدير رتّب",
+    "btn_reset": "مسح البيانات",
+    "btn_reset_title": "يرجع للبيانات التجريبية — مش مسح فاضي",
+    "backup_nudge": "بياناتك بتفضل في المتصفح بس — صدّر JSON احتياطي عشان متضيعش.",
+    "btn_backup_export": "تصدير الآن",
+    "btn_backup_dismiss": "إخفاء",
+    "lang_group": "اللغة",
+    "tab_pricing": "التسعير",
+    "tab_proposal": "عرض السعر",
+    "tab_crm": "العملاء",
+    "tab_week": "أسبوع الشغل",
+    "panel_pricing": "التسعير",
+    "panel_proposal": "عرض السعر",
+    "panel_crm": "متابعة العملاء",
+    "panel_week": "أسبوع الشغل",
+    "fx_label": "سعر الصرف (ج.م لكل $1)",
+    "week_done_prefix": "تم",
+    "week_done_mid": "من 7 · ساعات التركيز:",
+    "foot": "Sarab · Rattib MVP — أدوات تنظيم، مفيش ضمان دخل",
+    "th_type": "نوع المشروع",
+    "th_hours": "ساعات",
+    "th_rate": "سعر/س",
+    "th_costs": "تكاليف",
+    "th_margin": "هامش %",
+    "th_price": "مقترح ج.م",
+    "th_usd": "USD",
+    "th_deposit": "مقدم {pct}%",
+    "th_balance": "المتبقي",
+    "th_notes": "ملاحظات",
+    "th_actions": "إجراءات",
+    "pricing_totals": "إجمالي الصفوف المحسوبة",
+    "add_pricing": "+ صف تسعير",
+    "copy_pricing": "نسخ التسعير",
+    "copy_pricing_title": "نسخ صفوف التسعير الظاهرة كنص",
+    "clear_blank_pricing": "احذف الفارغ",
+    "clear_blank_pricing_title": "احذف صفوف التسعير الفاضية",
+    "to_proposal": "انقل لعرض السعر",
+    "to_proposal_title": "انقل إجمالي التسعير إلى عرض السعر",
+    "use_for_proposal": "انقل للعرض",
+    "use_for_proposal_title": "ضع السعر والمشروع في عرض السعر",
+    "copy_text": "نسخ نص",
+    "copy_pricing_row_title": "نسخ صف التسعير كنص",
+    "dup_row": "كرّر",
+    "dup_pricing_title": "كرّر الصف تحتها",
+    "prop_date": "تاريخ العرض",
+    "prop_valid": "صالح حتى",
+    "prop_client": "اسم العميل",
+    "prop_contact": "جهة التواصل",
+    "prop_project": "اسم المشروع",
+    "prop_price": "السعر (ج.م)",
+    "prop_deposit_pct": "نسبة المقدم %",
+    "prop_revisions": "المراجعات",
+    "prop_duration": "المدة",
+    "prop_payments": "طرق الدفع",
+    "prop_summary": "ملخص",
+    "prop_in_scope": "داخل النطاق",
+    "prop_out_scope": "خارج النطاق",
+    "prop_terms": "شروط",
+    "prop_next": "الخطوة التالية",
+    "prop_deposit_calc": "المقدم المحسوب",
+    "prop_balance_calc": "المتبقي عند التسليم",
+    "copy_wa": "نسخ للواتساب",
+    "open_wa": "فتح واتساب",
+    "from_pricing": "من التسعير",
+    "from_pricing_title": "انقل إجمالي صفوف التسعير المحسوبة إلى سعر العرض",
+    "add_to_crm": "أضف للعملاء",
+    "date_title": "اليوم / الشهر / السنة",
+    "copy_crm": "نسخ المتابعات",
+    "copy_crm_title": "نسخ قائمة المتابعات الظاهرة",
+    "snooze3_all": "+3 للكل",
+    "snooze3_all_title": "تأجيل المتابعة 3 أيام لكل العملاء الظاهرين",
+    "snooze7_all": "+7 للكل",
+    "snooze7_all_title": "تأجيل المتابعة أسبوع لكل العملاء الظاهرين",
+    "today_all": "اليوم للكل",
+    "today_all_title": "تعيين المتابعة لليوم لكل العملاء الظاهرين",
+    "clear_next_all": "بدون موعد للكل",
+    "clear_next_all_title": "مسح موعد المتابعة لكل العملاء الظاهرين",
+    "contacted_all": "تواصلت للكل",
+    "contacted_all_title": "تسجيل تواصل لليوم + متابعة بعد 3 أيام للظاهرين المستحقين",
+    "clear_blank_clients": "احذف الفارغ",
+    "clear_blank_clients_title": "احذف العملاء الفاضيين",
+    "add_client": "+ عميل",
+    "crm_filters_aria": "تصفية العملاء",
+    "crm_search_sr": "بحث في العملاء",
+    "crm_search_ph": "بحث بالاسم / التواصل / المصدر / الملاحظات",
+    "crm_search_clear": "مسح البحث",
+    "crm_empty_filter": "مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.",
+    "crm_empty_none": "لسه مفيش عملاء — اضغط «+ عميل» أو «أضف للعملاء» من عرض السعر.",
+    "crm_empty_search": "مفيش نتائج للبحث ده — جرّب كلمة تانية أو امسح البحث.",
+    "crm_empty_today": "مفيش متابعات النهاردة — لو في متأخرين جرّب «متأخر».",
+    "crm_empty_none_next": "كل العملاء النشطين عندهم موعد متابعة — تمام.",
+    "th_name": "الاسم",
+    "th_contact": "التواصل",
+    "th_source": "المصدر",
+    "th_status": "الحالة",
+    "th_last": "آخر تواصل",
+    "th_next": "متابعة تالية",
+    "th_value": "القيمة",
+    "crm_totals": "إجمالي القيمة الظاهرة",
+    "filter_all": "الكل",
+    "filter_today": "النهاردة",
+    "filter_overdue": "متأخر",
+    "filter_none": "بدون موعد",
+    "filter_lead": "عميل محتمل",
+    "filter_proposal": "عرض سعر",
+    "filter_won": "تم الاتفاق",
+    "filter_lost": "خسارة",
+    "status_lead": "عميل محتمل",
+    "status_proposal": "عرض سعر",
+    "status_won": "تم الاتفاق",
+    "status_lost": "خسارة",
+    "clear_next": "بدون موعد",
+    "clear_next_title": "مسح موعد المتابعة",
+    "snooze_group": "متابعة سريعة",
+    "today_btn": "اليوم",
+    "today_btn_title": "خلي المتابعة النهاردة",
+    "snooze3_title": "تأجيل 3 أيام",
+    "snooze7_title": "تأجيل أسبوع",
+    "whatsapp": "واتساب",
+    "whatsapp_title": "فتح واتساب",
+    "contacted": "تواصلت",
+    "copy_client_title": "نسخ بطاقة العميل كنص",
+    "dup_client_title": "كرّر العميل تحتها",
+    "contact_ph": "واتساب 01xxxxxxxxx",
+    "contact_hint_phone": "حط رقم عشان يظهر زر واتساب",
+    "overdue_badge": "{n} متأخر",
+    "pipeline_empty": "مفيش ظاهر في التصفية دي",
+    "pipeline_visible": "الظاهر: {n} · قيمة {sum} ج.م",
+    "pipeline_overdue": "{n} متأخر",
+    "pipeline_today": "{n} متابعة النهاردة",
+    "pipeline_none": "{n} بدون موعد",
+    "pipeline_overdue_title": "عرض المتابعات المتأخرة",
+    "pipeline_today_title": "عرض متابعات النهاردة",
+    "pipeline_none_title": "عرض العملاء من غير متابعة تالية",
+    "toast_filter_overdue": "تصفية المتأخرين",
+    "toast_filter_overdue_pipe": "تصفية المتابعات المتأخرة",
+    "toast_filter_today_pipe": "تصفية متابعات النهاردة",
+    "toast_filter_none_pipe": "تصفية بدون موعد",
+    "crm_count_valued": "({v} بقيمة · {n} ظاهر · {filter})",
+    "crm_count_plain": "({n} ظاهر · {filter})",
+    "copy_today": "نسخ اليوم",
+    "copy_today_title": "نسخ بطاقة النهاردة كنص",
+    "copy_week": "نسخ الملخص",
+    "week_done_all": "تم للكل",
+    "week_done_all_title": "علم كل الأيام الناقصة اللي فيها محتوى كمكتملة",
+    "week_clear_all": "مسح للكل",
+    "week_clear_all_title": "امسح مهام وساعات وتسليمات وعلامة تم لكل الأيام اللي فيها محتوى",
+    "new_week": "أسبوع جديد",
+    "th_day": "اليوم",
+    "th_tasks": "المهام",
+    "th_focus": "ساعات التركيز",
+    "th_deliverables": "التسليمات",
+    "th_done": "تم؟",
+    "today_pill": "اليوم",
+    "done_yes": "تم",
+    "done_no": "مش بعد",
+    "done_on_title": "إلغاء اكتمال اليوم",
+    "done_off_title": "تعليم اليوم كمكتمل",
+    "copy_day_title": "نسخ بطاقة اليوم كنص",
+    "clear_day": "مسح",
+    "clear_day_title": "مسح مهام وساعات وتسليمات اليوم",
+    "day_sun": "الأحد",
+    "day_mon": "الاثنين",
+    "day_tue": "الثلاثاء",
+    "day_wed": "الأربعاء",
+    "day_thu": "الخميس",
+    "day_fri": "الجمعة",
+    "day_sat": "السبت",
+    "undo": "تراجع",
+    "egp": "ج.م",
+    "hint_today": "اليوم",
+    "hint_tomorrow": "بكرة",
+    "hint_late1": "متأخر يوم",
+    "hint_late_n": "متأخر {n} أيام",
+    "hint_in_n": "بعد {n} أيام",
+    "toast_exported": "اتصدر {file}",
+    "toast_fill_hours": "املأ الساعات وسعر الساعة أولاً",
+    "toast_fill_one_row": "املأ صف تسعير واحد على الأقل (ساعات وسعر الساعة) أولاً",
+    "toast_moved_proposal": "اتنقل لعرض السعر بالسعر المحسوب",
+    "toast_moved_total": "اتنقل إجمالي التسعير: {price} ج.م",
+    "toast_proposal_restored": "رجع عرض السعر زي ما كان",
+    "toast_copied_pricing_row": "اتنسخ صف التسعير",
+    "toast_copied_named": "اتنسخ «{name}»",
+    "toast_undid_copy": "اتلغت النسخة",
+    "toast_pricing_row_restored": "رجع صف التسعير",
+    "toast_no_blank_pricing": "مفيش صفوف فاضية تتشال",
+    "toast_cleared_blank_pricing": "اتمسح {n} صف فاضي",
+    "toast_pricing_rows_restored": "رجعت صفوف التسعير",
+    "toast_no_blank_clients": "مفيش عملاء فاضي",
+    "toast_cleared_blank_clients": "اتمسح {n} عميل فاضي",
+    "toast_clients_restored": "رجعت العملاء",
+    "toast_copied_client": "اتنسخ العميل",
+    "toast_deleted_client": "اتمسح العميل",
+    "toast_deleted_named": "اتمسح «{name}»",
+    "toast_client_restored": "رجع العميل للمتابعة",
+    "toast_proposal_copied": "تم نسخ العرض — الصقه في واتساب",
+    "toast_proposal_long_client": "العرض طويل — اتنسخ، الصقه في واتساب للعميل",
+    "toast_proposal_long": "العرض طويل — اتنسخ، الصقه في واتساب",
+    "toast_wa_opened_client": "اتفتح واتساب للعميل بالنص — راجع قبل الإرسال",
+    "toast_need_client_name": "اكتب اسم العميل في عرض السعر أولاً",
+    "toast_crm_update_undone": "اتلغى تحديث العميل من العرض",
+    "toast_crm_removed": "اتشال العميل من المتابعة",
+    "toast_need_wa_number": "حط رقم واتساب في خانة التواصل أولاً",
+    "toast_wa_followup": "اتفتح واتساب بمسودة متابعة — راجع قبل الإرسال",
+    "toast_contact_undone": "اتلغى تسجيل التواصل",
+    "toast_contacted": "اتسجّل تواصل — المتابعة بعد 3 أيام",
+    "toast_snooze_undone": "اتلغى التأجيل",
+    "toast_snooze_bulk_undone": "اتلغى التأجيل الجماعي",
+    "toast_today_undone": "اتلغى تعيين النهاردة",
+    "toast_next_today": "المتابعة بقت النهاردة",
+    "toast_today_bulk_undone": "اتلغى تعيين النهاردة الجماعي",
+    "toast_no_next_clear": "مفيش مواعيد ظاهرة تتشال",
+    "toast_next_restored": "اترجع مواعيد المتابعة",
+    "toast_no_next_one": "مفيش موعد يتشال",
+    "toast_next_one_restored": "اترجع موعد المتابعة",
+    "toast_next_cleared": "اتشال موعد المتابعة",
+    "toast_no_contactable": "مفيش ظاهرين متأخرين أو النهاردة يتسجّل لهم تواصل",
+    "toast_contact_bulk_undone": "اتلغى تسجيل التواصل الجماعي",
+    "toast_status_undone": "اتلغى تغيير الحالة",
+    "toast_won": "تم الاتفاق — اتشالت المتابعة",
+    "toast_lost": "اتسجّلت كخسارة — اتشالت المتابعة",
+    "toast_as_proposal_next": "اتسجّل كعرض سعر — المتابعة بعد 3 أيام",
+    "toast_back_lead": "رجعت للمتابعة — بعد 3 أيام",
+    "toast_as_proposal": "اتسجّل كعرض سعر",
+    "toast_no_crm_copy": "مفيش عملاء في التصفية دي للنسخ",
+    "toast_copied_followups": "اتنسخ {n} متابعة ({filter})",
+    "toast_no_pricing_copy": "مفيش صفوف تسعير للنسخ",
+    "toast_copied_pricing_n": "اتنسخ {n} صف تسعير ({calc} محسوب)",
+    "toast_copied_pricing_plain": "اتنسخ {n} صف تسعير",
+    "toast_copied_week": "اتنسخ ملخص الأسبوع",
+    "toast_week_already_done": "«{day}» مكتملة أصلاً",
+    "toast_week_now_done": "«{day}» بقت مكتملة",
+    "toast_week_done_undone": "اتلغى تم «{day}»",
+    "toast_no_day_content": "مفيش محتوى لليوم ده للنسخ — حط مهام أو ساعات أولاً",
+    "toast_copied_day": "اتنسخ يوم «{day}»",
+    "toast_week_restored": "رجع أسبوع الشغل",
+    "toast_week_ready": "أسبوع جديد جاهز",
+    "toast_week_carried": "اترحّلت المهام الناقصة",
+    "toast_week_empty": "أسبوع فاضي",
+    "toast_week_already_clear": "«{day}» فاضي أصلاً",
+    "toast_day_cleared": "اتمسح يوم «{day}»",
+    "toast_day_restored": "رجع يوم «{day}»",
+    "toast_day_marked": "«{day}» بقت مكتملة",
+    "toast_day_unmarked": "«{day}» رجعت مش مكتملة",
+    "toast_day_toggle_undone": "اتلغى تغيير «{day}»",
+    "toast_no_incomplete": "مفيش أيام ناقصة بمحتوى تتعلّم تم",
+    "toast_marked_n": "اتعلّم تم لـ {n} يوم",
+    "toast_done_all_undone": "اتلغى تم الجماعي",
+    "toast_no_clearable": "مفيش أيام تتتمسح",
+    "toast_cleared_n_days": "اتمسح {n} يوم",
+    "toast_clear_all_undone": "اتلغى مسح الجماعي",
+    "toast_added_pricing": "اتضاف صف تسعير فاضي",
+    "toast_removed_pricing": "اتشال صف التسعير الفاضي",
+    "toast_added_client": "اتضاف عميل فاضي",
+    "toast_removed_client": "اتشال العميل الفاضي",
+    "toast_imported": "تم استيراد البيانات بأمان",
+    "toast_import_undone": "رجعت البيانات قبل الاستيراد",
+    "toast_import_bad": "ملف غير صالح — لازم يكون تصدير رتّب JSON",
+    "toast_reset_demo": "رجعت للبيانات التجريبية",
+    "toast_reset_undone": "رجعت بياناتك",
+    "confirm_import": "استيراد الملف هيستبدل البيانات الحالية. كمّل؟",
+    "confirm_reset": "هترجع للبيانات التجريبية — مش هتفضل فاضي. كمّل؟",
+    "confirm_new_week": "أسبوع جديد؟ هنتصفّر الساعات والتسليمات وعلامات «تم». المهام الناقصة هتترحّل، وتقدر تفضّي الأسبوع من التوست.",
+    "empty_week_full": "فاضي بالكامل",
+    "mark_done": "تم",
+    "mark_done_all": "تم للكل",
+    "move_to_proposal": "انقل لعرض السعر",
+    "err_file_big": "الملف كبير أوي (حد أقصى 2MB)",
+    "err_not_json": "الملف مش JSON صالح",
+    "err_not_object": "الملف مش JSON كائن صالح",
+    "err_bad_keys": "الملف فيه مفاتيح مش مسموحة",
+    "err_not_rattib": "الملف مش تصدير رتّب — مفيش أقسام معروفة",
+    "week_clear_n_title": "امسح {n} يوم فيه محتوى أو تم",
+    "week_clear_none_title": "مفيش أيام فيها محتوى أو تم",
+    "no_name": "بدون اسم",
+    "copy_client_head": "متابعة عميل — رتّب",
+    "copy_contact": "التواصل",
+    "copy_source": "المصدر",
+    "copy_last": "آخر تواصل",
+    "copy_next": "متابعة تالية",
+    "copy_value": "القيمة",
+    "copy_notes": "ملاحظات",
+    "copy_pricing_head": "ملخص التسعير — رتّب",
+    "copy_fx_line": "سعر الصرف: {fx} ج.م لكل $1 · مقدم {pct}%",
+    "copy_pricing_total": "إجمالي ({n}): {price} ج.م · {usd} USD · مقدم {dep} · متبقي {bal}",
+    "copy_pricing_none": "مفيش صفوف محسوبة بعد",
+    "copy_row_n": "صف {n}",
+    "copy_row_incomplete": "☐ {type} — ناقص ساعات/سعر ساعة",
+    "copy_pricing_row_head": "صف تسعير — رتّب",
+    "copy_week_head": "ملخص أسبوع الشغل — رتّب",
+    "copy_week_progress": "تم {done} من 7 · ساعات التركيز: {hours}",
+    "copy_tasks": "المهام",
+    "copy_hours": "الساعات",
+    "copy_deliverables": "التسليمات",
+    "copy_day_head": "يوم الشغل — رتّب · {day}",
+    "copy_day_head_today": "يوم الشغل — رتّب · {day} (اليوم)",
+    "total_label": "الإجمالي"
+  },
+  "en": {
+    "doc_title": "Rattib — freelancer OS in one place",
+    "doc_desc": "Pricing + proposal + CRM + work week in one app. A Sarab product.",
+    "brand_tag": "Free try here — not the end of the road",
+    "demo_chip": "Demo data",
+    "btn_export": "Export",
+    "btn_export_title": "Export all data as JSON",
+    "btn_import": "Import",
+    "btn_import_title": "Import a Rattib JSON export",
+    "btn_reset": "Reset data",
+    "btn_reset_title": "Restore demo seed — not a blank wipe",
+    "backup_nudge": "Your data stays in this browser only — export a JSON backup so you don’t lose it.",
+    "btn_backup_export": "Export now",
+    "btn_backup_dismiss": "Dismiss",
+    "lang_group": "Language",
+    "tab_pricing": "Pricing",
+    "tab_proposal": "Proposal",
+    "tab_crm": "Clients",
+    "tab_week": "Work week",
+    "panel_pricing": "Pricing",
+    "panel_proposal": "Proposal",
+    "panel_crm": "Client follow-ups",
+    "panel_week": "Work week",
+    "fx_label": "FX rate (EGP per $1)",
+    "week_done_prefix": "Done",
+    "week_done_mid": "of 7 · Focus hours:",
+    "foot": "Sarab · Rattib MVP — organization tools, no income guarantee",
+    "th_type": "Project type",
+    "th_hours": "Hours",
+    "th_rate": "Rate/hr",
+    "th_costs": "Costs",
+    "th_margin": "Margin %",
+    "th_price": "Suggest EGP",
+    "th_usd": "USD",
+    "th_deposit": "Deposit {pct}%",
+    "th_balance": "Balance",
+    "th_notes": "Notes",
+    "th_actions": "Actions",
+    "pricing_totals": "Total computed rows",
+    "add_pricing": "+ Pricing row",
+    "copy_pricing": "Copy pricing",
+    "copy_pricing_title": "Copy visible pricing rows as text",
+    "clear_blank_pricing": "Clear blanks",
+    "clear_blank_pricing_title": "Delete blank pricing rows",
+    "to_proposal": "Send to proposal",
+    "to_proposal_title": "Move pricing total into the proposal",
+    "use_for_proposal": "Use in proposal",
+    "use_for_proposal_title": "Put price and project into the proposal",
+    "copy_text": "Copy text",
+    "copy_pricing_row_title": "Copy pricing row as text",
+    "dup_row": "Duplicate",
+    "dup_pricing_title": "Duplicate row below",
+    "prop_date": "Proposal date",
+    "prop_valid": "Valid until",
+    "prop_client": "Client name",
+    "prop_contact": "Contact",
+    "prop_project": "Project name",
+    "prop_price": "Price (EGP)",
+    "prop_deposit_pct": "Deposit %",
+    "prop_revisions": "Revisions",
+    "prop_duration": "Duration",
+    "prop_payments": "Payment methods",
+    "prop_summary": "Summary",
+    "prop_in_scope": "In scope",
+    "prop_out_scope": "Out of scope",
+    "prop_terms": "Terms",
+    "prop_next": "Next step",
+    "prop_deposit_calc": "Calculated deposit",
+    "prop_balance_calc": "Balance on delivery",
+    "copy_wa": "Copy for WhatsApp",
+    "open_wa": "Open WhatsApp",
+    "from_pricing": "From pricing",
+    "from_pricing_title": "Move computed pricing total into proposal price",
+    "add_to_crm": "Add to clients",
+    "date_title": "Day / month / year",
+    "copy_crm": "Copy follow-ups",
+    "copy_crm_title": "Copy visible follow-up list",
+    "snooze3_all": "+3 all",
+    "snooze3_all_title": "Snooze follow-up 3 days for visible clients",
+    "snooze7_all": "+7 all",
+    "snooze7_all_title": "Snooze follow-up one week for visible clients",
+    "today_all": "Today all",
+    "today_all_title": "Set follow-up to today for visible clients",
+    "clear_next_all": "No date all",
+    "clear_next_all_title": "Clear follow-up date for visible clients",
+    "contacted_all": "Contacted all",
+    "contacted_all_title": "Log contact today + follow-up in 3 days for due visible clients",
+    "clear_blank_clients": "Clear blanks",
+    "clear_blank_clients_title": "Delete blank clients",
+    "add_client": "+ Client",
+    "crm_filters_aria": "Filter clients",
+    "crm_search_sr": "Search clients",
+    "crm_search_ph": "Search name / contact / source / notes",
+    "crm_search_clear": "Clear search",
+    "crm_empty_filter": "No clients in this filter — try “All” or add a client.",
+    "crm_empty_none": "No clients yet — tap “+ Client” or “Add to clients” from Proposal.",
+    "crm_empty_search": "No results for this search — try another word or clear search.",
+    "crm_empty_today": "No follow-ups today — if any are late, try “Overdue”.",
+    "crm_empty_none_next": "All active clients have a next date — nice.",
+    "th_name": "Name",
+    "th_contact": "Contact",
+    "th_source": "Source",
+    "th_status": "Status",
+    "th_last": "Last contact",
+    "th_next": "Next follow-up",
+    "th_value": "Value",
+    "crm_totals": "Visible value total",
+    "filter_all": "All",
+    "filter_today": "Today",
+    "filter_overdue": "Overdue",
+    "filter_none": "No date",
+    "filter_lead": "Lead",
+    "filter_proposal": "Proposal",
+    "filter_won": "Won",
+    "filter_lost": "Lost",
+    "status_lead": "Lead",
+    "status_proposal": "Proposal",
+    "status_won": "Won",
+    "status_lost": "Lost",
+    "clear_next": "No date",
+    "clear_next_title": "Clear follow-up date",
+    "snooze_group": "Quick follow-up",
+    "today_btn": "Today",
+    "today_btn_title": "Set follow-up to today",
+    "snooze3_title": "Snooze 3 days",
+    "snooze7_title": "Snooze one week",
+    "whatsapp": "WhatsApp",
+    "whatsapp_title": "Open WhatsApp",
+    "contacted": "Contacted",
+    "copy_client_title": "Copy client card as text",
+    "dup_client_title": "Duplicate client below",
+    "contact_ph": "WhatsApp 01xxxxxxxxx",
+    "contact_hint_phone": "Add a number so WhatsApp appears",
+    "overdue_badge": "{n} overdue",
+    "pipeline_empty": "Nothing visible in this filter",
+    "pipeline_visible": "Visible: {n} · value {sum} EGP",
+    "pipeline_overdue": "{n} overdue",
+    "pipeline_today": "{n} due today",
+    "pipeline_none": "{n} no date",
+    "pipeline_overdue_title": "Show overdue follow-ups",
+    "pipeline_today_title": "Show today’s follow-ups",
+    "pipeline_none_title": "Show clients without a next date",
+    "toast_filter_overdue": "Filtered to overdue",
+    "toast_filter_overdue_pipe": "Filtered to overdue follow-ups",
+    "toast_filter_today_pipe": "Filtered to today’s follow-ups",
+    "toast_filter_none_pipe": "Filtered to no date",
+    "crm_count_valued": "({v} with value · {n} visible · {filter})",
+    "crm_count_plain": "({n} visible · {filter})",
+    "copy_today": "Copy today",
+    "copy_today_title": "Copy today’s card as text",
+    "copy_week": "Copy summary",
+    "week_done_all": "Done all",
+    "week_done_all_title": "Mark every incomplete day that has content as done",
+    "week_clear_all": "Clear all",
+    "week_clear_all_title": "Clear tasks, hours, deliverables, and done for days with content",
+    "new_week": "New week",
+    "th_day": "Day",
+    "th_tasks": "Tasks",
+    "th_focus": "Focus hours",
+    "th_deliverables": "Deliverables",
+    "th_done": "Done?",
+    "today_pill": "Today",
+    "done_yes": "Done",
+    "done_no": "Not yet",
+    "done_on_title": "Unmark day as done",
+    "done_off_title": "Mark day as done",
+    "copy_day_title": "Copy day card as text",
+    "clear_day": "Clear",
+    "clear_day_title": "Clear today’s tasks, hours, and deliverables",
+    "day_sun": "Sunday",
+    "day_mon": "Monday",
+    "day_tue": "Tuesday",
+    "day_wed": "Wednesday",
+    "day_thu": "Thursday",
+    "day_fri": "Friday",
+    "day_sat": "Saturday",
+    "undo": "Undo",
+    "egp": "EGP",
+    "hint_today": "Today",
+    "hint_tomorrow": "Tomorrow",
+    "hint_late1": "1 day late",
+    "hint_late_n": "{n} days late",
+    "hint_in_n": "in {n} days",
+    "toast_exported": "Exported {file}",
+    "toast_fill_hours": "Fill hours and hourly rate first",
+    "toast_fill_one_row": "Fill at least one pricing row (hours and rate) first",
+    "toast_moved_proposal": "Moved to proposal with calculated price",
+    "toast_moved_total": "Moved pricing total: {price} EGP",
+    "toast_proposal_restored": "Proposal restored",
+    "toast_copied_pricing_row": "Pricing row copied",
+    "toast_copied_named": "Copied “{name}”",
+    "toast_undid_copy": "Duplicate undone",
+    "toast_pricing_row_restored": "Pricing row restored",
+    "toast_no_blank_pricing": "No blank rows to clear",
+    "toast_cleared_blank_pricing": "Cleared {n} blank row(s)",
+    "toast_pricing_rows_restored": "Pricing rows restored",
+    "toast_no_blank_clients": "No blank clients",
+    "toast_cleared_blank_clients": "Cleared {n} blank client(s)",
+    "toast_clients_restored": "Clients restored",
+    "toast_copied_client": "Client copied",
+    "toast_deleted_client": "Client deleted",
+    "toast_deleted_named": "Deleted “{name}”",
+    "toast_client_restored": "Client restored to follow-ups",
+    "toast_proposal_copied": "Proposal copied — paste into WhatsApp",
+    "toast_proposal_long_client": "Proposal is long — copied; paste into WhatsApp for the client",
+    "toast_proposal_long": "Proposal is long — copied; paste into WhatsApp",
+    "toast_wa_opened_client": "Opened WhatsApp with the text — review before sending",
+    "toast_need_client_name": "Enter the client name on the proposal first",
+    "toast_crm_update_undone": "Client update from proposal undone",
+    "toast_crm_removed": "Client removed from follow-ups",
+    "toast_need_wa_number": "Add a WhatsApp number in the contact field first",
+    "toast_wa_followup": "Opened WhatsApp with a follow-up draft — review before sending",
+    "toast_contact_undone": "Contact log undone",
+    "toast_contacted": "Contact logged — follow-up in 3 days",
+    "toast_snooze_undone": "Snooze undone",
+    "toast_snooze_bulk_undone": "Bulk snooze undone",
+    "toast_today_undone": "Set-to-today undone",
+    "toast_next_today": "Follow-up set to today",
+    "toast_today_bulk_undone": "Bulk set-to-today undone",
+    "toast_no_next_clear": "No visible dates to clear",
+    "toast_next_restored": "Follow-up dates restored",
+    "toast_no_next_one": "No date to clear",
+    "toast_next_one_restored": "Follow-up date restored",
+    "toast_next_cleared": "Follow-up date cleared",
+    "toast_no_contactable": "No visible overdue/today clients to mark contacted",
+    "toast_contact_bulk_undone": "Bulk contact log undone",
+    "toast_status_undone": "Status change undone",
+    "toast_won": "Marked won — follow-up cleared",
+    "toast_lost": "Marked lost — follow-up cleared",
+    "toast_as_proposal_next": "Marked as proposal — follow-up in 3 days",
+    "toast_back_lead": "Back to follow-up — in 3 days",
+    "toast_as_proposal": "Marked as proposal",
+    "toast_no_crm_copy": "No clients in this filter to copy",
+    "toast_copied_followups": "Copied {n} follow-up(s) ({filter})",
+    "toast_no_pricing_copy": "No pricing rows to copy",
+    "toast_copied_pricing_n": "Copied {n} pricing row(s) ({calc} computed)",
+    "toast_copied_pricing_plain": "Copied {n} pricing row(s)",
+    "toast_copied_week": "Week summary copied",
+    "toast_week_already_done": "“{day}” already done",
+    "toast_week_now_done": "“{day}” marked done",
+    "toast_week_done_undone": "Undid done on “{day}”",
+    "toast_no_day_content": "Nothing to copy for this day — add tasks or hours first",
+    "toast_copied_day": "Copied day “{day}”",
+    "toast_week_restored": "Work week restored",
+    "toast_week_ready": "New week ready",
+    "toast_week_carried": "Incomplete tasks carried over",
+    "toast_week_empty": "Week cleared",
+    "toast_week_already_clear": "“{day}” already empty",
+    "toast_day_cleared": "Cleared day “{day}”",
+    "toast_day_restored": "Restored day “{day}”",
+    "toast_day_marked": "“{day}” marked done",
+    "toast_day_unmarked": "“{day}” unmarked",
+    "toast_day_toggle_undone": "Undid change on “{day}”",
+    "toast_no_incomplete": "No incomplete days with content to mark done",
+    "toast_marked_n": "Marked {n} day(s) done",
+    "toast_done_all_undone": "Bulk done undone",
+    "toast_no_clearable": "No days to clear",
+    "toast_cleared_n_days": "Cleared {n} day(s)",
+    "toast_clear_all_undone": "Bulk clear undone",
+    "toast_added_pricing": "Blank pricing row added",
+    "toast_removed_pricing": "Blank pricing row removed",
+    "toast_added_client": "Blank client added",
+    "toast_removed_client": "Blank client removed",
+    "toast_imported": "Data imported safely",
+    "toast_import_undone": "Restored data from before import",
+    "toast_import_bad": "Invalid file — needs a Rattib JSON export",
+    "toast_reset_demo": "Restored demo data",
+    "toast_reset_undone": "Restored your data",
+    "confirm_import": "Import will replace current data. Continue?",
+    "confirm_reset": "This restores demo data — not a blank wipe. Continue?",
+    "confirm_new_week": "New week? Hours, deliverables, and done marks reset. Incomplete tasks carry over; you can empty the week from the toast.",
+    "empty_week_full": "Empty fully",
+    "mark_done": "Done",
+    "mark_done_all": "Done all",
+    "move_to_proposal": "Send to proposal",
+    "err_file_big": "File too large (max 2MB)",
+    "err_not_json": "File is not valid JSON",
+    "err_not_object": "File is not a valid JSON object",
+    "err_bad_keys": "File contains disallowed keys",
+    "err_not_rattib": "Not a Rattib export — no known sections",
+    "week_clear_n_title": "Clear {n} day(s) with content or done",
+    "week_clear_none_title": "No days with content or done",
+    "no_name": "Untitled",
+    "copy_client_head": "Client follow-up — Rattib",
+    "copy_contact": "Contact",
+    "copy_source": "Source",
+    "copy_last": "Last contact",
+    "copy_next": "Next follow-up",
+    "copy_value": "Value",
+    "copy_notes": "Notes",
+    "copy_pricing_head": "Pricing summary — Rattib",
+    "copy_fx_line": "FX: {fx} EGP per $1 · deposit {pct}%",
+    "copy_pricing_total": "Total ({n}): {price} EGP · {usd} USD · deposit {dep} · balance {bal}",
+    "copy_pricing_none": "No computed rows yet",
+    "copy_row_n": "Row {n}",
+    "copy_row_incomplete": "☐ {type} — missing hours/rate",
+    "copy_pricing_row_head": "Pricing row — Rattib",
+    "copy_week_head": "Work week summary — Rattib",
+    "copy_week_progress": "Done {done} of 7 · focus hours: {hours}",
+    "copy_tasks": "Tasks",
+    "copy_hours": "Hours",
+    "copy_deliverables": "Deliverables",
+    "copy_day_head": "Work day — Rattib · {day}",
+    "copy_day_head_today": "Work day — Rattib · {day} (today)",
+    "total_label": "Total"
+  }
+};
+
+const LANG_KEY = "lang";
+const DAY_KEYS = ["day_sun", "day_mon", "day_tue", "day_wed", "day_thu", "day_fri", "day_sat"];
+const DAYS_AR = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+let appLang = "ar";
+function normalizeLang(v) { return v === "en" ? "en" : "ar"; }
+function t(key, vars) {
+  const pack = I18N[appLang] || I18N.ar;
+  let s = pack[key];
+  if (s == null) s = (I18N.ar && I18N.ar[key]) || key;
+  if (vars && typeof vars === "object") {
+    s = String(s).replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? String(vars[k]) : ""));
+  }
+  return s;
+}
+function dayLabel(storedDay) {
+  const idx = DAYS_AR.indexOf(storedDay);
+  if (idx >= 0) return t(DAY_KEYS[idx]);
+  return storedDay || "";
+}
+function applyDocumentLang() {
+  const html = document.documentElement;
+  if (appLang === "en") { html.setAttribute("lang", "en"); html.setAttribute("dir", "ltr"); }
+  else { html.setAttribute("lang", "ar"); html.setAttribute("dir", "rtl"); }
+  document.title = t("doc_title");
+  const meta = document.querySelector('meta[name="description"]');
+  if (meta) meta.setAttribute("content", t("doc_desc"));
+}
+function paintLangToggle() {
+  document.querySelectorAll("[data-lang]").forEach((btn) => {
+    const on = btn.dataset.lang === appLang;
+    btn.classList.toggle("active", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+}
+function paintStaticI18n() {
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.getAttribute("data-i18n");
+    if (!key) return;
+    el.textContent = t(key);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-title");
+    if (key) el.title = t(key);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (key) el.setAttribute("placeholder", t(key));
+  });
+  document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-aria");
+    if (key) el.setAttribute("aria-label", t(key));
+  });
+  const chip = document.getElementById("demo-seed-chip");
+  if (chip) chip.textContent = t("demo_chip");
+  paintLangToggle();
+}
+function setAppLang(next, { persist = true, repaint = true } = {}) {
+  appLang = normalizeLang(next);
+  applyDocumentLang();
+  if (persist) saveUi({ [LANG_KEY]: appLang });
+  paintStaticI18n();
+  if (repaint && typeof renderAll === "function") {
+    try { renderAll(); } catch { /* boot */ }
+  }
+}
+function initLangFromUi() {
+  appLang = normalizeLang(loadUi()[LANG_KEY]);
+  applyDocumentLang();
+  paintStaticI18n();
+}
+function bindLangToggle() {
+  document.querySelectorAll("[data-lang]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const next = btn.dataset.lang;
+      if (normalizeLang(next) === appLang) return;
+      setAppLang(next);
+    });
+  });
+}
+
 
 const APP_TZ = "Africa/Cairo";
 
@@ -275,7 +975,7 @@ function doExport() {
   // Demo export is not a real backup of owned data — don't suppress the nudge after first edit.
   if (!showingDemoSeed) saveUi({ lastExportAt: stamp });
   paintBackupNudge();
-  showToast(`اتصدر ${filename}`);
+  showToast(t("toast_exported", { file: filename }));
 }
 function n(v) {
   const x = Number(v);
@@ -357,16 +1057,15 @@ function setCrmFilter(id) {
   renderCrm();
 }
 
-const CRM_FILTER_LABELS = {
-  all: "الكل",
-  today: "النهاردة",
-  overdue: "متأخر",
-  none: "بدون موعد",
-  lead: "عميل محتمل",
-  proposal: "عرض سعر",
-  won: "تم الاتفاق",
-  lost: "خسارة",
-};
+function crmFilterLabel(id) {
+  return t(`filter_${id}`) || id;
+}
+const CRM_FILTER_LABELS = new Proxy({}, {
+  get(_t, prop) {
+    if (typeof prop !== "string") return undefined;
+    return crmFilterLabel(prop);
+  },
+});
 
 /** Count clients for a chip given current search (ignore selected filter). */
 function clientNeedsNext(c) {
@@ -413,7 +1112,7 @@ function bindTabs() {
       e.stopPropagation();
       setCrmFilter("overdue");
       goTab("crm");
-      showToast("تصفية المتأخرين");
+      showToast(t("toast_filter_overdue"));
     });
   }
   const saved = loadUi().tab;
@@ -475,8 +1174,8 @@ function paintPricingTotals() {
   foot.hidden = false;
   const count = document.getElementById("pricing-count");
   if (count) count.textContent = `(${t.n})`;
-  const depCell = foot.querySelector('[data-label="المقدم"], [data-label^="مقدم"]');
-  if (depCell) depCell.setAttribute("data-label", `مقدم ${depositPct()}%`);
+  const depCell = foot.querySelector('[data-label="المقدم"], [data-label^="مقدم"], [data-label^="Deposit"], [data-label^="Deposit "]');
+  if (depCell) depCell.setAttribute("data-label", t("th_deposit", { pct: depositPct() }));
   set("tot-price", money(t.price));
   set("tot-usd", money(t.usd));
   set("tot-dep", money(t.dep));
@@ -488,7 +1187,7 @@ function renderPricing() {
   fx.value = state.fx;
   fx.onchange = () => { state.fx = n(fx.value) || 50; save(); renderPricing(); };
   const depHead = document.getElementById("th-deposit");
-  if (depHead) depHead.textContent = `مقدم ${depositPct()}%`;
+  if (depHead) depHead.textContent = t("th_deposit", { pct: depositPct() });
 
   const tbody = document.querySelector("#pricing-table tbody");
   tbody.innerHTML = "";
@@ -496,22 +1195,22 @@ function renderPricing() {
     const c = pricingCalcs(row);
     const tr = document.createElement("tr");
     tr.dataset.row = String(i);
-    const depLabel = `مقدم ${depositPct()}%`;
+    const depLabel = t("th_deposit", { pct: depositPct() });
     tr.innerHTML = `
-      <td data-label="نوع المشروع"><input data-i="${i}" data-k="type" value="${esc(row.type)}"></td>
-      <td class="num" data-label="ساعات"><input data-i="${i}" data-k="hours" type="number" value="${row.hours}"></td>
-      <td class="num" data-label="سعر/س"><input data-i="${i}" data-k="rate" type="number" value="${row.rate}"></td>
-      <td class="num" data-label="تكاليف"><input data-i="${i}" data-k="costs" type="number" value="${row.costs}"></td>
-      <td class="num" data-label="هامش %"><input data-i="${i}" data-k="margin" type="number" value="${row.margin}"></td>
-      <td class="calc-cell" data-label="مقترح ج.م"><span class="calc">${c.empty ? "—" : money(c.price)}</span></td>
+      <td data-label="${esc(t("th_type"))}"><input data-i="${i}" data-k="type" value="${esc(row.type)}"></td>
+      <td class="num" data-label="${esc(t("th_hours"))}"><input data-i="${i}" data-k="hours" type="number" value="${row.hours}"></td>
+      <td class="num" data-label="${esc(t("th_rate"))}"><input data-i="${i}" data-k="rate" type="number" value="${row.rate}"></td>
+      <td class="num" data-label="${esc(t("th_costs"))}"><input data-i="${i}" data-k="costs" type="number" value="${row.costs}"></td>
+      <td class="num" data-label="${esc(t("th_margin"))}"><input data-i="${i}" data-k="margin" type="number" value="${row.margin}"></td>
+      <td class="calc-cell" data-label="${esc(t("th_price"))}"><span class="calc">${c.empty ? "—" : money(c.price)}</span></td>
       <td class="calc-cell" data-label="USD"><span class="calc">${c.empty ? "—" : money(c.usd)}</span></td>
-      <td class="calc-cell" data-label="${depLabel}"><span class="calc">${c.empty ? "—" : money(c.dep)}</span></td>
-      <td class="calc-cell" data-label="المتبقي"><span class="calc">${c.empty ? "—" : money(c.bal)}</span></td>
-      <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(row.notes)}"></td>
-      <td class="row-actions" data-label="إجراءات">
-        <button type="button" class="ghost tiny" data-use="${i}" title="ضع السعر والمشروع في عرض السعر">انقل للعرض</button>
-        <button type="button" class="ghost tiny" data-copy-row="${i}" title="نسخ صف التسعير كنص عربي">نسخ نص</button>
-        <button type="button" class="ghost tiny" data-dup="${i}" title="كرّر الصف تحتها">كرّر</button>
+      <td class="calc-cell" data-label="${esc(depLabel)}"><span class="calc">${c.empty ? "—" : money(c.dep)}</span></td>
+      <td class="calc-cell" data-label="${esc(t("th_balance"))}"><span class="calc">${c.empty ? "—" : money(c.bal)}</span></td>
+      <td data-label="${esc(t("th_notes"))}"><input data-i="${i}" data-k="notes" value="${esc(row.notes)}"></td>
+      <td class="row-actions" data-label="${esc(t("th_actions"))}">
+        <button type="button" class="ghost tiny" data-use="${i}" title="${esc(t("use_for_proposal_title"))}">${t("use_for_proposal")}</button>
+        <button type="button" class="ghost tiny" data-copy-row="${i}" title="${esc(t("copy_pricing_row_title"))}">${t("copy_text")}</button>
+        <button type="button" class="ghost tiny" data-dup="${i}" title="${esc(t("dup_pricing_title"))}">${t("dup_row")}</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
     tbody.appendChild(tr);
@@ -550,7 +1249,7 @@ function usePricingRowForProposal(i) {
   const row = state.pricing[i];
   if (!row) return;
   const c = pricingCalcs(row);
-  if (c.empty) { alert("املأ الساعات وسعر الساعة أولاً"); return; }
+  if (c.empty) { alert(t("toast_fill_hours")); return; }
   const previous = JSON.parse(JSON.stringify(state.proposal));
   state.proposal.project = row.type || state.proposal.project;
   state.proposal.price = Math.round(c.price);
@@ -558,13 +1257,13 @@ function usePricingRowForProposal(i) {
   save();
   goTab("proposal");
   renderProposal();
-  offerProposalAfterPricingToast("اتنقل لعرض السعر بالسعر المحسوب", previous);
+  offerProposalAfterPricingToast(t("toast_moved_proposal"), previous);
 }
 
 function fillProposalFromPricing() {
   const t = pricingTotals();
   if (t.n === 0) {
-    alert("املأ صف تسعير واحد على الأقل (ساعات وسعر الساعة) أولاً");
+    alert(t("toast_fill_one_row"));
     return;
   }
   const previous = JSON.parse(JSON.stringify(state.proposal));
@@ -579,7 +1278,7 @@ function fillProposalFromPricing() {
   save();
   goTab("proposal");
   renderProposal();
-  offerProposalAfterPricingToast(`اتنقل إجمالي التسعير: ${money(price)} ج.م`, previous);
+  offerProposalAfterPricingToast(t("toast_moved_total", { price: money(price) }), previous);
 }
 
 function proposalPlainText() {
@@ -648,16 +1347,16 @@ function offerProposalAfterPricingToast(msg, previous) {
     ms: 8000,
     actions: [
       {
-        label: "نسخ للواتساب",
+        label: t("copy_wa"),
         onAction: () => { copyProposalWhatsApp(); },
       },
       {
-        label: "تراجع",
+        label: t("undo"),
         onAction: () => {
           state.proposal = previous;
           save();
           renderProposal();
-          showToast("رجع عرض السعر زي ما كان");
+          showToast(t("toast_proposal_restored"));
         },
       },
     ],
@@ -679,10 +1378,10 @@ function duplicatePricingRow(i) {
   save();
   renderPricing();
   const label = (copy.type && String(copy.type).trim())
-    ? `اتنسخ صف «${copy.type}»`
-    : "اتنسخ صف التسعير";
+    ? t("toast_copied_named", { name: copy.type })
+    : t("toast_copied_pricing_row");
   showToast(label, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       const removeAt = state.pricing.indexOf(copy);
@@ -690,7 +1389,7 @@ function duplicatePricingRow(i) {
       state.pricing.splice(removeAt, 1);
       save();
       renderPricing();
-      showToast("اتلغت النسخة");
+      showToast(t("toast_undid_copy"));
     },
   });
 }
@@ -705,14 +1404,14 @@ function deletePricingRow(i) {
     ? `اتمسح صف «${removed.type}»`
     : "اتمسح صف التسعير";
   showToast(label, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       const insertAt = Math.min(at, state.pricing.length);
       state.pricing.splice(insertAt, 0, removed);
       save();
       renderPricing();
-      showToast("رجع صف التسعير");
+      showToast(t("toast_pricing_row_restored"));
     },
   });
 }
@@ -726,7 +1425,7 @@ function blankPricingIndices() {
 function clearBlankPricingRows() {
   const idxs = blankPricingIndices();
   if (!idxs.length) {
-    showToast("مفيش صفوف فاضية تتشال");
+    showToast(t("toast_no_blank_pricing"));
     return;
   }
   // Snapshot full list so undo restores order + blanks exactly.
@@ -741,17 +1440,17 @@ function clearBlankPricingRows() {
   renderPricing();
   const n = previous.length - state.pricing.length;
   if (n <= 0) {
-    showToast("مفيش صفوف فاضية تتشال");
+    showToast(t("toast_no_blank_pricing"));
     return;
   }
-  showToast(`اتمسح ${n} صف فاضي`, {
-    actionLabel: "تراجع",
+  showToast(t("toast_cleared_blank_pricing", { n }), {
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       state.pricing = previous.map((row) => ({ ...row }));
       save();
       renderPricing();
-      showToast("رجعت صفوف التسعير");
+      showToast(t("toast_pricing_rows_restored"));
     },
   });
 }
@@ -778,7 +1477,7 @@ function blankClientIndices() {
 function clearBlankClients() {
   const idxs = blankClientIndices();
   if (!idxs.length) {
-    showToast("مفيش عملاء فاضي");
+    showToast(t("toast_no_blank_clients"));
     return;
   }
   // Snapshot full list so undo restores order + blanks exactly.
@@ -793,17 +1492,17 @@ function clearBlankClients() {
   renderCrm();
   const n = previous.length - state.clients.length;
   if (n <= 0) {
-    showToast("مفيش عملاء فاضي");
+    showToast(t("toast_no_blank_clients"));
     return;
   }
-  showToast(`اتمسح ${n} عميل فاضي`, {
-    actionLabel: "تراجع",
+  showToast(t("toast_cleared_blank_clients", { n }), {
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       state.clients = previous.map((c) => ({ ...c }));
       save();
       renderCrm();
-      showToast("رجعت العملاء");
+      showToast(t("toast_clients_restored"));
     },
   });
 }
@@ -843,10 +1542,10 @@ function duplicateClient(i) {
   save();
   renderCrm();
   const label = (copy.name && String(copy.name).trim())
-    ? `اتنسخ «${copy.name}»`
-    : "اتنسخ العميل";
+    ? t("toast_copied_named", { name: copy.name })
+    : t("toast_copied_client");
   showToast(label, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       const removeAt = state.clients.indexOf(copy);
@@ -854,7 +1553,7 @@ function duplicateClient(i) {
       state.clients.splice(removeAt, 1);
       save();
       renderCrm();
-      showToast("اتلغت النسخة");
+      showToast(t("toast_undid_copy"));
     },
   });
 }
@@ -866,16 +1565,16 @@ function deleteClient(i) {
   const at = i;
   save();
   renderCrm();
-  const label = (removed && removed.name) ? `اتمسح «${removed.name}»` : "اتمسح العميل";
+  const label = (removed && removed.name) ? t("toast_deleted_named", { name: removed.name }) : t("toast_deleted_client");
   showToast(label, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       const insertAt = Math.min(at, state.clients.length);
       state.clients.splice(insertAt, 0, removed);
       save();
       renderCrm();
-      showToast("رجع العميل للمتابعة");
+      showToast(t("toast_client_restored"));
     },
   });
 }
@@ -888,7 +1587,7 @@ function offerProposalAddToCrmToast(msg) {
     return;
   }
   showToast(msg, {
-    actionLabel: "أضف للعملاء",
+    actionLabel: t("add_to_crm"),
     ms: 8000,
     onAction: () => addProposalToCrm(),
   });
@@ -907,7 +1606,7 @@ async function copyProposalWhatsApp(opts = {}) {
     ta.remove();
   }
   if (opts.silent) return;
-  offerProposalAddToCrmToast("تم نسخ العرض — الصقه في واتساب");
+  offerProposalAddToCrmToast(t("toast_proposal_copied"));
 }
 
 function openProposalWhatsApp() {
@@ -922,13 +1621,13 @@ function openProposalWhatsApp() {
     copyProposalWhatsApp({ silent: true });
     window.open(base, "_blank", "noopener,noreferrer");
     offerProposalAddToCrmToast(phone
-      ? "العرض طويل — اتنسخ، الصقه في واتساب للعميل"
-      : "العرض طويل — اتنسخ، الصقه في واتساب");
+      ? t("toast_proposal_long_client")
+      : t("toast_proposal_long"));
     return;
   }
   window.open(url, "_blank", "noopener,noreferrer");
   offerProposalAddToCrmToast(phone
-    ? "اتفتح واتساب للعميل بالنص — راجع قبل الإرسال"
+    ? t("toast_wa_opened_client")
     : "اتفتح واتساب بالنص — راجع قبل الإرسال");
 }
 
@@ -952,38 +1651,40 @@ function renderProposal() {
   const p = state.proposal;
   const { deposit, balance } = proposalDepositBalance();
   const fields = [
-    ["date","تاريخ العرض","date"], ["validUntil","صالح حتى","date"],
-    ["client","اسم العميل","text"], ["contact","جهة التواصل","text"],
-    ["project","اسم المشروع","text"], ["price","السعر (ج.م)","number"],
-    ["depositPct","نسبة المقدم %","number"], ["revisions","المراجعات","text"],
-    ["duration","المدة","text"], ["payments","طرق الدفع","text"],
-    ["summary","ملخص","textarea", true], ["inScope","داخل النطاق","textarea", true],
-    ["outScope","خارج النطاق","textarea", true], ["terms","شروط","textarea", true],
-    ["next","الخطوة التالية","textarea", true],
+    ["date","prop_date","date"], ["validUntil","prop_valid","date"],
+    ["client","prop_client","text"], ["contact","prop_contact","text"],
+    ["project","prop_project","text"], ["price","prop_price","number"],
+    ["depositPct","prop_deposit_pct","number"], ["revisions","prop_revisions","text"],
+    ["duration","prop_duration","text"], ["payments","prop_payments","text"],
+    ["summary","prop_summary","textarea", true], ["inScope","prop_in_scope","textarea", true],
+    ["outScope","prop_out_scope","textarea", true], ["terms","prop_terms","textarea", true],
+    ["next","prop_next","textarea", true],
   ];
   const box = document.getElementById("proposal-form");
-  box.innerHTML = fields.map(([k,label,type,full]) => {
+  const dateLang = appLang === "en" ? "en-GB" : "ar-EG";
+  box.innerHTML = fields.map(([k,labelKey,type,full]) => {
+    const label = t(labelKey);
     const ar = type === "date" ? formatArDate(p[k]) : "";
     const control = type === "textarea"
       ? `<textarea data-k="${k}">${esc(p[k] ?? "")}</textarea>`
       : type === "date"
-        ? `<input data-k="${k}" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(p[k] ?? "")}">${ar ? `<div class="date-hint">${ar}</div>` : ""}`
+        ? `<input data-k="${k}" type="date" lang="${dateLang}" title="${esc(t("date_title"))}" value="${esc(p[k] ?? "")}">${ar ? `<div class="date-hint">${ar}</div>` : ""}`
         : `<input data-k="${k}" type="${type}" value="${esc(p[k] ?? "")}">`;
-    return `<label class="${full ? "full" : ""}">${label}
+    return `<label class="${full ? "full" : ""}">${esc(label)}
       ${control}
     </label>`;
   }).join("") + `
-    <label>المقدم المحسوب
-      <div class="calc" id="proposal-deposit-calc">${money(deposit)} ج.م</div>
+    <label>${esc(t("prop_deposit_calc"))}
+      <div class="calc" id="proposal-deposit-calc">${money(deposit)} ${t("egp")}</div>
     </label>
-    <label>المتبقي عند التسليم
-      <div class="calc" id="proposal-balance-calc">${money(balance)} ج.م</div>
+    <label>${esc(t("prop_balance_calc"))}
+      <div class="calc" id="proposal-balance-calc">${money(balance)} ${t("egp")}</div>
     </label>
     <div class="full proposal-actions">
-      <button type="button" id="btn-copy-wa" class="primary">نسخ للواتساب</button>
-      <button type="button" id="btn-open-wa" class="ghost">فتح واتساب</button>
-      <button type="button" id="btn-from-pricing" class="ghost" title="انقل إجمالي صفوف التسعير المحسوبة إلى سعر العرض">من التسعير</button>
-      <button type="button" id="btn-add-crm" class="ghost">أضف للعملاء</button>
+      <button type="button" id="btn-copy-wa" class="primary">${t("copy_wa")}</button>
+      <button type="button" id="btn-open-wa" class="ghost">${t("open_wa")}</button>
+      <button type="button" id="btn-from-pricing" class="ghost" title="${esc(t("from_pricing_title"))}">${t("from_pricing")}</button>
+      <button type="button" id="btn-add-crm" class="ghost">${t("add_to_crm")}</button>
     </div>`;
   box.querySelectorAll("[data-k]").forEach((el) => {
     el.addEventListener("input", () => {
@@ -1030,7 +1731,8 @@ function addDaysISO(iso, days) {
 function formatArDate(iso) {
   if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "";
   try {
-    return new Date(iso + "T12:00:00").toLocaleDateString("ar-EG", {
+    const locale = appLang === "en" ? "en-GB" : "ar-EG";
+    return new Date(iso + "T12:00:00").toLocaleDateString(locale, {
       weekday: "short",
       day: "numeric",
       month: "long",
@@ -1047,11 +1749,11 @@ function nextDateHint(iso) {
   const t0 = new Date(today + "T12:00:00");
   const t1 = new Date(iso + "T12:00:00");
   const diff = Math.round((t1 - t0) / 86400000);
-  if (diff === 0) return "اليوم";
-  if (diff === 1) return "بكرة";
-  if (diff === -1) return "متأخر يوم";
-  if (diff < 0) return `متأخر ${Math.abs(diff)} أيام`;
-  return `بعد ${diff} أيام`;
+  if (diff === 0) return t("hint_today");
+  if (diff === 1) return t("hint_tomorrow");
+  if (diff === -1) return t("hint_late1");
+  if (diff < 0) return t("hint_late_n", { n: Math.abs(diff) });
+  return t("hint_in_n", { n: diff });
 }
 
 
@@ -1127,12 +1829,12 @@ function offerProposalCrmSavedToast(msg, clientIndex, onUndo) {
   const actions = [];
   if (hasWa) {
     actions.push({
-      label: "واتساب",
+      label: t("whatsapp"),
       onAction: () => openClientWhatsApp(clientIndex),
     });
   }
   actions.push({
-    label: "تراجع",
+    label: t("undo"),
     onAction: onUndo,
   });
   showToast(msg, {
@@ -1145,7 +1847,7 @@ function addProposalToCrm() {
   const p = state.proposal || {};
   const name = String(p.client || "").trim();
   if (!name) {
-    alert("اكتب اسم العميل في عرض السعر أولاً");
+    alert(t("toast_need_client_name"));
     return;
   }
   const contact = String(p.contact || "").trim();
@@ -1186,7 +1888,7 @@ function addProposalToCrm() {
       c.next = prev.next;
       save();
       renderCrm();
-      showToast("اتلغى تحديث العميل من العرض");
+      showToast(t("toast_crm_update_undone"));
     });
     return;
   }
@@ -1211,7 +1913,7 @@ function addProposalToCrm() {
     state.clients.splice(at, 1);
     save();
     renderCrm();
-    showToast("اتشال العميل من المتابعة");
+    showToast(t("toast_crm_removed"));
   });
 }
 
@@ -1250,7 +1952,7 @@ function openClientWhatsApp(i, opts = {}) {
   if (!c) return;
   const phone = whatsappPhone(c.contact);
   if (!phone) {
-    showToast("حط رقم واتساب في خانة التواصل أولاً");
+    showToast(t("toast_need_wa_number"));
     return;
   }
   // Prefill a short Arabic follow-up; keep URL short so wa.me does not break.
@@ -1262,11 +1964,11 @@ function openClientWhatsApp(i, opts = {}) {
   // Match the row UI: no mark-contacted affordance once already won.
   // skipContactedOffer: reverse loop after markContacted — plain toast only.
   if (opts.skipContactedOffer || c.status === "won") {
-    showToast("اتفتح واتساب بمسودة متابعة — راجع قبل الإرسال");
+    showToast(t("toast_wa_followup"));
     return;
   }
-  showToast("اتفتح واتساب بمسودة متابعة — راجع قبل الإرسال", {
-    actionLabel: "تواصلت",
+  showToast(t("toast_wa_followup"), {
+    actionLabel: t("contacted"),
     ms: 8000,
     onAction: () => markContacted(i),
   });
@@ -1285,12 +1987,12 @@ function markContacted(i) {
   const actions = [];
   if (hasWa) {
     actions.push({
-      label: "واتساب",
+      label: t("whatsapp"),
       onAction: () => openClientWhatsApp(i, { skipContactedOffer: true }),
     });
   }
   actions.push({
-    label: "تراجع",
+    label: t("undo"),
     onAction: () => {
       if (state.clients[i] !== c) return;
       c.last = prev.last;
@@ -1298,10 +2000,10 @@ function markContacted(i) {
       c.status = prev.status;
       save();
       renderCrm();
-      showToast("اتلغى تسجيل التواصل");
+      showToast(t("toast_contact_undone"));
     },
   });
-  showToast("اتسجّل تواصل — المتابعة بعد 3 أيام", {
+  showToast(t("toast_contacted"), {
     actions,
     ms: hasWa ? 8000 : 6000,
   });
@@ -1324,7 +2026,7 @@ function snoozeClient(i, days) {
     c.next = prevNext;
     save();
     renderCrm();
-    showToast("اتلغى التأجيل");
+    showToast(t("toast_snooze_undone"));
   };
   // Parity with markContacted (#110) / setClientNextToday: offer واتساب when phone present.
   if (whatsappPhone(c.contact)) {
@@ -1332,16 +2034,16 @@ function snoozeClient(i, days) {
       ms: 8000,
       actions: [
         {
-          label: "واتساب",
+          label: t("whatsapp"),
           onAction: () => openClientWhatsApp(i, { skipContactedOffer: true }),
         },
-        { label: "تراجع", onAction: undo },
+        { label: t("undo"), onAction: undo },
       ],
     });
     return;
   }
   showToast(label, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: undo,
   });
@@ -1370,7 +2072,7 @@ function snoozeVisibleClients(days) {
     });
     save();
     renderCrm();
-    showToast("اتلغى التأجيل الجماعي");
+    showToast(t("toast_snooze_bulk_undone"));
   };
   // Parity with setVisibleClientsNextToday / markVisibleContacted: offer واتساب for first target with phone.
   const waTarget = snapshots.find(({ c }) => !!whatsappPhone(c.contact));
@@ -1379,16 +2081,16 @@ function snoozeVisibleClients(days) {
       ms: 8000,
       actions: [
         {
-          label: "واتساب",
+          label: t("whatsapp"),
           onAction: () => openClientWhatsApp(waTarget.i, { skipContactedOffer: true }),
         },
-        { label: "تراجع", onAction: undo },
+        { label: t("undo"), onAction: undo },
       ],
     });
     return;
   }
   showToast(label, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: undo,
   });
@@ -1406,21 +2108,21 @@ function setClientNextToday(i) {
   const actions = [];
   if (hasWa) {
     actions.push({
-      label: "واتساب",
+      label: t("whatsapp"),
       onAction: () => openClientWhatsApp(i, { skipContactedOffer: true }),
     });
   }
   actions.push({
-    label: "تراجع",
+    label: t("undo"),
     onAction: () => {
       if (state.clients[i] !== c) return;
       c.next = prevNext;
       save();
       renderCrm();
-      showToast("اتلغى تعيين النهاردة");
+      showToast(t("toast_today_undone"));
     },
   });
-  showToast("المتابعة بقت النهاردة", {
+  showToast(t("toast_next_today"), {
     actions,
     ms: hasWa ? 8000 : 6000,
   });
@@ -1445,7 +2147,7 @@ function setVisibleClientsNextToday() {
     });
     save();
     renderCrm();
-    showToast("اتلغى تعيين النهاردة الجماعي");
+    showToast(t("toast_today_bulk_undone"));
   };
   const waTarget = snapshots.find(({ c }) => !!whatsappPhone(c.contact));
   if (waTarget) {
@@ -1453,16 +2155,16 @@ function setVisibleClientsNextToday() {
       ms: 8000,
       actions: [
         {
-          label: "واتساب",
+          label: t("whatsapp"),
           onAction: () => openClientWhatsApp(waTarget.i, { skipContactedOffer: true }),
         },
-        { label: "تراجع", onAction: undo },
+        { label: t("undo"), onAction: undo },
       ],
     });
     return;
   }
   showToast(msg, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: undo,
   });
@@ -1474,7 +2176,7 @@ function clearVisibleClientsNext() {
     ["lead", "proposal"].includes(c.status) && String(c.next || "").trim()
   );
   if (!targets.length) {
-    showToast("مفيش مواعيد ظاهرة تتشال");
+    showToast(t("toast_no_next_clear"));
     return;
   }
   const snapshots = targets.map(({ c, i }) => ({ c, i, prevNext: c.next }));
@@ -1492,7 +2194,7 @@ function clearVisibleClientsNext() {
     });
     save();
     renderCrm();
-    showToast("اترجع مواعيد المتابعة");
+    showToast(t("toast_next_restored"));
   };
   // Parity with snoozeVisibleClients (#118) / markVisibleContacted: offer واتساب for first target with phone.
   const waTarget = snapshots.find(({ c }) => !!whatsappPhone(c.contact));
@@ -1501,16 +2203,16 @@ function clearVisibleClientsNext() {
       ms: 8000,
       actions: [
         {
-          label: "واتساب",
+          label: t("whatsapp"),
           onAction: () => openClientWhatsApp(waTarget.i, { skipContactedOffer: true }),
         },
-        { label: "تراجع", onAction: undo },
+        { label: t("undo"), onAction: undo },
       ],
     });
     return;
   }
   showToast(label, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: undo,
   });
@@ -1522,7 +2224,7 @@ function clearClientNext(i) {
   if (!c) return;
   if (!["lead", "proposal"].includes(c.status)) return;
   if (!String(c.next || "").trim()) {
-    showToast("مفيش موعد يتشال");
+    showToast(t("toast_no_next_one"));
     return;
   }
   const prevNext = c.next;
@@ -1534,24 +2236,24 @@ function clearClientNext(i) {
     c.next = prevNext;
     save();
     renderCrm();
-    showToast("اترجع موعد المتابعة");
+    showToast(t("toast_next_one_restored"));
   };
   // Parity with snoozeClient (#118) / setClientNextToday: offer واتساب when phone present.
   if (whatsappPhone(c.contact)) {
-    showToast("اتشال موعد المتابعة", {
+    showToast(t("toast_next_cleared"), {
       ms: 8000,
       actions: [
         {
-          label: "واتساب",
+          label: t("whatsapp"),
           onAction: () => openClientWhatsApp(i, { skipContactedOffer: true }),
         },
-        { label: "تراجع", onAction: undo },
+        { label: t("undo"), onAction: undo },
       ],
     });
     return;
   }
-  showToast("اتشال موعد المتابعة", {
-    actionLabel: "تراجع",
+  showToast(t("toast_next_cleared"), {
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: undo,
   });
@@ -1563,7 +2265,7 @@ function markVisibleContacted() {
     ["lead", "proposal"].includes(c.status) && (clientIsOverdue(c) || clientIsDueToday(c))
   );
   if (!targets.length) {
-    showToast("مفيش ظاهرين متأخرين أو النهاردة يتسجّل لهم تواصل");
+    showToast(t("toast_no_contactable"));
     return;
   }
   const snapshots = targets.map(({ c, i }) => ({
@@ -1592,24 +2294,24 @@ function markVisibleContacted() {
     });
     save();
     renderCrm();
-    showToast("اتلغى تسجيل التواصل الجماعي");
+    showToast(t("toast_contact_bulk_undone"));
   };
   const msg = `اتسجّل تواصل لـ ${n} عميل — المتابعة بعد 3 أيام`;
   if (waTarget) {
     showToast(msg, {
       actions: [
         {
-          label: "واتساب",
+          label: t("whatsapp"),
           onAction: () => openClientWhatsApp(waTarget.i, { skipContactedOffer: true }),
         },
-        { label: "تراجع", onAction: undo },
+        { label: t("undo"), onAction: undo },
       ],
       ms: 8000,
     });
     return;
   }
   showToast(msg, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: undo,
   });
@@ -1644,21 +2346,21 @@ function paintCrmPipeline(visible) {
       return;
     }
     el.replaceChildren();
-    el.append(document.createTextNode("مفيش ظاهر في التصفية دي"));
-    appendPipelineJump(el, "overdue", overdueN, `${overdueN} متأخر`, "عرض المتابعات المتأخرة", "تصفية المتابعات المتأخرة");
-    appendPipelineJump(el, "today", todayN, `${todayN} متابعة النهاردة`, "عرض متابعات النهاردة", "تصفية متابعات النهاردة");
-    appendPipelineJump(el, "none", noneN, `${noneN} بدون موعد`, "عرض العملاء من غير متابعة تالية", "تصفية بدون موعد");
+    el.append(document.createTextNode(t("pipeline_empty")));
+    appendPipelineJump(el, "overdue", overdueN, t("pipeline_overdue", { n: overdueN }), t("pipeline_overdue_title"), t("toast_filter_overdue_pipe"));
+    appendPipelineJump(el, "today", todayN, t("pipeline_today", { n: todayN }), t("pipeline_today_title"), t("toast_filter_today_pipe"));
+    appendPipelineJump(el, "none", noneN, t("pipeline_none", { n: noneN }), t("pipeline_none_title"), t("toast_filter_none_pipe"));
     el.hidden = false;
     return;
   }
   const sum = visible.reduce((acc, { c }) => acc + n(c.value), 0);
   // Respect current search, same as chip counts.
   el.replaceChildren();
-  el.append(document.createTextNode(`الظاهر: ${visible.length} · قيمة ${money(sum)} ج.م`));
+  el.append(document.createTextNode(t("pipeline_visible", { n: visible.length, sum: money(sum) })));
   // Overdue first, then today, then missing next — parity jumps.
-  appendPipelineJump(el, "overdue", overdueN, `${overdueN} متأخر`, "عرض المتابعات المتأخرة", "تصفية المتابعات المتأخرة");
-  appendPipelineJump(el, "today", todayN, `${todayN} متابعة النهاردة`, "عرض متابعات النهاردة", "تصفية متابعات النهاردة");
-  appendPipelineJump(el, "none", noneN, `${noneN} بدون موعد`, "عرض العملاء من غير متابعة تالية", "تصفية بدون موعد");
+  appendPipelineJump(el, "overdue", overdueN, t("pipeline_overdue", { n: overdueN }), t("pipeline_overdue_title"), t("toast_filter_overdue_pipe"));
+  appendPipelineJump(el, "today", todayN, t("pipeline_today", { n: todayN }), t("pipeline_today_title"), t("toast_filter_today_pipe"));
+  appendPipelineJump(el, "none", noneN, t("pipeline_none", { n: noneN }), t("pipeline_none_title"), t("toast_filter_none_pipe"));
   el.hidden = false;
 }
 
@@ -1670,15 +2372,15 @@ function onClientStatusChange(i, prev, nextStatus) {
   let toast = "";
   if (nextStatus === "won" || nextStatus === "lost") {
     c.next = "";
-    toast = nextStatus === "won" ? "تم الاتفاق — اتشالت المتابعة" : "اتسجّلت كخسارة — اتشالت المتابعة";
+    toast = nextStatus === "won" ? t("toast_won") : t("toast_lost");
   } else if ((nextStatus === "lead" || nextStatus === "proposal") && !String(c.next || "").trim()) {
     c.next = addDaysISO(localISODate(), 3);
     toast = nextStatus === "proposal"
-      ? "اتسجّل كعرض سعر — المتابعة بعد 3 أيام"
-      : "رجعت للمتابعة — بعد 3 أيام";
+      ? t("toast_as_proposal_next")
+      : t("toast_back_lead");
   } else if (nextStatus === "proposal" && prev !== "proposal") {
     // lead→proposal with an existing next was silent — close the send-proposal loop.
-    toast = "اتسجّل كعرض سعر";
+    toast = t("toast_as_proposal");
   }
   save();
   renderCrm();
@@ -1689,7 +2391,7 @@ function onClientStatusChange(i, prev, nextStatus) {
     c.next = prevNext;
     save();
     renderCrm();
-    showToast("اتلغى تغيير الحالة");
+    showToast(t("toast_status_undone"));
   };
   // Active pipeline: offer واتساب when phone present (parity with markContacted #110).
   const offerWa = ["lead", "proposal"].includes(nextStatus) && !!whatsappPhone(c.contact);
@@ -1698,17 +2400,17 @@ function onClientStatusChange(i, prev, nextStatus) {
       ms: 8000,
       actions: [
         {
-          label: "واتساب",
+          label: t("whatsapp"),
           // Keep تواصلت offer after WA — status change is not itself a contact.
           onAction: () => openClientWhatsApp(i),
         },
-        { label: "تراجع", onAction: undo },
+        { label: t("undo"), onAction: undo },
       ],
     });
     return;
   }
   showToast(toast, {
-    actionLabel: "تراجع",
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: undo,
   });
@@ -1768,14 +2470,14 @@ function renderCrm() {
   if (emptyEl) {
     emptyEl.hidden = visible.length > 0;
     emptyEl.textContent = state.clients.length === 0
-      ? "لسه مفيش عملاء — اضغط «+ عميل» أو «أضف للعملاء» من عرض السعر."
+      ? t("crm_empty_none")
       : (crmQuery || "").trim()
-        ? "مفيش نتائج للبحث ده — جرّب كلمة تانية أو امسح البحث."
+        ? t("crm_empty_search")
         : crmFilter === "today"
-          ? "مفيش متابعات النهاردة — لو في متأخرين جرّب «متأخر»."
+          ? t("crm_empty_today")
           : crmFilter === "none"
-            ? "كل العملاء النشطين عندهم موعد متابعة — تمام."
-            : "مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.";
+            ? t("crm_empty_none_next")
+            : t("crm_empty_filter");
   }
   if (wrap) wrap.hidden = visible.length === 0;
   paintCrmPipeline(visible);
@@ -1795,42 +2497,43 @@ function renderCrm() {
     const showSnooze = ["lead", "proposal"].includes(c.status);
     const hasNext = String(c.next || "").trim();
     const clearNextBtn = hasNext
-      ? `<button type="button" class="ghost tiny" data-clear-next="${i}" title="مسح موعد المتابعة">بدون موعد</button>`
+      ? `<button type="button" class="ghost tiny" data-clear-next="${i}" title="${esc(t("clear_next_title"))}">${t("clear_next")}</button>`
       : "";
+    const dateLang = appLang === "en" ? "en-GB" : "ar-EG";
     const snoozeHtml = showSnooze ? `
-        <div class="snooze-row" role="group" aria-label="متابعة سريعة">
-          <button type="button" class="ghost tiny" data-today="${i}" title="خلي المتابعة النهاردة">اليوم</button>
-          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="3" title="تأجيل 3 أيام">+3</button>
-          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="7" title="تأجيل أسبوع">+7</button>
+        <div class="snooze-row" role="group" aria-label="${esc(t("snooze_group"))}">
+          <button type="button" class="ghost tiny" data-today="${i}" title="${esc(t("today_btn_title"))}">${t("today_btn")}</button>
+          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="3" title="${esc(t("snooze3_title"))}">+3</button>
+          <button type="button" class="ghost tiny" data-snooze="${i}" data-days="7" title="${esc(t("snooze7_title"))}">+7</button>
           ${clearNextBtn}
         </div>` : "";
     tr.innerHTML = `
-      <td data-label="الاسم"><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
-      <td data-label="التواصل">
-        <input data-i="${i}" data-k="contact" value="${esc(c.contact)}" placeholder="واتساب 01xxxxxxxxx">
-        ${(!whatsappPhone(c.contact) && /واتساب|whatsapp/i.test(c.contact || "")) ? `<div class="date-hint">حط رقم عشان يظهر زر واتساب</div>` : ""}
+      <td data-label="${esc(t("th_name"))}"><input data-i="${i}" data-k="name" value="${esc(c.name)}"></td>
+      <td data-label="${esc(t("th_contact"))}">
+        <input data-i="${i}" data-k="contact" value="${esc(c.contact)}" placeholder="${esc(t("contact_ph"))}">
+        ${(!whatsappPhone(c.contact) && /واتساب|whatsapp/i.test(c.contact || "")) ? `<div class="date-hint">${esc(t("contact_hint_phone"))}</div>` : ""}
       </td>
-      <td data-label="المصدر"><input data-i="${i}" data-k="source" value="${esc(c.source)}"></td>
-      <td data-label="الحالة"><select data-i="${i}" data-k="status">${STATUS.map(s => `<option value="${s.value}" ${c.status===s.value?"selected":""}>${s.label}</option>`).join("")}</select></td>
-      <td data-label="آخر تواصل">
-        <input data-i="${i}" data-k="last" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(c.last)}">
+      <td data-label="${esc(t("th_source"))}"><input data-i="${i}" data-k="source" value="${esc(c.source)}"></td>
+      <td data-label="${esc(t("th_status"))}"><select data-i="${i}" data-k="status">${STATUS.map(s => `<option value="${s.value}" ${c.status===s.value?"selected":""}>${esc(statusLabel(s.value))}</option>`).join("")}</select></td>
+      <td data-label="${esc(t("th_last"))}">
+        <input data-i="${i}" data-k="last" type="date" lang="${dateLang}" title="${esc(t("date_title"))}" value="${esc(c.last)}">
         ${c.last && formatArDate(c.last) ? `<div class="date-hint">${formatArDate(c.last)}</div>` : ""}
       </td>
-      <td data-label="متابعة تالية" class="${["won","lost"].includes(c.status) ? "next-closed" : ""}">
+      <td data-label="${esc(t("th_next"))}" class="${["won","lost"].includes(c.status) ? "next-closed" : ""}">
         ${["won","lost"].includes(c.status)
           ? `<span class="muted next-na">—</span>`
-          : `<input data-i="${i}" data-k="next" type="date" lang="ar-EG" title="اليوم / الشهر / السنة" value="${esc(c.next)}">
+          : `<input data-i="${i}" data-k="next" type="date" lang="${dateLang}" title="${esc(t("date_title"))}" value="${esc(c.next)}">
         ${c.next && formatArDate(c.next) ? `<div class="date-hint">${formatArDate(c.next)}</div>` : ""}
         ${hint ? `<div class="date-hint${overdue ? " late" : ""}">${hint}</div>` : ""}
         ${snoozeHtml}`}
       </td>
-      <td class="num" data-label="القيمة"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
-      <td data-label="ملاحظات"><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>
-      <td class="row-actions" data-label="إجراءات">
-        ${whatsappPhone(c.contact) ? `<button type="button" class="ghost tiny" data-wa="${i}" title="فتح واتساب">واتساب</button>` : ""}
-        ${c.status !== "won" ? `<button type="button" class="ghost tiny" data-touch="${i}">تواصلت</button>` : ""}
-        <button type="button" class="ghost tiny" data-copy-card="${i}" title="نسخ بطاقة العميل كنص عربي">نسخ نص</button>
-        <button type="button" class="ghost tiny" data-dup="${i}" title="كرّر العميل تحتها">كرّر</button>
+      <td class="num" data-label="${esc(t("th_value"))}"><input data-i="${i}" data-k="value" type="number" value="${c.value}"></td>
+      <td data-label="${esc(t("th_notes"))}"><input data-i="${i}" data-k="notes" value="${esc(c.notes)}"></td>
+      <td class="row-actions" data-label="${esc(t("th_actions"))}">
+        ${whatsappPhone(c.contact) ? `<button type="button" class="ghost tiny" data-wa="${i}" title="${esc(t("whatsapp_title"))}">${t("whatsapp")}</button>` : ""}
+        ${c.status !== "won" ? `<button type="button" class="ghost tiny" data-touch="${i}">${t("contacted")}</button>` : ""}
+        <button type="button" class="ghost tiny" data-copy-card="${i}" title="${esc(t("copy_client_title"))}">${t("copy_text")}</button>
+        <button type="button" class="ghost tiny" data-dup="${i}" title="${esc(t("dup_client_title"))}">${t("dup_row")}</button>
         <button type="button" class="icon-btn" data-del="${i}">✕</button>
       </td>`;
     tbody.appendChild(tr);
@@ -1838,7 +2541,7 @@ function renderCrm() {
   const badge = document.getElementById("crm-overdue-badge");
   if (badge) {
     badge.hidden = overdueCount === 0;
-    badge.textContent = overdueCount ? `${overdueCount} متأخر` : "";
+    badge.textContent = overdueCount ? t("overdue_badge", { n: overdueCount }) : "";
   }
   paintCrmValueTotals();
   tbody.querySelectorAll("input,select").forEach((el) => {
@@ -1914,18 +2617,18 @@ function paintCrmValueTotals() {
   foot.hidden = false;
   const count = document.getElementById("crm-value-count");
   if (count) {
-    const filterLabel = CRM_FILTER_LABELS[crmFilter] || crmFilter;
+    const filterLabel = crmFilterLabel(crmFilter);
     count.textContent = t.withValue
-      ? `(${t.withValue} بقيمة · ${t.n} ظاهر · ${filterLabel})`
-      : `(${t.n} ظاهر · ${filterLabel})`;
+      ? t("crm_count_valued", { v: t.withValue, n: t.n, filter: filterLabel })
+      : t("crm_count_plain", { n: t.n, filter: filterLabel });
   }
   const el = document.getElementById("crm-tot-value");
-  if (el) el.textContent = `${money(t.sum)} ج.م`;
+  if (el) el.textContent = `${money(t.sum)} ${t("egp")}`;
 }
 
 function statusLabel(value) {
-  const hit = STATUS.find((s) => s.value === value);
-  return hit ? hit.label : String(value || "");
+  if (STATUS.some((s) => s.value === value)) return t(`status_${value}`);
+  return String(value || "");
 }
 
 function visibleCrmClients() {
@@ -1934,9 +2637,9 @@ function visibleCrmClients() {
 
 
 function clientCardPlainText(c) {
-  const name = String(c.name || "").trim() || "بدون اسم";
+  const name = String(c.name || "").trim() || t("no_name");
   const lines = [
-    "متابعة عميل — رتّب",
+    t("copy_client_head"),
     "",
   ];
   let head = `• ${name} (${statusLabel(c.status)})`;
@@ -1946,17 +2649,17 @@ function clientCardPlainText(c) {
   else if (nextAr) head += ` — ${nextAr}`;
   lines.push(head);
   const contact = String(c.contact || "").trim();
-  if (contact) lines.push(`  التواصل: ${contact}`);
+  if (contact) lines.push(`  ${t("copy_contact")}: ${contact}`);
   const source = String(c.source || "").trim();
-  if (source) lines.push(`  المصدر: ${source}`);
+  if (source) lines.push(`  ${t("copy_source")}: ${source}`);
   const lastAr = formatArDate(c.last);
-  if (lastAr) lines.push(`  آخر تواصل: ${lastAr}`);
-  else if (String(c.last || "").trim()) lines.push(`  آخر تواصل: ${c.last}`);
-  if (nextAr && !["won", "lost"].includes(c.status)) lines.push(`  متابعة تالية: ${nextAr}`);
-  else if (String(c.next || "").trim() && !["won", "lost"].includes(c.status)) lines.push(`  متابعة تالية: ${c.next}`);
-  if (n(c.value)) lines.push(`  القيمة: ${money(c.value)} ج.م`);
+  if (lastAr) lines.push(`  ${t("copy_last")}: ${lastAr}`);
+  else if (String(c.last || "").trim()) lines.push(`  ${t("copy_last")}: ${c.last}`);
+  if (nextAr && !["won", "lost"].includes(c.status)) lines.push(`  ${t("copy_next")}: ${nextAr}`);
+  else if (String(c.next || "").trim() && !["won", "lost"].includes(c.status)) lines.push(`  ${t("copy_next")}: ${c.next}`);
+  if (n(c.value)) lines.push(`  ${t("copy_value")}: ${money(c.value)} ${t("egp")}`);
   const notes = String(c.notes || "").trim();
-  if (notes) lines.push(`  ملاحظات: ${notes}`);
+  if (notes) lines.push(`  ${t("copy_notes")}: ${notes}`);
   return lines.join("\n");
 }
 
@@ -1965,7 +2668,7 @@ async function copyClientCard(i) {
   if (!c) return;
   await copyTextToClipboard(clientCardPlainText(c));
   const name = String(c.name || "").trim();
-  const msg = name ? `اتنسخ «${name}»` : "اتنسخ العميل";
+  const msg = name ? t("toast_copied_named", { name }) : t("toast_copied_client");
   // After نسخ نص: offer واتساب (when phone) + تواصلت — parity with markContacted #110 / row WA; skip won.
   if (c.status === "won") {
     showToast(msg);
@@ -1975,12 +2678,12 @@ async function copyClientCard(i) {
   const actions = [];
   if (hasWa) {
     actions.push({
-      label: "واتساب",
+      label: t("whatsapp"),
       onAction: () => openClientWhatsApp(i),
     });
   }
   actions.push({
-    label: "تواصلت",
+    label: t("contacted"),
     onAction: () => markContacted(i),
   });
   showToast(msg, {
@@ -2047,13 +2750,13 @@ function offerCrmFollowUpsContactedToast(msg) {
   const actions = [];
   if (waTarget) {
     actions.push({
-      label: "واتساب",
+      label: t("whatsapp"),
       // Keep تواصلت offer after WA — copy is not itself a contact (same as copyClientCard).
       onAction: () => openClientWhatsApp(waTarget.i),
     });
   }
   actions.push({
-    label: "تواصلت للكل",
+    label: t("contacted_all"),
     onAction: () => markVisibleContacted(),
   });
   showToast(msg, {
@@ -2065,58 +2768,64 @@ function offerCrmFollowUpsContactedToast(msg) {
 async function copyCrmFollowUps() {
   const visible = visibleCrmClients();
   if (!visible.length) {
-    showToast("مفيش عملاء في التصفية دي للنسخ");
+    showToast(t("toast_no_crm_copy"));
     return;
   }
   await copyTextToClipboard(crmFollowUpPlainText());
-  const filterLabel = CRM_FILTER_LABELS[crmFilter] || crmFilter;
-  offerCrmFollowUpsContactedToast(`اتنسخ ${visible.length} متابعة (${filterLabel})`);
+  const filterLabel = crmFilterLabel(crmFilter);
+  offerCrmFollowUpsContactedToast(t("toast_copied_followups", { n: visible.length, filter: filterLabel }));
 }
 
 
 function pricingPlainText() {
   const lines = [
-    "ملخص التسعير — رتّب",
-    `سعر الصرف: ${state.fx} ج.م لكل $1 · مقدم ${depositPct()}%`,
+    t("copy_pricing_head"),
+    t("copy_fx_line", { fx: state.fx, pct: depositPct() }),
   ];
-  const t = pricingTotals();
-  if (t.n) {
-    lines.push(`إجمالي (${t.n}): ${money(t.price)} ج.م · ${money(t.usd)} USD · مقدم ${money(t.dep)} · متبقي ${money(t.bal)}`);
+  const tot = pricingTotals();
+  if (tot.n) {
+    lines.push(t("copy_pricing_total", {
+      n: tot.n,
+      price: money(tot.price),
+      usd: money(tot.usd),
+      dep: money(tot.dep),
+      bal: money(tot.bal),
+    }));
   } else {
-    lines.push("مفيش صفوف محسوبة بعد");
+    lines.push(t("copy_pricing_none"));
   }
   lines.push("");
   state.pricing.forEach((row, i) => {
     const c = pricingCalcs(row);
-    const type = String(row.type || "").trim() || `صف ${i + 1}`;
+    const type = String(row.type || "").trim() || t("copy_row_n", { n: i + 1 });
     if (c.empty) {
-      lines.push(`☐ ${type} — ناقص ساعات/سعر ساعة`);
+      lines.push(t("copy_row_incomplete", { type }));
     } else {
-      lines.push(`• ${type}: ${row.hours}س × ${money(row.rate)} + تكاليف ${money(row.costs)} (هامش ${row.margin}%) → ${money(c.price)} ج.م / ${money(c.usd)} USD`);
-      lines.push(`  مقدم ${money(c.dep)} · متبقي ${money(c.bal)}`);
+      lines.push(`• ${type}: ${row.hours}h × ${money(row.rate)} + ${money(row.costs)} (${row.margin}%) → ${money(c.price)} ${t("egp")} / ${money(c.usd)} USD`);
+      lines.push(`  ${t("th_deposit", { pct: depositPct() })} ${money(c.dep)} · ${t("th_balance")} ${money(c.bal)}`);
     }
     const notes = String(row.notes || "").trim();
-    if (notes) lines.push(`  ملاحظات: ${notes}`);
+    if (notes) lines.push(`  ${t("copy_notes")}: ${notes}`);
   });
   return lines.join("\n");
 }
 
 function pricingRowPlainText(row, i = 0) {
   const c = pricingCalcs(row);
-  const type = String(row.type || "").trim() || `صف ${i + 1}`;
+  const type = String(row.type || "").trim() || t("copy_row_n", { n: i + 1 });
   const lines = [
-    "صف تسعير — رتّب",
-    `سعر الصرف: ${state.fx} ج.م لكل $1 · مقدم ${depositPct()}%`,
+    t("copy_pricing_row_head"),
+    t("copy_fx_line", { fx: state.fx, pct: depositPct() }),
     "",
   ];
   if (c.empty) {
-    lines.push(`☐ ${type} — ناقص ساعات/سعر ساعة`);
+    lines.push(t("copy_row_incomplete", { type }));
   } else {
-    lines.push(`• ${type}: ${row.hours}س × ${money(row.rate)} + تكاليف ${money(row.costs)} (هامش ${row.margin}%) → ${money(c.price)} ج.م / ${money(c.usd)} USD`);
-    lines.push(`  مقدم ${money(c.dep)} · متبقي ${money(c.bal)}`);
+    lines.push(`• ${type}: ${row.hours}h × ${money(row.rate)} + ${money(row.costs)} (${row.margin}%) → ${money(c.price)} ${t("egp")} / ${money(c.usd)} USD`);
+    lines.push(`  ${t("th_deposit", { pct: depositPct() })} ${money(c.dep)} · ${t("th_balance")} ${money(c.bal)}`);
   }
   const notes = String(row.notes || "").trim();
-  if (notes) lines.push(`  ملاحظات: ${notes}`);
+  if (notes) lines.push(`  ${t("copy_notes")}: ${notes}`);
   return lines.join("\n");
 }
 
@@ -2126,7 +2835,7 @@ async function copyPricingRow(i) {
   const row = state.pricing[idx];
   await copyTextToClipboard(pricingRowPlainText(row, idx));
   const type = String(row.type || "").trim();
-  const msg = type ? `اتنسخ «${type}»` : "اتنسخ صف التسعير";
+  const msg = type ? t("toast_copied_named", { name: type }) : t("toast_copied_pricing_row");
   // Offer انقل للعرض after نسخ نص when row has a computed price (parity with row button).
   // Use actions[] (multi-action toast shape) + suggested()>0 belt-and-suspenders so a
   // non-empty computed row never falls back to a plain «اتنسخ …» toast.
@@ -2138,7 +2847,7 @@ async function copyPricingRow(i) {
   showToast(msg, {
     ms: 8000,
     actions: [{
-      label: "انقل للعرض",
+      label: t("use_for_proposal"),
       onAction: () => usePricingRowForProposal(idx),
     }],
   });
@@ -2152,7 +2861,7 @@ function offerPricingToProposalToast(msg) {
     return;
   }
   showToast(msg, {
-    actionLabel: "انقل لعرض السعر",
+    actionLabel: t("move_to_proposal"),
     ms: 8000,
     onAction: () => fillProposalFromPricing(),
   });
@@ -2160,14 +2869,14 @@ function offerPricingToProposalToast(msg) {
 
 async function copyPricingSummary() {
   if (!state.pricing.length) {
-    showToast("مفيش صفوف تسعير للنسخ");
+    showToast(t("toast_no_pricing_copy"));
     return;
   }
   await copyTextToClipboard(pricingPlainText());
   const t = pricingTotals();
   const msg = t.n
-    ? `اتنسخ ${state.pricing.length} صف تسعير (${t.n} محسوب)`
-    : `اتنسخ ${state.pricing.length} صف تسعير`;
+    ? t("toast_copied_pricing_n", { n: state.pricing.length, calc: t.n })
+    : t("toast_copied_pricing_plain", { n: state.pricing.length });
   offerPricingToProposalToast(msg);
 }
 
@@ -2190,17 +2899,17 @@ function paintWeekProgress() {
 
 function weekPlainText() {
   const lines = [
-    "ملخص أسبوع الشغل — رتّب",
-    `تم ${weekDoneCount()} من 7 · ساعات التركيز: ${weekTotal()}`,
+    t("copy_week_head"),
+    t("copy_week_progress", { done: weekDoneCount(), hours: weekTotal() }),
     "",
   ];
   state.week.forEach((w) => {
     const mark = w.done === "☑" ? "☑" : "☐";
-    lines.push(`${mark} ${w.day}`);
-    if (String(w.tasks || "").trim()) lines.push(`  المهام: ${w.tasks}`);
-    if (n(w.hours)) lines.push(`  الساعات: ${w.hours}`);
+    lines.push(`${mark} ${dayLabel(w.day)}`);
+    if (String(w.tasks || "").trim()) lines.push(`  ${t("copy_tasks")}: ${w.tasks}`);
+    if (n(w.hours)) lines.push(`  ${t("copy_hours")}: ${w.hours}`);
     const del = String(w.deliverables || "").trim();
-    if (del && del !== "—") lines.push(`  التسليمات: ${w.deliverables}`);
+    if (del && del !== "—") lines.push(`  ${t("copy_deliverables")}: ${w.deliverables}`);
   });
   return lines.join("\n");
 }
@@ -2212,7 +2921,7 @@ function offerWeekSummaryDoneAllToast(msg) {
     return;
   }
   showToast(msg, {
-    actionLabel: "تم للكل",
+    actionLabel: t("mark_done_all"),
     ms: 8000,
     onAction: () => markWeekDoneAll(),
   });
@@ -2220,7 +2929,7 @@ function offerWeekSummaryDoneAllToast(msg) {
 
 async function copyWeekSummary() {
   await copyTextToClipboard(weekPlainText());
-  offerWeekSummaryDoneAllToast("اتنسخ ملخص الأسبوع");
+  offerWeekSummaryDoneAllToast(t("toast_copied_week"));
 }
 
 
@@ -2246,14 +2955,15 @@ function weekDayPlainText(i) {
   const todayName = DAYS[cairoDayOfWeek()];
   const isToday = w.day === todayName;
   const mark = w.done === "☑" ? "☑" : "☐";
+  const dlab = dayLabel(w.day);
   const title = isToday
-    ? `يوم الشغل — رتّب · ${w.day} (اليوم)`
-    : `يوم الشغل — رتّب · ${w.day}`;
-  const lines = [title, `${mark} ${w.day}`];
-  if (String(w.tasks || "").trim()) lines.push(`  المهام: ${w.tasks}`);
-  if (n(w.hours)) lines.push(`  الساعات: ${w.hours}`);
+    ? t("copy_day_head_today", { day: dlab })
+    : t("copy_day_head", { day: dlab });
+  const lines = [title, `${mark} ${dlab}`];
+  if (String(w.tasks || "").trim()) lines.push(`  ${t("copy_tasks")}: ${w.tasks}`);
+  if (n(w.hours)) lines.push(`  ${t("copy_hours")}: ${w.hours}`);
   const del = String(w.deliverables || "").trim();
-  if (del && del !== "—") lines.push(`  التسليمات: ${w.deliverables}`);
+  if (del && del !== "—") lines.push(`  ${t("copy_deliverables")}: ${w.deliverables}`);
   return lines.join("\n");
 }
 
@@ -2272,22 +2982,22 @@ function markWeekDayDone(i) {
   const w = state.week[i];
   if (!w) return;
   if (w.done === "☑") {
-    showToast(`«${w.day}» مكتملة أصلاً`);
+    showToast(t("toast_week_already_done", { day: dayLabel(w.day) }));
     return;
   }
   const prevDone = w.done;
   w.done = "☑";
   save();
   renderWeek();
-  showToast(`«${w.day}» بقت مكتملة`, {
-    actionLabel: "تراجع",
+  showToast(t("toast_week_now_done", { day: dayLabel(w.day) }), {
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       if (state.week.indexOf(w) < 0) return;
       w.done = prevDone;
       save();
       renderWeek();
-      showToast(`اتلغى تم «${w.day}»`);
+      showToast(t("toast_week_done_undone", { day: dayLabel(w.day) }));
     },
   });
 }
@@ -2300,7 +3010,7 @@ function offerWeekDayDoneToast(msg, i) {
     return;
   }
   showToast(msg, {
-    actionLabel: "تم",
+    actionLabel: t("mark_done"),
     ms: 8000,
     onAction: () => markWeekDayDone(i),
   });
@@ -2308,18 +3018,18 @@ function offerWeekDayDoneToast(msg, i) {
 
 async function copyWeekDay(i) {
   if (!weekDayHasContent(i)) {
-    showToast("مفيش محتوى لليوم ده للنسخ — حط مهام أو ساعات أولاً");
+    showToast(t("toast_no_day_content"));
     return;
   }
   await copyTextToClipboard(weekDayPlainText(i));
   const w = state.week[i];
-  offerWeekDayDoneToast(`اتنسخ يوم «${w ? w.day : "اليوم"}»`, i);
+  offerWeekDayDoneToast(t("toast_copied_day", { day: w ? dayLabel(w.day) : t("hint_today") }), i);
 }
 
 async function copyTodayWeek() {
   const row = todayWeekRow();
   if (!row) {
-    showToast("مفيش محتوى لليوم ده للنسخ — حط مهام أو ساعات أولاً");
+    showToast(t("toast_no_day_content"));
     return;
   }
   await copyWeekDay(row.i);
@@ -2331,7 +3041,7 @@ function weekHasCarryTasks() {
 }
 
 function resetWeek() {
-  if (!confirm("أسبوع جديد؟ هنتصفّر الساعات والتسليمات وعلامات «تم». المهام الناقصة هتترحّل، وتقدر تفضّي الأسبوع من التوست.")) return;
+  if (!confirm(t("confirm_new_week"))) return;
   const previous = state.week.map((w) => ({
     day: w.day,
     tasks: w.tasks,
@@ -2357,23 +3067,23 @@ function resetWeek() {
     state.week = previous.map((w) => ({ ...w }));
     save();
     renderWeek();
-    showToast("رجع أسبوع الشغل");
+    showToast(t("toast_week_restored"));
   };
   if (!weekHasCarryTasks()) {
     applyReset(false);
-    showToast("أسبوع جديد جاهز", {
-      actionLabel: "تراجع",
+    showToast(t("toast_week_ready"), {
+      actionLabel: t("undo"),
       ms: 6000,
       onAction: restorePrevious,
     });
     return;
   }
   applyReset(true);
-  showToast("اترحّلت المهام الناقصة", {
+  showToast(t("toast_week_carried"), {
     ms: 8000,
     actions: [
       {
-        label: "فاضي بالكامل",
+        label: t("empty_week_full"),
         onAction: () => {
           state.week = previous.map((w) => ({
             day: w.day,
@@ -2384,15 +3094,15 @@ function resetWeek() {
           }));
           save();
           renderWeek();
-          showToast("أسبوع فاضي", {
-            actionLabel: "تراجع",
+          showToast(t("toast_week_empty"), {
+            actionLabel: t("undo"),
             ms: 6000,
             onAction: restorePrevious,
           });
         },
       },
       {
-        label: "تراجع",
+        label: t("undo"),
         onAction: restorePrevious,
       },
     ],
@@ -2405,7 +3115,7 @@ function clearWeekDay(i) {
   const hasContent = weekDayHasContent(i);
   const doneOn = w.done === "☑";
   if (!hasContent && !doneOn) {
-    showToast(`«${w.day}» فاضي أصلاً`);
+    showToast(t("toast_week_already_clear", { day: dayLabel(w.day) }));
     return;
   }
   const prev = {
@@ -2420,8 +3130,8 @@ function clearWeekDay(i) {
   w.done = "☐";
   save();
   renderWeek();
-  showToast(`اتمسح يوم «${w.day}»`, {
-    actionLabel: "تراجع",
+  showToast(t("toast_day_cleared", { day: dayLabel(w.day) }), {
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       if (state.week.indexOf(w) < 0) return;
@@ -2431,7 +3141,7 @@ function clearWeekDay(i) {
       w.done = prev.done;
       save();
       renderWeek();
-      showToast(`رجع يوم «${w.day}»`);
+      showToast(t("toast_day_restored", { day: dayLabel(w.day) }));
     },
   });
 }
@@ -2443,15 +3153,15 @@ function toggleWeekDone(i) {
   w.done = w.done === "☑" ? "☐" : "☑";
   save();
   renderWeek();
-  showToast(w.done === "☑" ? `«${w.day}» بقت مكتملة` : `«${w.day}» رجعت مش مكتملة`, {
-    actionLabel: "تراجع",
+  showToast(w.done === "☑" ? t("toast_day_marked", { day: dayLabel(w.day) }) : t("toast_day_unmarked", { day: dayLabel(w.day) }), {
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       if (state.week.indexOf(w) < 0) return;
       w.done = prevDone;
       save();
       renderWeek();
-      showToast(`اتلغى تغيير «${w.day}»`);
+      showToast(t("toast_day_toggle_undone", { day: dayLabel(w.day) }));
     },
   });
 }
@@ -2465,7 +3175,7 @@ function weekIncompleteWithContent() {
 function markWeekDoneAll() {
   const targets = weekIncompleteWithContent();
   if (!targets.length) {
-    showToast("مفيش أيام ناقصة بمحتوى تتعلّم تم");
+    showToast(t("toast_no_incomplete"));
     return;
   }
   const snapshots = targets.map(({ w, i }) => ({ w, i, prevDone: w.done }));
@@ -2473,8 +3183,8 @@ function markWeekDoneAll() {
   save();
   renderWeek();
   const n = snapshots.length;
-  showToast(`اتعلّم تم لـ ${n} يوم`, {
-    actionLabel: "تراجع",
+  showToast(t("toast_marked_n", { n }), {
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       snapshots.forEach(({ w, i, prevDone }) => {
@@ -2483,7 +3193,7 @@ function markWeekDoneAll() {
       });
       save();
       renderWeek();
-      showToast("اتلغى تم الجماعي");
+      showToast(t("toast_done_all_undone"));
     },
   });
 }
@@ -2507,7 +3217,7 @@ function weekClearableDays() {
 function clearWeekDaysAll() {
   const targets = weekClearableDays();
   if (!targets.length) {
-    showToast("مفيش أيام تتتمسح");
+    showToast(t("toast_no_clearable"));
     return;
   }
   const snapshots = targets.map(({ w, i }) => ({
@@ -2529,8 +3239,8 @@ function clearWeekDaysAll() {
   save();
   renderWeek();
   const n = snapshots.length;
-  showToast(`اتمسح ${n} يوم`, {
-    actionLabel: "تراجع",
+  showToast(t("toast_cleared_n_days", { n }), {
+    actionLabel: t("undo"),
     ms: 6000,
     onAction: () => {
       snapshots.forEach(({ w, i, prev }) => {
@@ -2542,7 +3252,7 @@ function clearWeekDaysAll() {
       });
       save();
       renderWeek();
-      showToast("اتلغى مسح الجماعي");
+      showToast(t("toast_clear_all_undone"));
     },
   });
 }
@@ -2553,8 +3263,8 @@ function paintWeekClearAllBtn() {
   const n = weekClearableDays().length;
   btn.hidden = n === 0;
   btn.title = n
-    ? `امسح ${n} يوم فيه محتوى أو تم`
-    : "مفيش أيام فيها محتوى أو تم";
+    ? t("week_clear_n_title", { n })
+    : t("week_clear_none_title");
 }
 
 function renderWeek() {
@@ -2570,22 +3280,23 @@ function renderWeek() {
     const tr = document.createElement("tr");
     if (w.day === todayName) tr.classList.add("today");
     if (w.done === "☑") tr.classList.add("week-done");
-    const dayLabel = w.day === todayName ? `${esc(w.day)} <span class="today-pill">اليوم</span>` : esc(w.day);
+    const dlab = dayLabel(w.day);
+    const dayHtml = w.day === todayName ? `${esc(dlab)} <span class="today-pill">${esc(t("today_pill"))}</span>` : esc(dlab);
     const doneOn = w.done === "☑";
     tr.innerHTML = `
-      <td data-label="اليوم">${dayLabel}</td>
-      <td data-label="المهام"><input data-i="${i}" data-k="tasks" value="${esc(w.tasks)}"></td>
-      <td class="num" data-label="ساعات التركيز"><input data-i="${i}" data-k="hours" type="number" step="0.5" value="${w.hours}"></td>
-      <td data-label="التسليمات"><input data-i="${i}" data-k="deliverables" value="${esc(w.deliverables)}"></td>
-      <td data-label="تم؟" class="week-done-cell">
-        <button type="button" class="done-toggle${doneOn ? " on" : ""}" data-done-toggle="${i}" aria-pressed="${doneOn ? "true" : "false"}" title="${doneOn ? "إلغاء اكتمال اليوم" : "تعليم اليوم كمكتمل"}">
+      <td data-label="${esc(t("th_day"))}">${dayHtml}</td>
+      <td data-label="${esc(t("th_tasks"))}"><input data-i="${i}" data-k="tasks" value="${esc(w.tasks)}"></td>
+      <td class="num" data-label="${esc(t("th_focus"))}"><input data-i="${i}" data-k="hours" type="number" step="0.5" value="${w.hours}"></td>
+      <td data-label="${esc(t("th_deliverables"))}"><input data-i="${i}" data-k="deliverables" value="${esc(w.deliverables)}"></td>
+      <td data-label="${esc(t("th_done"))}" class="week-done-cell">
+        <button type="button" class="done-toggle${doneOn ? " on" : ""}" data-done-toggle="${i}" aria-pressed="${doneOn ? "true" : "false"}" title="${esc(doneOn ? t("done_on_title") : t("done_off_title"))}">
           <span aria-hidden="true">${doneOn ? "☑" : "☐"}</span>
-          <span class="done-toggle-label">${doneOn ? "تم" : "مش بعد"}</span>
+          <span class="done-toggle-label">${esc(doneOn ? t("done_yes") : t("done_no"))}</span>
         </button>
       </td>
-      <td class="row-actions week-row-actions" data-label="إجراءات">
-        <button type="button" class="ghost tiny" data-copy-day="${i}" title="نسخ بطاقة اليوم كنص عربي">نسخ نص</button>
-        <button type="button" class="ghost tiny" data-clear-day="${i}" title="مسح مهام وساعات وتسليمات اليوم">مسح</button>
+      <td class="row-actions week-row-actions" data-label="${esc(t("th_actions"))}">
+        <button type="button" class="ghost tiny" data-copy-day="${i}" title="${esc(t("copy_day_title"))}">${t("copy_text")}</button>
+        <button type="button" class="ghost tiny" data-clear-day="${i}" title="${esc(t("clear_day_title"))}">${t("clear_day")}</button>
       </td>`;
     tbody.appendChild(tr);
   });
@@ -2684,14 +3395,14 @@ function isBlankClient(c) {
 
 /** Validate + normalize a Rattib export. Throws Error with Arabic message on bad shape. */
 function normalizeImportedState(data) {
-  if (!isPlainObject(data)) throw new Error("الملف مش JSON كائن صالح");
+  if (!isPlainObject(data)) throw new Error(t("err_not_object"));
   // reject prototype-pollution keys and require at least one known section
   const keys = Object.keys(data);
   if (keys.some((k) => k === "__proto__" || k === "constructor" || k === "prototype")) {
-    throw new Error("الملف فيه مفاتيح مش مسموحة");
+    throw new Error(t("err_bad_keys"));
   }
   const hasSection = ["fx", "pricing", "proposal", "clients", "week"].some((k) => k in data);
-  if (!hasSection) throw new Error("الملف مش تصدير رتّب — مفيش أقسام معروفة");
+  if (!hasSection) throw new Error(t("err_not_rattib"));
 
   const base = seed();
   const out = { ...base };
@@ -2782,6 +3493,7 @@ function esc(s) {
 }
 
 function wire() {
+  bindLangToggle();
   bindTabs();
   const newWeekBtn = document.getElementById("btn-new-week");
   if (newWeekBtn) newWeekBtn.onclick = () => { resetWeek(); };
@@ -2816,8 +3528,8 @@ function wire() {
     state.pricing.push(copy);
     save();
     renderPricing();
-    showToast("اتضاف صف تسعير فاضي", {
-      actionLabel: "تراجع",
+    showToast(t("toast_added_pricing"), {
+      actionLabel: t("undo"),
       ms: 6000,
       onAction: () => {
         const at = state.pricing.indexOf(copy);
@@ -2825,7 +3537,7 @@ function wire() {
         state.pricing.splice(at, 1);
         save();
         renderPricing();
-        showToast("اتشال صف التسعير الفاضي");
+        showToast(t("toast_removed_pricing"));
       },
     });
   };
@@ -2836,8 +3548,8 @@ function wire() {
     state.clients.push(copy);
     save();
     renderCrm();
-    showToast("اتضاف عميل فاضي", {
-      actionLabel: "تراجع",
+    showToast(t("toast_added_client"), {
+      actionLabel: t("undo"),
       ms: 6000,
       onAction: () => {
         const at = state.clients.indexOf(copy);
@@ -2845,7 +3557,7 @@ function wire() {
         state.clients.splice(at, 1);
         save();
         renderCrm();
-        showToast("اتشال العميل الفاضي");
+        showToast(t("toast_removed_client"));
       },
     });
   };
@@ -2914,13 +3626,13 @@ function wire() {
   document.getElementById("import-file").onchange = async (e) => {
     const file = e.target.files?.[0]; if (!file) return;
     try {
-      if (file.size > 2_000_000) throw new Error("الملف كبير أوي (حد أقصى 2MB)");
+      if (file.size > 2_000_000) throw new Error(t("err_file_big"));
       const text = await file.text();
       let data;
       try { data = JSON.parse(text); }
-      catch { throw new Error("الملف مش JSON صالح"); }
+      catch { throw new Error(t("err_not_json")); }
       const next = normalizeImportedState(data);
-      if (!confirm("استيراد الملف هيستبدل البيانات الحالية. كمّل؟")) {
+      if (!confirm(t("confirm_import"))) {
         e.target.value = "";
         return;
       }
@@ -2930,24 +3642,24 @@ function wire() {
       // Re-imported pristine seed → keep «بيانات تجريبية»; otherwise owned data.
       commitState({ asDemo: matchesCurrentDemoSeed(state) });
       renderAll();
-      showToast("تم استيراد البيانات بأمان", {
-        actionLabel: "تراجع",
+      showToast(t("toast_imported"), {
+        actionLabel: t("undo"),
         ms: 6000,
         onAction: () => {
           state = previous;
           commitState({ asDemo: previousWasDemo || matchesCurrentDemoSeed(previous) });
           renderAll();
-          showToast("رجعت البيانات قبل الاستيراد");
+          showToast(t("toast_import_undone"));
         },
       });
     } catch (err) {
-      const msg = err?.message || "ملف غير صالح — لازم يكون تصدير رتّب JSON";
+      const msg = err?.message || t("toast_import_bad");
       showToast(msg, { ms: 7000 });
     }
     e.target.value = "";
   };
   document.getElementById("btn-reset").onclick = () => {
-    if (!confirm("هترجع للبيانات التجريبية — مش هتفضل فاضي. كمّل؟")) return;
+    if (!confirm(t("confirm_reset"))) return;
     const previous = JSON.parse(JSON.stringify(state));
     const previousWasDemo = showingDemoSeed;
     // Pause persist across replace+render so detached input/change events
@@ -2961,14 +3673,14 @@ function wire() {
       persistPauseDepth = Math.max(0, persistPauseDepth - 1);
     }
     persistDemoSeed();
-    showToast("رجعت للبيانات التجريبية", {
-      actionLabel: "تراجع",
+    showToast(t("toast_reset_demo"), {
+      actionLabel: t("undo"),
       ms: 6000,
       onAction: () => {
         state = previous;
         commitState({ asDemo: previousWasDemo });
         renderAll();
-        showToast("رجعت بياناتك");
+        showToast(t("toast_reset_undone"));
       },
     });
   };
@@ -2994,6 +3706,7 @@ function renderAll() {
 // call save() and clear a just-migrated DEMO flag before persistDemoSeed().
 persistPauseDepth += 1;
 try {
+  initLangFromUi();
   paintCrmFilterChips();
   wire();
 } finally {
@@ -3001,3 +3714,4 @@ try {
 }
 if (showingDemoSeed) persistDemoSeed();
 else paintDemoChip();
+paintStaticI18n();

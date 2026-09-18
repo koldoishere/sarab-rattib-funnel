@@ -16,39 +16,43 @@
       <img class="mark" src="logo-mark.png" width="40" height="40" alt="Sarab" decoding="async">
       <div>
         <strong>رتّب · Rattib</strong>
-        <small>جرّب مجانًا هنا · Free try — مش نهاية الطريق</small>
+        <small data-i18n="brand_tag">جرّب مجانًا هنا · Free try — مش نهاية الطريق</small>
         <a class="brand-pack" href="https://whop.com/3a4c1a95-1fd9-4864-9a4c-d293e48194f0/products/10f2ce23-2ff7-4b91-afdd-d1ce251f3f03/" target="_blank" rel="noopener noreferrer">Own the $12 pack · الرزمة</a>
-        <span id="demo-seed-chip" class="demo-seed-chip" hidden>بيانات تجريبية</span>
+        <span id="demo-seed-chip" class="demo-seed-chip" hidden data-i18n="demo_chip">بيانات تجريبية</span>
       </div>
     </div>
     <div class="actions">
-      <button type="button" id="btn-export" class="ghost" title="تصدير كل البيانات كملف JSON">تصدير</button>
-      <button type="button" id="btn-import" class="ghost" title="استيراد ملف JSON من تصدير رتّب">استيراد</button>
+      <div class="lang-toggle" role="group" data-i18n-aria="lang_group" aria-label="اللغة">
+        <button type="button" class="lang-btn active" data-lang="ar" aria-pressed="true">AR</button>
+        <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <button type="button" id="btn-export" class="ghost" data-i18n="btn_export" data-i18n-title="btn_export_title" title="تصدير كل البيانات كملف JSON">تصدير</button>
+      <button type="button" id="btn-import" class="ghost" data-i18n="btn_import" data-i18n-title="btn_import_title" title="استيراد ملف JSON من تصدير رتّب">استيراد</button>
       <input type="file" id="import-file" accept="application/json,.json" hidden>
-      <button type="button" id="btn-reset" class="ghost danger" title="يرجع للبيانات التجريبية — مش مسح فاضي">مسح البيانات</button>
+      <button type="button" id="btn-reset" class="ghost danger" data-i18n="btn_reset" data-i18n-title="btn_reset_title" title="يرجع للبيانات التجريبية — مش مسح فاضي">مسح البيانات</button>
     </div>
   </header>
 
   <div id="backup-nudge" class="backup-nudge" hidden role="status">
-    <p class="backup-nudge-text">بياناتك بتفضل في المتصفح بس — صدّر JSON احتياطي عشان متضيعش.</p>
+    <p class="backup-nudge-text" data-i18n="backup_nudge">بياناتك بتفضل في المتصفح بس — صدّر JSON احتياطي عشان متضيعش.</p>
     <div class="backup-nudge-actions">
-      <button type="button" id="btn-backup-export" class="primary">تصدير الآن</button>
-      <button type="button" id="btn-backup-dismiss" class="ghost">إخفاء</button>
+      <button type="button" id="btn-backup-export" class="primary" data-i18n="btn_backup_export">تصدير الآن</button>
+      <button type="button" id="btn-backup-dismiss" class="ghost" data-i18n="btn_backup_dismiss">إخفاء</button>
     </div>
   </div>
 
   <nav class="tabs" role="tablist">
-    <button type="button" class="tab active" data-tab="pricing">التسعير</button>
-    <button type="button" class="tab" data-tab="proposal">عرض السعر</button>
-    <button type="button" class="tab" data-tab="crm">العملاء <span id="crm-overdue-badge" class="badge" hidden></span></button>
-    <button type="button" class="tab" data-tab="week">أسبوع الشغل</button>
+    <button type="button" class="tab active" data-tab="pricing" data-i18n="tab_pricing">التسعير</button>
+    <button type="button" class="tab" data-tab="proposal" data-i18n="tab_proposal">عرض السعر</button>
+    <button type="button" class="tab" data-tab="crm"><span data-i18n="tab_crm">العملاء</span> <span id="crm-overdue-badge" class="badge" hidden></span></button>
+    <button type="button" class="tab" data-tab="week" data-i18n="tab_week">أسبوع الشغل</button>
   </nav>
 
   <main>
     <section id="panel-pricing" class="panel active">
       <div class="panel-head">
-        <h1>التسعير</h1>
-        <label class="fx">سعر الصرف (ج.م لكل $1)
+        <h1 data-i18n="panel_pricing">التسعير</h1>
+        <label class="fx"><span data-i18n="fx_label">سعر الصرف (ج.م لكل $1)</span>
           <input type="number" id="fx-rate" min="1" step="0.1" value="50">
         </label>
       </div>
@@ -56,23 +60,23 @@
         <table id="pricing-table">
           <thead>
             <tr>
-              <th>نوع المشروع</th>
-              <th>ساعات</th>
-              <th>سعر/س</th>
-              <th>تكاليف</th>
-              <th>هامش %</th>
-              <th>مقترح ج.م</th>
+              <th data-i18n="th_type">نوع المشروع</th>
+              <th data-i18n="th_hours">ساعات</th>
+              <th data-i18n="th_rate">سعر/س</th>
+              <th data-i18n="th_costs">تكاليف</th>
+              <th data-i18n="th_margin">هامش %</th>
+              <th data-i18n="th_price">مقترح ج.م</th>
               <th>USD</th>
               <th id="th-deposit">مقدم 50%</th>
-              <th>المتبقي</th>
-              <th>ملاحظات</th>
+              <th data-i18n="th_balance">المتبقي</th>
+              <th data-i18n="th_notes">ملاحظات</th>
               <th></th>
             </tr>
           </thead>
           <tbody></tbody>
           <tfoot id="pricing-tfoot" hidden>
             <tr class="pricing-totals-row">
-              <td colspan="5" data-label="الإجمالي"><strong>إجمالي الصفوف المحسوبة</strong> <span class="muted" id="pricing-count"></span></td>
+              <td colspan="5" data-label="الإجمالي"><strong data-i18n="pricing_totals">إجمالي الصفوف المحسوبة</strong> <span class="muted" id="pricing-count"></span></td>
               <td class="calc-cell" data-label="مقترح ج.م"><span class="calc" id="tot-price">—</span></td>
               <td class="calc-cell" data-label="USD"><span class="calc" id="tot-usd">—</span></td>
               <td class="calc-cell" data-label="المقدم"><span class="calc" id="tot-dep">—</span></td>
@@ -83,36 +87,36 @@
         </table>
       </div>
       <div class="row-actions pricing-actions">
-        <button type="button" id="add-pricing" class="primary">+ صف تسعير</button>
-        <button type="button" id="btn-copy-pricing" class="ghost" title="نسخ صفوف التسعير الظاهرة كنص عربي">نسخ التسعير</button>
-        <button type="button" id="btn-clear-blank-pricing" class="ghost" hidden title="احذف صفوف التسعير الفاضية (من غير نوع/ساعات/سعر/تكاليف/ملاحظات)">احذف الفارغ</button>
-        <button type="button" id="btn-to-proposal" class="ghost" title="انقل إجمالي التسعير إلى عرض السعر">انقل لعرض السعر</button>
+        <button type="button" id="add-pricing" class="primary" data-i18n="add_pricing">+ صف تسعير</button>
+        <button type="button" id="btn-copy-pricing" class="ghost" data-i18n="copy_pricing" data-i18n-title="copy_pricing_title" title="نسخ صفوف التسعير الظاهرة كنص عربي">نسخ التسعير</button>
+        <button type="button" id="btn-clear-blank-pricing" class="ghost" hidden data-i18n="clear_blank_pricing" data-i18n-title="clear_blank_pricing_title" title="احذف صفوف التسعير الفاضية (من غير نوع/ساعات/سعر/تكاليف/ملاحظات)">احذف الفارغ</button>
+        <button type="button" id="btn-to-proposal" class="ghost" data-i18n="to_proposal" data-i18n-title="to_proposal_title" title="انقل إجمالي التسعير إلى عرض السعر">انقل لعرض السعر</button>
       </div>
     </section>
 
     <section id="panel-proposal" class="panel">
-      <h1>عرض السعر</h1>
+      <h1 data-i18n="panel_proposal">عرض السعر</h1>
       <div class="form-grid" id="proposal-form"></div>
     </section>
 
     <section id="panel-crm" class="panel">
       <div class="panel-head">
         <div>
-          <h1>متابعة العملاء</h1>
+          <h1 data-i18n="panel_crm">متابعة العملاء</h1>
           <p class="muted crm-pipeline" id="crm-pipeline" hidden></p>
         </div>
         <div class="panel-actions">
-          <button type="button" id="btn-copy-crm" class="ghost" title="نسخ قائمة المتابعات الظاهرة (حسب التصفية والبحث)">نسخ المتابعات</button>
-          <button type="button" id="btn-snooze-visible" class="ghost" hidden title="تأجيل المتابعة 3 أيام لكل العملاء الظاهرين (عميل محتمل / عرض سعر)">+3 للكل</button>
-          <button type="button" id="btn-snooze7-visible" class="ghost" hidden title="تأجيل المتابعة أسبوع لكل العملاء الظاهرين (عميل محتمل / عرض سعر)">+7 للكل</button>
-          <button type="button" id="btn-today-visible" class="ghost" hidden title="تعيين المتابعة لليوم لكل العملاء الظاهرين (عميل محتمل / عرض سعر)">اليوم للكل</button>
-          <button type="button" id="btn-clear-next-visible" class="ghost" hidden title="مسح موعد المتابعة لكل العملاء الظاهرين (عميل محتمل / عرض سعر)">بدون موعد للكل</button>
-          <button type="button" id="btn-mark-contacted-visible" class="ghost" hidden title="تسجيل تواصل لليوم + متابعة بعد 3 أيام للظاهرين المستحقين (متأخر / النهاردة)">تواصلت للكل</button>
-          <button type="button" id="btn-clear-blank-clients" class="ghost" hidden title="احذف العملاء الفاضيين (من غير اسم/تواصل/مصدر/ملاحظات/تواريخ/قيمة)">احذف الفارغ</button>
-          <button type="button" id="add-client" class="primary">+ عميل</button>
+          <button type="button" id="btn-copy-crm" class="ghost" title="نسخ قائمة المتابعات الظاهرة (حسب التصفية والبحث)" data-i18n="copy_crm" data-i18n-title="copy_crm_title">نسخ المتابعات</button>
+          <button type="button" id="btn-snooze-visible" class="ghost" hidden title="تأجيل المتابعة 3 أيام لكل العملاء الظاهرين (عميل محتمل / عرض سعر)" data-i18n="snooze3_all" data-i18n-title="snooze3_all_title">+3 للكل</button>
+          <button type="button" id="btn-snooze7-visible" class="ghost" hidden title="تأجيل المتابعة أسبوع لكل العملاء الظاهرين (عميل محتمل / عرض سعر)" data-i18n="snooze7_all" data-i18n-title="snooze7_all_title">+7 للكل</button>
+          <button type="button" id="btn-today-visible" class="ghost" hidden title="تعيين المتابعة لليوم لكل العملاء الظاهرين (عميل محتمل / عرض سعر)" data-i18n="today_all" data-i18n-title="today_all_title">اليوم للكل</button>
+          <button type="button" id="btn-clear-next-visible" class="ghost" hidden title="مسح موعد المتابعة لكل العملاء الظاهرين (عميل محتمل / عرض سعر)" data-i18n="clear_next_all" data-i18n-title="clear_next_all_title">بدون موعد للكل</button>
+          <button type="button" id="btn-mark-contacted-visible" class="ghost" hidden title="تسجيل تواصل لليوم + متابعة بعد 3 أيام للظاهرين المستحقين (متأخر / النهاردة)" data-i18n="contacted_all" data-i18n-title="contacted_all_title">تواصلت للكل</button>
+          <button type="button" id="btn-clear-blank-clients" class="ghost" hidden title="احذف العملاء الفاضيين (من غير اسم/تواصل/مصدر/ملاحظات/تواريخ/قيمة)" data-i18n="clear_blank_clients" data-i18n-title="clear_blank_clients_title">احذف الفارغ</button>
+          <button type="button" id="add-client" class="primary" data-i18n="add_client">+ عميل</button>
         </div>
       </div>
-      <div class="crm-filters" id="crm-filters" role="toolbar" aria-label="تصفية العملاء">
+      <div class="crm-filters" id="crm-filters" role="toolbar" data-i18n-aria="crm_filters_aria" aria-label="تصفية العملاء">
         <button type="button" class="chip active" data-filter="all">الكل</button>
         <button type="button" class="chip chip-today" data-filter="today">النهاردة</button>
         <button type="button" class="chip chip-late" data-filter="overdue">متأخر</button>
@@ -123,32 +127,32 @@
         <button type="button" class="chip" data-filter="lost">خسارة</button>
       </div>
       <label class="crm-search">
-        <span class="sr-only">بحث في العملاء</span>
+        <span class="sr-only" data-i18n="crm_search_sr">بحث في العملاء</span>
         <span class="crm-search-wrap">
-          <input type="search" id="crm-search" placeholder="بحث بالاسم / التواصل / المصدر / الملاحظات" autocomplete="off" enterkeyhint="search">
-          <button type="button" id="crm-search-clear" class="crm-search-clear" hidden title="مسح البحث" aria-label="مسح البحث">✕</button>
+          <input type="search" id="crm-search" placeholder="بحث بالاسم / التواصل / المصدر / الملاحظات" data-i18n-placeholder="crm_search_ph" autocomplete="off" enterkeyhint="search">
+          <button type="button" id="crm-search-clear" class="crm-search-clear" hidden title="مسح البحث" aria-label="مسح البحث" data-i18n-title="crm_search_clear" data-i18n-aria="crm_search_clear">✕</button>
         </span>
       </label>
-      <p class="empty-hint" id="crm-empty" hidden>مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.</p>
+      <p class="empty-hint" id="crm-empty" hidden data-i18n="crm_empty_filter">مفيش عملاء في التصفية دي — جرّب «الكل» أو ضيف عميل.</p>
       <div class="table-wrap">
         <table id="crm-table">
           <thead>
             <tr>
-              <th>الاسم</th>
-              <th>التواصل</th>
-              <th>المصدر</th>
-              <th>الحالة</th>
-              <th>آخر تواصل</th>
-              <th>متابعة تالية</th>
-              <th>القيمة</th>
-              <th>ملاحظات</th>
+              <th data-i18n="th_name">الاسم</th>
+              <th data-i18n="th_contact">التواصل</th>
+              <th data-i18n="th_source">المصدر</th>
+              <th data-i18n="th_status">الحالة</th>
+              <th data-i18n="th_last">آخر تواصل</th>
+              <th data-i18n="th_next">متابعة تالية</th>
+              <th data-i18n="th_value">القيمة</th>
+              <th data-i18n="th_notes">ملاحظات</th>
               <th></th>
             </tr>
           </thead>
           <tbody></tbody>
           <tfoot id="crm-tfoot" hidden>
             <tr class="crm-totals-row">
-              <td colspan="6" data-label="الإجمالي"><strong>إجمالي القيمة الظاهرة</strong> <span class="muted" id="crm-value-count"></span></td>
+              <td colspan="6" data-label="الإجمالي"><strong data-i18n="crm_totals">إجمالي القيمة الظاهرة</strong> <span class="muted" id="crm-value-count"></span></td>
               <td class="calc-cell" data-label="القيمة"><span class="calc" id="crm-tot-value">—</span></td>
               <td colspan="2" data-label=""></td>
             </tr>
@@ -160,27 +164,27 @@
     <section id="panel-week" class="panel">
       <div class="panel-head">
         <div>
-          <h1>أسبوع الشغل</h1>
-          <p class="muted">تم <strong id="week-done">0</strong> من 7 · ساعات التركيز: <strong id="week-total">0</strong></p>
+          <h1 data-i18n="panel_week">أسبوع الشغل</h1>
+          <p class="muted"><span data-i18n="week_done_prefix">تم</span> <strong id="week-done">0</strong> <span data-i18n="week_done_mid">من 7 · ساعات التركيز:</span> <strong id="week-total">0</strong></p>
         </div>
         <div class="panel-actions">
-          <button type="button" id="btn-copy-today" class="ghost" title="نسخ بطاقة النهاردة كنص عربي">نسخ اليوم</button>
-          <button type="button" id="btn-copy-week" class="ghost">نسخ الملخص</button>
-          <button type="button" id="btn-week-done-all" class="ghost" hidden title="علم كل الأيام الناقصة اللي فيها محتوى كمكتملة">تم للكل</button>
-          <button type="button" id="btn-week-clear-all" class="ghost" hidden title="امسح مهام وساعات وتسليمات وعلامة تم لكل الأيام اللي فيها محتوى أو متعلّمة تم">مسح للكل</button>
-          <button type="button" id="btn-new-week" class="ghost">أسبوع جديد</button>
+          <button type="button" id="btn-copy-today" class="ghost" title="نسخ بطاقة النهاردة كنص عربي" data-i18n="copy_today" data-i18n-title="copy_today_title">نسخ اليوم</button>
+          <button type="button" id="btn-copy-week" class="ghost" data-i18n="copy_week">نسخ الملخص</button>
+          <button type="button" id="btn-week-done-all" class="ghost" hidden title="علم كل الأيام الناقصة اللي فيها محتوى كمكتملة" data-i18n="week_done_all" data-i18n-title="week_done_all_title">تم للكل</button>
+          <button type="button" id="btn-week-clear-all" class="ghost" hidden title="امسح مهام وساعات وتسليمات وعلامة تم لكل الأيام اللي فيها محتوى أو متعلّمة تم" data-i18n="week_clear_all" data-i18n-title="week_clear_all_title">مسح للكل</button>
+          <button type="button" id="btn-new-week" class="ghost" data-i18n="new_week">أسبوع جديد</button>
         </div>
       </div>
       <div class="table-wrap">
         <table id="week-table">
           <thead>
             <tr>
-              <th>اليوم</th>
-              <th>المهام</th>
-              <th>ساعات التركيز</th>
-              <th>التسليمات</th>
-              <th>تم؟</th>
-              <th>إجراءات</th>
+              <th data-i18n="th_day">اليوم</th>
+              <th data-i18n="th_tasks">المهام</th>
+              <th data-i18n="th_focus">ساعات التركيز</th>
+              <th data-i18n="th_deliverables">التسليمات</th>
+              <th data-i18n="th_done">تم؟</th>
+              <th data-i18n="th_actions">إجراءات</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -190,7 +194,7 @@
   </main>
 
   <footer class="foot">
-    <span>Sarab · Rattib MVP — أدوات تنظيم، مفيش ضمان دخل</span>
+    <span data-i18n="foot">Sarab · Rattib MVP — أدوات تنظيم، مفيش ضمان دخل</span>
   </footer>
   <div id="toast" class="toast" hidden></div>
   <script src="app.js"></script>

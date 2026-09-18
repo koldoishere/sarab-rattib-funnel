@@ -80,6 +80,54 @@ body { display: flex; flex-direction: column; min-height: 100vh; }
   font-size: .88rem;
 }
 .actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* Language toggle (AR | EN) — header chrome */
+.lang-toggle {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  background: #0a100c;
+}
+.lang-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  min-height: 2.5rem;
+  min-width: 2.75rem;
+  padding: .35rem .7rem;
+  cursor: pointer;
+}
+.lang-btn + .lang-btn {
+  border-inline-start: 1px solid var(--border);
+}
+.lang-btn.active {
+  background: var(--green);
+  color: var(--bg);
+}
+.lang-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  z-index: 1;
+}
+@media (max-width: 700px) {
+  .lang-toggle .lang-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: .35rem .65rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+}
+
 .tabs {
   display: flex; gap: .35rem; padding: .75rem 1.25rem;
   border-bottom: 1px solid var(--border); background: #070a08;
@@ -809,3 +857,9 @@ tr.due-today input[data-k="next"], tr.due-today select[data-k="status"] {
 
 .next-na { display: inline-block; padding: .35rem 0; color: var(--muted); }
 td.next-closed { opacity: .85; }
+
+/* Bilingual dir: number/calc columns stay LTR regardless of page dir */
+html[dir="ltr"] td.num input,
+html[dir="ltr"] .calc {
+  text-align: left;
+}
