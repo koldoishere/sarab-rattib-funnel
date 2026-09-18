@@ -541,6 +541,7 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
   #panel-pricing .row-actions .tiny,
   #panel-week .week-row-actions .tiny {
     min-height: 44px;
+    min-width: 44px; /* Testi #122 FAIL: +3/+7 / كرّر were ~34–37px wide */
     padding: .4rem .65rem;
     display: inline-flex;
     align-items: center;
@@ -766,6 +767,7 @@ tr.week-done td[data-label="التسليمات"] input {
   #panel-week .week-row-actions .tiny {
     width: 100%;
     min-height: 44px;
+    min-width: 44px;
     padding: .4rem .65rem;
     display: inline-flex;
     align-items: center;
