@@ -341,6 +341,10 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
   display: inline-block; margin-inline-start: .35rem; padding: .1rem .45rem;
   border-radius: 999px; background: #5a2a2a; color: #ffb4b4; font-size: .72rem; font-weight: 700;
 }
+/* Empty overdue badge must not reserve 44×44 flex space in the tab strip (clips «Work week»). */
+#crm-overdue-badge[hidden] {
+  display: none !important;
+}
 .row-actions { display: flex; gap: .25rem; align-items: center; white-space: nowrap; }
 .ghost.tiny {
   padding: .25rem .55rem; font-size: .78rem; border-radius: 999px;
@@ -354,6 +358,10 @@ tr.overdue input[data-k="next"], tr.overdue select[data-k="status"] {
   border: 1px solid var(--green); box-shadow: 0 8px 24px rgba(0,0,0,.35);
   z-index: 50; font-size: .9rem; font-weight: 600;
   display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; max-width: min(92vw, 28rem);
+}
+/* Author display:flex overrides UA [hidden]; keep blank toast out of view. */
+.toast[hidden] {
+  display: none !important;
 }
 .toast-action {
   flex: 0 0 auto;
@@ -729,6 +737,13 @@ tr.today td { box-shadow: inset 3px 0 0 var(--green); background: #0d1a12; }
     justify-content: center;
     box-sizing: border-box;
     vertical-align: middle;
+  }
+  #crm-overdue-badge[hidden] {
+    display: none !important;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
   }
   /* Pricing / CRM / week table inputs & selects — same 44px; was padding .4rem .5rem (~32–36px) outside this query.
      Priority: CRM select[data-k=status] + input[data-k=next]. Scoped to tables so .crm-search keeps its clear-✕ padding.
